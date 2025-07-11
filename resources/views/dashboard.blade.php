@@ -1,89 +1,83 @@
 <x-app-layout>
+    <x-slot name="header">
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            {{ __('Dashboard') }}
+        </h2>
+    </x-slot>
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <!-- Dashboard Title and Overview -->
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
-                <div class="p-6 text-gray-900">
-                    <h1 class="text-3xl font-bold text-red-600">Dashboard</h1>
-                    <p class="mt-2 text-lg text-grey-600 font-medium">Overview of inventory system metrics</p>
+    <div class="flex min-h-screen bg-gray-50">
+      
+        <button id="toggleSidebar" class="md:hidden fixed top-4 left-4 z-50 bg-gray-800 text-white p-2 rounded-lg">
+            <i class="fas fa-bars"></i>
+        </button>
+
+        <!-- Main Content -->
+        <div class="flex-1 container mx-auto px-4 py-8">
+            <div class="text-center mb-10 animate-fade-in">
+                <h2 class="text-2xl font-bold text-red-600">Dashboard</h2>
+                <p class="text-lg text-black-600">Overview of your inventory system</p>
+            </div>
+
+            <!-- Metrics -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="bg-white rounded-xl shadow-md p-6 text-center">
+                    <h3 class="text-lg font-semibold text-gray-700">Total Equipment</h3>
+                    <p class="text-3xl font-bold text-green-600">{{ $totalEquipment }}</p>
+                </div>
+                <div class="bg-white rounded-xl shadow-md p-6 text-center">
+                    <h3 class="text-lg font-semibold text-gray-700">Active Issuances</h3>
+                    <p class="text-3xl font-bold text-green-600">{{ $activeIssuances }}</p>
+                </div>
+                <div class="bg-white rounded-xl shadow-md p-6 text-center">
+                    <h3 class="text-lg font-semibold text-gray-700">Pending Requests</h3>
+                    <p class="text-3xl font-bold text-green-600">{{ $pendingRequests }}</p>
                 </div>
             </div>
 
-            <!-- Metrics Cards -->
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-6">
-                <div class="bg-red-100 p-6 rounded-lg shadow-md">
-                    <h3 class="text-lg font-semibold text-red-700">Total Equipment</h3>
-                    <p class="text-2xl font-bold text-red-800">5</p>
+            <!-- Issuances -->
+            <div class="bg-white rounded-xl shadow-md overflow-hidden animate-fade-in">
+                <div class="bg-gray-800 px-6 py-4">
+                    <h2 class="text-xl font-semibold text-white">Current Issuances</h2>
                 </div>
-                <div class="bg-green-100 p-6 rounded-lg shadow-md">
-                    <h3 class="text-lg font-semibold text-green-700">Active Issuances</h3>
-                    <p class="text-2xl font-bold text-green-800">5</p>
-                </div>
-                <div class="bg-yellow-100 p-6 rounded-lg shadow-md">
-                    <h3 class="text-lg font-semibold text-yellow-700">Pending Requests</h3>
-                    <p class="text-2xl font-bold text-yellow-800">0</p>
-                </div>
-            </div>
-
-            <!-- Equipment Issuance Table -->
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
                 <div class="p-6">
-                    <h3 class="text-xl font-semibold text-red-600 mb-4">Equipment Issuance Details</h3>
                     <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200">
+                        <table class="min-w-full divide-y divide-gray-200" aria-label="Issuance Records">
                             <thead class="bg-green-50">
                                 <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-green-800 uppercase tracking-wider">Name of Staff</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-green-800 uppercase tracking-wider">Department</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-green-800 uppercase tracking-wider">Equipment Issued</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-green-800 uppercase tracking-wider">Model/Brand</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-green-800 uppercase tracking-wider">Date Issued</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-green-800 uppercase tracking-wider">Serial Number</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-green-800 uppercase tracking-wider">Date Returned</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-green-800 uppercase tracking-wider">PR Number</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-green-800 uppercase tracking-wider">Remarks</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-green-800 uppercase tracking-wider">Staff</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-green-800 uppercase tracking-wider">Department</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-green-800 uppercase tracking-wider">Equipment</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-green-800 uppercase tracking-wider">Model</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-green-800 uppercase tracking-wider">Serial</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-green-800 uppercase tracking-wider">Issued</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-green-800 uppercase tracking-wider">PR Number</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-green-800 uppercase tracking-wider">Status</th>
                                 </tr>
                             </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
-                                <tr>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">John Doe</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">IT</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Laptop</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Dell XPS 13</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">2025-06-01</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">SN123456</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">-</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">PR001</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">In use</td>
-                                </tr>
-                                <tr>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Jane Smith</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">HR</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Monitor</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">LG 27UK850</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">2025-05-15</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">SN789012</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">2025-07-01</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">PR002</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Returned</td>
-                                </tr>
+                            <tbody id="issuanceTableBody" class="bg-white divide-y divide-gray-200">
+                                @if ($issuances->whereNull('date_returned')->isEmpty())
+                                    <tr>
+                                        <td colspan="8" class="px-6 py-4 text-center text-gray-500">No Current Record</td>
+                                    </tr>
+                                @else
+                                    @foreach ($issuances->whereNull('date_returned') as $issuance)
+                                        <tr>
+                                            <td class="px-6 py-4 whitespace-nowrap">{{ $issuance->staff_name }}</td>
+                                            <td class="px-6 py-4 whitespace-nowrap">{{ $issuance->department }}</td>
+                                            <td class="px-6 py-4 whitespace-nowrap">{{ $issuance->equipment->name }}</td>
+                                            <td class="px-6 py-4 whitespace-nowrap">{{ $issuance->equipment->model_brand }}</td>
+                                            <td class="px-6 py-4 whitespace-nowrap">{{ $issuance->equipment->serial_number }}</td>
+                                            <td class="px-6 py-4 whitespace-nowrap">{{ $issuance->date_issued }}</td>
+                                            <td class="px-6 py-4 whitespace-nowrap">{{ $issuance->pr_number }}</td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Active</span>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                @endif
                             </tbody>
                         </table>
                     </div>
-                </div>
-            </div>
-
-            <!-- History Log Summary -->
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6">
-                    <h3 class="text-xl font-semibold text-red-600 mb-4">History Log Summary</h3>
-                    <p class="text-gray-600">Recent activity in the inventory system:</p>
-                    <ul class="mt-2 space-y-2">
-                        <li class="text-sm text-gray-900">2025-07-09: Equipment issued to John Doe (Laptop, SN123456)</li>
-                        <li class="text-sm text-gray-900">2025-07-01: Equipment returned by Jane Smith (Monitor, SN789012)</li>
-                        <li class="text-sm text-gray-900">2025-06-15: Pending request for new equipment (PR003)</li>
-                    </ul>
                 </div>
             </div>
         </div>

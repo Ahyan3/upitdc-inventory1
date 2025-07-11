@@ -2,9 +2,12 @@
 
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\InventoryController;
+use App\Http\Controllers\StaffController;
+use App\Http\Controllers\SettingsController;
 use App\Models\Equipment;
 use App\Models\Issuance;
 use App\Models\Request;
+use App\Models\HistoryLog;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -20,21 +23,23 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->when(request('department'), fn($query) => $query->where('department', request('department')))
             ->when(request('sort'), fn($query) => $query->orderBy(request('sort'), request('direction', 'asc')))
             ->get();
-        $history = [
-            ['description' => 'Laptop issued to John Doe on 2025-06-01'],
-            ['description' => 'Monitor returned by Jane Smith on 2025-07-01'],
-        ];
-
-        return view('dashboard', compact('totalEquipment', 'activeIssuances', 'pendingRequests', 'issuances', 'history'));
+        return view('dashboard', compact('totalEquipment', 'activeIssuances', 'pendingRequests', 'issuances'));
     })->name('dashboard');
 
     Route::get('/inventory', [InventoryController::class, 'index'])->name('inventory');
     Route::post('/inventory/issue', [InventoryController::class, 'issue'])->name('inventory.issue');
     Route::post('/inventory/return', [InventoryController::class, 'return'])->name('inventory.return');
     Route::delete('/inventory/{id}', [InventoryController::class, 'delete'])->name('inventory.delete');
-    Route::get('/staff', fn() => view('staff'))->name('staff');
-    Route::get('/history', fn() => view('history'))->name('history');
-    Route::get('/settings', fn() => view('settings'))->name('settings');
+
+    Route::get('/staff', [StaffController::class, 'index'])->name('staff');
+    Route::post('/staff', [StaffController::class, 'store'])->name('staff.store');
+    Route::patch('/staff/{staff}', [StaffController::class, 'update'])->name('staff.update');
+    Route::delete('/staff/{staff}', [StaffController::class, 'destroy'])->name('staff.destroy');
+
+    Route::get('/history', fn() => view('history', ['history_logs' => HistoryLog::orderBy('action_date', 'desc')->get()]))->name('history');
+
+    Route::get('/settings', [SettingsController::class, 'index'])->name('settings');
+    Route::patch('/settings', [SettingsController::class, 'update'])->name('settings.update');
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

@@ -3,7 +3,8 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ config('app.name', 'Laravel') }}</title>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>{{ \App\Models\Setting::where('key', 'system_title')->value('value') ?? 'UPITDC - Inventory System' }}</title>
     <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     @vite(['resources/css/app.css', 'resources/js/app.js', 'resources/js/inventory.js'])
@@ -15,7 +16,7 @@
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
                 <div class="flex items-center">
                     <img src="{{ asset('images/my-logo.png') }}" alt="Company Logo" class="h-10 mr-3" onerror="this.src='/images/fallback-logo.png'">
-                    <h1 class="text-xl font-semibold text-red-600">Inventory System</h1>
+                    <h1 class="text-xl font-semibold text-red-600">{{ \App\Models\Setting::where('key', 'system_title')->value('value') ?? 'UPITDC - Inventory System' }}</h1>
                 </div>
                 <div class="flex items-center space-x-4">
                     <!-- Navigation Buttons -->
