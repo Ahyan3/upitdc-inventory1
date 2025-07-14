@@ -9,5 +9,19 @@ class HistoryLog extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['action', 'staff_name', 'department', 'equipment_name', 'details', 'action_date'];
+    protected $fillable = [
+        'action', 
+        'staff_name', 
+        'department', 
+        'model', 
+        'model_id',
+        'old_values',
+        'new_values',
+        'user_id',
+        'staff_id',
+        'ip_address',
+        'user_agent',
+        'description', 
+        'action_date'
+    ];
 }

@@ -6,7 +6,9 @@ use App\Models\Equipment;
 use App\Models\Issuance;
 use App\Models\HistoryLog;
 use App\Models\Staff;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class InventoryController extends Controller
 {
@@ -35,47 +37,70 @@ class InventoryController extends Controller
             'remarks' => 'nullable|string|max:255',
         ]);
 
-        // Create or find staff with all required fields
-        $staff = Staff::firstOrCreate(
-            ['name' => $validated['staff_name'], 'department' => $validated['department']],
-            [
-                'email' => strtolower(str_replace(' ', '.', $validated['staff_name'])) . '@example.com',
-                'position' => 'Staff',
-                'password' => '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', // Default hashed 'password'
-                'email_verified_at' => now(),
-                'remember_token' => null,
-            ]
-        );
+        try {
+            DB::beginTransaction();
+            
+            // Create or find staff with all required fields
+            $staff = Staff::firstOrCreate(
+                ['name' => $validated['staff_name'], 'department' => $validated['department']],
+                [
+                    'email' => strtolower(str_replace(' ', '.', $validated['staff_name'])) . '@example.com',
+                    'position' => 'Staff',
+                    'password' => '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', // Default hashed 'password'
+                    'email_verified_at' => now(),
+                    'remember_token' => null,
+                ]
+            );
 
-        // Create equipment
-$equipment = Equipment::create([
-    'name' => $validated['equipment_name'],
-    'model' => $validated['model_brand'], // or split this into model and brand
-    'brand' => $validated['model_brand'], // if you have separate brand column
-    'serial_number' => $validated['serial_number'],
-]);
+            // Create or find user with the same information as staff
+            $user = User::firstOrCreate(
+                ['email' => strtolower(str_replace(' ', '.', $validated['staff_name'])) . '@example.com'],
+                [
+                    'name' => $validated['staff_name'],
+                    'password' => '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', // Default hashed 'password'
+                ]
+            );
 
-        // Create issuance
-        $issuance = Issuance::create([
-            'staff_name' => $staff->name,
-            'department' => $staff->department,
-            'equipment_id' => $equipment->id,
-            'date_issued' => $validated['date_issued'],
-            'pr_number' => $validated['pr_number'],
-            'remarks' => $validated['remarks'],
-        ]);
+            // Create equipment - FIXED: Added remarks field
+            $equipment = Equipment::create([
+                'name' => $validated['equipment_name'],
+                'model_brand' => $validated['model_brand'], // Use model_brand as shown in the error
+                'serial_number' => $validated['serial_number'],
+                'remarks' => $validated['remarks'] ?? '', // Add this line to fix the error
+            ]);
 
-        // Log action
-        HistoryLog::create([
-            'action' => 'Issued',
-            'staff_name' => $staff->name,
-            'department' => $staff->department,
-            'equipment_name' => $equipment->name,
-            'details' => "PR: {$validated['pr_number']}, Serial: {$equipment->serial_number}",
-            'action_date' => $validated['date_issued'],
-        ]);
+            // Create issuance
+            $issuance = Issuance::create([
+                'user_id' => $user->id,  // Use the created/found user ID
+                'staff_id' => $staff->id,
+                'equipment_id' => $equipment->id,
+                'issued_at' => $validated['date_issued'],
+                'expected_return_at' => now()->addDays(30), // Set expected return date (30 days from now)
+                'notes' => ($validated['remarks'] ?? '') . ($validated['pr_number'] ? " (PR: {$validated['pr_number']})" : ''),
+                'status' => 'active', // Try 'active' instead of 'issued'
+            ]);
 
-        return redirect()->route('inventory')->with('success', 'Equipment issued successfully.');
+            // Log action
+            HistoryLog::create([
+                'action' => 'Issued',
+                'staff_name' => $staff->name,
+                'department' => $staff->department,
+                'model' => 'Equipment', // Add model field
+                'model_id' => $equipment->id, // Add model_id field
+                'user_id' => $user->id, // Add user_id field
+                'staff_id' => $staff->id, // Add staff_id field
+                'description' => "PR: {$validated['pr_number']}, Serial: {$equipment->serial_number}",
+                'action_date' => $validated['date_issued'],
+            ]);
+
+            DB::commit();
+            
+            return redirect()->route('inventory')->with('success', 'Equipment issued successfully.');
+            
+        } catch (\Exception $e) {
+            DB::rollBack();
+            dd($e->getMessage(), $e->getTraceAsString()); // This will show you the error
+        }
     }
 
     public function return(Request $request, Issuance $issuance)
@@ -109,8 +134,9 @@ $equipment = Equipment::create([
             'action' => 'Deleted',
             'staff_name' => 'System',
             'department' => 'N/A',
-            'equipment_name' => $equipment->name,
-            'details' => "Serial: {$equipment->serial_number}",
+            'model' => 'Equipment', // Add model field
+            'model_id' => $equipment->id, // Add model_id field
+            'description' => "Equipment: {$equipment->name}, Serial: {$equipment->serial_number}",
             'action_date' => now(),
         ]);
 

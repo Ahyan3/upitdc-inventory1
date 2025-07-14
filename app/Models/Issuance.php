@@ -9,10 +9,26 @@ class Issuance extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['staff_name', 'department', 'equipment_id', 'date_issued', 'date_returned', 'pr_number', 'remarks'];
+    protected $fillable = [
+        'equipment_id',
+        'user_id', 
+        'staff_id',
+        'issued_at',           
+        'expected_return_at',
+        'returned_at',
+        'date_returned',
+        'status',
+        'notes',               
+        'return_notes'
+    ];
 
     public function equipment()
     {
         return $this->belongsTo(Equipment::class);
+    }
+    
+    public function staff()
+    {
+        return $this->belongsTo(Staff::class);
     }
 }

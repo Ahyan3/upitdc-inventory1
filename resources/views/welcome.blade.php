@@ -17,7 +17,7 @@
                 @auth
                     <!-- Content for logged-in users -->
                     <h2 class="text-3xl font-bold text-gray-900 mb-4">Welcome Back!</h2>
-                    <p class="text-lg text-gray-600 mb-6">Ready to manage your equipment and issuances?</p>
+                    <p class="text-lg text-gray-600 mb-6">Manage your equipment and issuances</p>
                     <div class="flex justify-center">
                         <a href="{{ route('dashboard') }}" class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-6 rounded-lg transition duration-200" aria-label="Get started with the system">
                             Get Started

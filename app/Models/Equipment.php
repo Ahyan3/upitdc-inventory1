@@ -9,7 +9,7 @@ class Equipment extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'category', 'model_brand', 'serial_number'];
+    protected $fillable = ['name', 'category', 'model_brand', 'serial_number', 'remarks'];
 
     public function issuances()
     {
