@@ -17,6 +17,11 @@ class InventoryController extends Controller
         return view('inventory', compact('equipment', 'issuances'));
     }
 
+    public function create()
+    {
+        return view('inventory.issue'); 
+    }
+
     public function issue(Request $request)
     {
         $validated = $request->validate([
@@ -30,18 +35,25 @@ class InventoryController extends Controller
             'remarks' => 'nullable|string|max:255',
         ]);
 
-        // Create or find staff
+        // Create or find staff with all required fields
         $staff = Staff::firstOrCreate(
             ['name' => $validated['staff_name'], 'department' => $validated['department']],
-            ['email' => strtolower(str_replace(' ', '.', $validated['staff_name'])) . '@example.com']
+            [
+                'email' => strtolower(str_replace(' ', '.', $validated['staff_name'])) . '@example.com',
+                'position' => 'Staff',
+                'password' => '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', // Default hashed 'password'
+                'email_verified_at' => now(),
+                'remember_token' => null,
+            ]
         );
 
         // Create equipment
-        $equipment = Equipment::create([
-            'name' => $validated['equipment_name'],
-            'model_brand' => $validated['model_brand'],
-            'serial_number' => $validated['serial_number'],
-        ]);
+$equipment = Equipment::create([
+    'name' => $validated['equipment_name'],
+    'model' => $validated['model_brand'], // or split this into model and brand
+    'brand' => $validated['model_brand'], // if you have separate brand column
+    'serial_number' => $validated['serial_number'],
+]);
 
         // Create issuance
         $issuance = Issuance::create([
