@@ -26,7 +26,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         return view('dashboard', compact('totalEquipment', 'activeIssuances', 'pendingRequests', 'issuances'));
     })->name('dashboard');
 
-    Route::get('/inventory', [InventoryController::class, 'index'])->name('inventory');
+    Route::get('/inventory/issue', [InventoryController::class, 'create']);
     Route::post('/inventory/issue', [InventoryController::class, 'issue'])->name('inventory.issue');
     Route::post('/inventory/return', [InventoryController::class, 'return'])->name('inventory.return');
     Route::delete('/inventory/{id}', [InventoryController::class, 'delete'])->name('inventory.delete');

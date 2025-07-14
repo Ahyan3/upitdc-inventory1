@@ -11,8 +11,14 @@ return new class extends Migration
         Schema::create('equipment', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('model_brand');
+            $table->text('description')->nullable();
             $table->string('serial_number')->unique();
+            $table->string('brand')->nullable();
+            $table->string('model')->nullable();
+            $table->enum('status', ['available', 'in_use', 'maintenance', 'damaged'])->default('available');
+            $table->date('purchase_date')->nullable();
+            $table->decimal('purchase_price', 10, 2)->nullable();
+            $table->string('location')->nullable();
             $table->timestamps();
         });
     }
