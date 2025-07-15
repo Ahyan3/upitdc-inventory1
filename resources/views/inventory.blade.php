@@ -40,11 +40,11 @@
                             <label for="department" class="block text-sm font-medium text-gray-700 mb-1">Department *</label>
                             <select name="department" id="department" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500" aria-label="Department">
                                 <option value="">Select Department</option>
-                                <option value="IT">IT</option>
-                                <option value="Finance">Finance</option>
-                                <option value="HR">Human Resources</option>
-                                <option value="Operations">Operations</option>
-                                <option value="Marketing">Marketing</option>
+                                <option value="ITSG">ITSG</option>
+                                <option value="Admin">Admin</option>
+                                <option value="Content Development">Content Development</option>
+                                <option value="Software Development">Software Development</option>
+                                <option value="Helpdesk">Helpdesk</option>
                                 <option value="Other">Other</option>
                             </select>
                         </div>
@@ -94,7 +94,7 @@
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-1">Equipment</label>
-                                        <input type="text" value="{{ $issuance->equipment->name }}" disabled class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-100" aria-label="Equipment Name">
+                                        <input type="text" value="{{ $issuance->equipment->equipment_name }}" disabled class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-100" aria-label="Equipment Name">
                                     </div>
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-1">Staff</label>
@@ -155,7 +155,8 @@
                                 @else
                                     @foreach ($equipment as $item)
                                         <tr>
-                                            <td class="px-6 py-4 whitespace-nowrap">{{ $item->name }}</td>
+                                            <td class="px-6 py-4 whitespace-nowrap">{{ $item->staff_name }}</td>
+                                            <td class="px-6 py-4 whitespace-nowrap">{{ $item->equipment_name }}</td>
                                             <td class="px-6 py-4 whitespace-nowrap">{{ $item->model_brand }}</td>
                                             <td class="px-6 py-4 whitespace-nowrap">{{ $item->serial_number }}</td>
                                             <td class="px-6 py-4 whitespace-nowrap">
@@ -166,10 +167,10 @@
                                                 @endif
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap">
-                                                <form action="{{ route('inventory.delete', $item->id) }}" method="POST" class="inline" onsubmit="return confirm('Delete {{ $item->name }}?')">
+                                                <form action="{{ route('inventory.delete', $item->id) }}" method="POST" class="inline delete-form">
                                                     @csrf
                                                     @method('DELETE')
-                                                    <button type="submit" class="text-red-600 hover:text-red-900" aria-label="Delete {{ $item->name }}">Delete</button>
+                                                    <button type="button" class="text-red-600 hover:text-red-900 delete-btn" data-item="{{ $item->equipment_name }}">Delete</button>
                                                 </form>
                                             </td>
                                         </tr>
@@ -182,4 +183,123 @@
             </div>
         </div>
     </div>
+
+    <!-- SweetAlert2 CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // SweetAlert2 for Delete Buttons
+            const deleteButtons = document.querySelectorAll('.delete-btn');
+            deleteButtons.forEach(button => {
+                button.addEventListener('click', function () {
+                    const form = this.closest('form');
+                    const itemName = this.getAttribute('data-item');
+
+                    Swal.fire({
+                        title: `Delete "${itemName}"?`,
+                        text: "This action cannot be undone!",
+                        icon: "warning",
+                        showCancelButton: true,
+                        confirmButtonColor: '#d33',
+                        cancelButtonColor: '#3085d6',
+                        confirmButtonText: 'Yes, delete it!',
+                        cancelButtonText: 'Cancel'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            form.submit();
+                        }
+                    });
+                });
+            });
+
+            // SweetAlert2 for Issue Equipment Form Duplicate Check
+            const issueForm = document.getElementById('issueForm');
+            issueForm.addEventListener('submit', async function (event) {
+                event.preventDefault();
+
+                const serialNumber = document.getElementById('serial_number').value;
+                const prNumber = document.getElementById('pr_number').value;
+                const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || document.querySelector('input[name="_token"]').value;
+
+                if (!csrfToken) {
+                    Swal.fire({
+                        title: 'Error',
+                        text: 'CSRF token not found. Please refresh the page and try again.',
+                        icon: 'error',
+                        confirmButtonColor: '#d33'
+                    });
+                    return;
+                }
+
+                try {
+                    const response = await fetch('{{ route("inventory.check-duplicates") }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': csrfToken
+                        },
+                        body: JSON.stringify({
+                            serial_number: serialNumber,
+                            pr_number: prNumber
+                        })
+                    });
+
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        let message = `HTTP error! Status: ${response.status}, StatusText: ${response.statusText}`;
+                        if (response.status === 419) {
+                            message = 'CSRF token mismatch. Please refresh the page and try again.';
+                        } else if (response.status === 500) {
+                            message = `Server error: ${errorText || 'Check server logs for details.'}`;
+                        }
+                        throw new Error(message);
+                    }
+
+                    const data = await response.json();
+
+                    if (data.error) {
+                        throw new Error(data.error);
+                    }
+
+                    if (data.serial_exists || data.pr_exists) {
+                        let warningMessage = 'The following issues were found:\n';
+                        if (data.serial_exists) {
+                            warningMessage += `- Serial Number "${serialNumber}" already exists in the inventory and cannot be used.\n`;
+                        }
+                        if (data.pr_exists) {
+                            warningMessage += `- PR Number "${prNumber}" already exists in the inventory.\n`;
+                        }
+                        warningMessage += data.serial_exists ? 
+                            'You cannot proceed due to duplicate serial number.' : 
+                            'Do you want to proceed with issuing this equipment?';
+
+                        Swal.fire({
+                            title: 'Duplicate Entry Detected',
+                            text: warningMessage,
+                            icon: 'warning',
+                            showCancelButton: !data.serial_exists,
+                            confirmButtonColor: '#3085d6',
+                            cancelButtonColor: '#d33',
+                            confirmButtonText: data.serial_exists ? 'OK' : 'Yes, proceed',
+                            cancelButtonText: 'Cancel'
+                        }).then((result) => {
+                            if (result.isConfirmed && !data.serial_exists) {
+                                issueForm.submit();
+                            }
+                        });
+                    } else {
+                        issueForm.submit();
+                    }
+                } catch (error) {
+                    console.error('Error checking duplicates:', error);
+                    Swal.fire({
+                        title: 'Error',
+                        text: `Failed to check for duplicates: ${error.message}. Please check the console and server logs for details.`,
+                        icon: 'error',
+                        confirmButtonColor: '#d33'
+                    });
+                }
+            });
+        });
+    </script>
 </x-app-layout>

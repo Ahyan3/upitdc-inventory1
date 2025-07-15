@@ -43,7 +43,7 @@
                                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-green-800 uppercase tracking-wider">Action</th>
                                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-green-800 uppercase tracking-wider">Staff</th>
                                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-green-800 uppercase tracking-wider">Department</th>
-                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-green-800 uppercase tracking-wider">Equipment</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-green-800 uppercase tracking-wider">Model/Brand</th>
                                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-green-800 uppercase tracking-wider">Details</th>
                                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-green-800 uppercase tracking-wider">Date</th>
                                     </tr>
@@ -63,7 +63,7 @@
                                                 </td>
                                                 <td class="px-6 py-4 whitespace-nowrap">{{ $log->staff_name }}</td>
                                                 <td class="px-6 py-4 whitespace-nowrap">{{ $log->department }}</td>
-                                                <td class="px-6 py-4 whitespace-nowrap">{{ $log->equipment_name }}</td>
+                                                <td class="px-6 py-4 whitespace-nowrap">{{ $log->model_brand }}</td>
                                                 <td class="px-6 py-4 whitespace-nowrap">{{ $log->details }}</td>
                                                 <td class="px-6 py-4 whitespace-nowrap">{{ $log->action_date }}</td>
                                             </tr>

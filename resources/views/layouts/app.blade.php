@@ -7,6 +7,7 @@
     <title>{{ \App\Models\Setting::where('key', 'system_title')->value('value') ?? 'UPITDC - Inventory System' }}</title>
     <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     @vite(['resources/css/app.css', 'resources/js/app.js', 'resources/js/inventory.js'])
 </head>
 <body class="font-sans antialiased bg-gray-50">
@@ -62,7 +63,7 @@
                                 </form>
                             @else
                                 <a href="{{ route('login') }}" class="block px-4 py-2 text-sm text-black hover:bg-gray-100" aria-label="Login">
-                                    <i class="fas fa-sign-in-alt mr-2"></i> Login
+                                    <i class="fas fa-sign-in-alt mr-2"></i>  Login
                                 </a>
                                 <a href="{{ route('register') }}" class="block px-4 py-2 text-sm text-black hover:bg-gray-100" aria-label="Register">
                                     <i class="fas fa-user-plus mr-2"></i> Register

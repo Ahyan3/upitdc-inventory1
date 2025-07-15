@@ -9,8 +9,16 @@ class Equipment extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'category', 'model_brand', 'serial_number', 'remarks'];
-
+    protected $fillable = [
+        'staff_name',
+        'equipment_name',
+        'model_brand',
+        'serial_number',
+        'department',
+        'date_issued',
+        'pr_number',
+        'remarks',
+    ];
     public function issuances()
     {
         return $this->hasMany(Issuance::class);
