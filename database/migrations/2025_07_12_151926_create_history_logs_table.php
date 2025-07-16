@@ -10,8 +10,8 @@ return new class extends Migration
     {
         Schema::create('history_logs', function (Blueprint $table) {
             $table->id();
-            $table->string('action'); // created, updated, deleted, issued, returned
-            $table->string('model'); // Equipment, User, Request, etc.
+            $table->string('action');
+            $table->string('model'); 
             $table->unsignedBigInteger('model_id');
             $table->json('old_values')->nullable();
             $table->json('new_values')->nullable();

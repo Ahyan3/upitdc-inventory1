@@ -2,25 +2,31 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Equipment extends Model
 {
-    use HasFactory;
-
     protected $fillable = [
         'staff_name',
+        'department_id',
         'equipment_name',
-        'model_brand',
+        'category',
+        'description',
         'serial_number',
-        'department',
+        'model_brand',
+        'status',
         'date_issued',
         'pr_number',
         'remarks',
     ];
+
+    public function department()
+    {
+        return $this->belongsTo(Department::class);
+    }
+
     public function issuances()
     {
         return $this->hasMany(Issuance::class);
     }
-}   
+}

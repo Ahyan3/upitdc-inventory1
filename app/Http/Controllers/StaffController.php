@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Staff;
+use App\Models\Department;
 use Illuminate\Http\Request;
-
 class StaffController extends Controller
 {
     public function index()
@@ -13,7 +13,10 @@ class StaffController extends Controller
             ->orWhere('department', 'like', '%'.request('search').'%')
             ->orWhere('email', 'like', '%'.request('search').'%'))
             ->get();
-        return view('staff', compact('staff'));
+        
+        $departments = Department::orderBy('name')->get();        
+        
+        return view('staff', compact('staff', 'departments'));
     }
 
     public function store(Request $request)
@@ -37,6 +40,7 @@ class StaffController extends Controller
         ]);
 
         $staff->update($validated);
+        
         return redirect()->route('staff')->with('success', 'Staff updated successfully.');
     }
 

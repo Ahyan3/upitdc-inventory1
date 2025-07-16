@@ -85,11 +85,11 @@ document.addEventListener('DOMContentLoaded', function () {
                     <div>
                         <label for="edit_department" class="block text-sm font-medium text-gray-700 mb-1">Department *</label>
                         <select name="department" id="edit_department" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500">
-                            <option value="IT" ${department === 'IT' ? 'selected' : ''}>IT</option>
-                            <option value="Finance" ${department === 'Finance' ? 'selected' : ''}>Finance</option>
-                            <option value="HR" ${department === 'HR' ? 'selected' : ''}>Human Resources</option>
-                            <option value="Operations" ${department === 'Operations' ? 'selected' : ''}>Operations</option>
-                            <option value="Marketing" ${department === 'Marketing' ? 'selected' : ''}>Marketing</option>
+                            <option value="ITSG" ${department === 'ITSG' ? 'selected' : ''}>ITSG</option>
+                            <option value="Admin" ${department === 'Admin' ? 'selected' : ''}>Admin</option>
+                            <option value="Content Development" ${department === 'Content Development' ? 'selected' : ''}>Content Development</option>
+                            <option value="Operations" ${department === 'Software Development' ? 'selected' : ''}>Software Development</option>
+                            <option value="Marketing" ${department === 'Helpdesk' ? 'selected' : ''}>Helpdesk</option>
                             <option value="Other" ${department === 'Other' ? 'selected' : ''}>Other</option>
                         </select>
                     </div>
@@ -107,21 +107,5 @@ document.addEventListener('DOMContentLoaded', function () {
         document.body.appendChild(modal);
     };
 
-    const issueForm = document.getElementById('issueForm');
-    if (issueForm) {
-        issueForm.addEventListener('submit', function (e) {
-            const staffName = document.getElementById('staff_name').value;
-            const department = document.getElementById('department').value;
-            const equipmentName = document.getElementById('equipment_name').value;
-            const modelBrand = document.getElementById('model_brand').value;
-            const serialNumber = document.getElementById('serial_number').value;
-            const dateIssued = document.getElementById('date_issued').value;
-            const prNumber = document.getElementById('pr_number').value;
-
-            if (!staffName || !department || !equipmentName || !modelBrand || !serialNumber || !dateIssued || !prNumber) {
-                e.preventDefault();
-                alert('Please fill all required fields.');
-            }
-        });
-    };
+    
 });
