@@ -150,6 +150,7 @@
             </div>
         </div>
     </div>
+    <x-auth-footer />
 
     @section('scripts')
     <script>

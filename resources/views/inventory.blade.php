@@ -178,7 +178,9 @@
                                         <form action="{{ route('inventory.delete', $item->id) }}" method="POST" class="inline delete-form">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="button" class="text-red-600 hover:text-red-900 delete-btn" data-item="{{ $item->equipment_name }}">Delete</button>
+                                            <button type="button" class="text-red-600 hover:text-red-900 delete-btn" data-item="{{ $item->equipment_name }}">
+                                                <i class="fas fa-trash-alt mr-1"></i> Delete
+                                            </button>
                                         </form>
                                     </td>
                                 </tr>
@@ -214,11 +216,13 @@
                 });
             });
 
-            // Delete confirmation
             document.querySelectorAll('.delete-btn').forEach(button => {
                 button.addEventListener('click', function() {
+                    const form = this.closest('form');
+                    const itemName = this.dataset.item;
+
                     Swal.fire({
-                        title: `Delete "${this.dataset.item}"?`,
+                        title: `Delete "${itemName}"?`,
                         text: "This action cannot be undone!",
                         icon: "warning",
                         showCancelButton: true,
@@ -227,7 +231,45 @@
                         confirmButtonText: 'Yes, delete it!'
                     }).then((result) => {
                         if (result.isConfirmed) {
-                            this.closest('form').submit();
+                            // Show loading state
+                            const originalHtml = this.innerHTML;
+                            this.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Deleting...';
+                            this.disabled = true;
+
+                            // Send AJAX request
+                            fetch(form.action, {
+                                    method: 'POST',
+                                    headers: {
+                                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                                        'Accept': 'application/json',
+                                        'Content-Type': 'application/json'
+                                    },
+                                    body: JSON.stringify({
+                                        _method: 'DELETE'
+                                    })
+                                })
+                                .then(response => {
+                                    if (!response.ok) {
+                                        return response.json().then(err => {
+                                            throw err;
+                                        });
+                                    }
+                                    return response.json();
+                                })
+                                .then(data => {
+                                    if (data.success) {
+                                        // Remove the row from table
+                                        form.closest('tr').remove();
+                                        Swal.fire('Deleted!', data.message, 'success');
+                                    } else {
+                                        throw new Error(data.message);
+                                    }
+                                })
+                                .catch(error => {
+                                    this.innerHTML = originalHtml;
+                                    this.disabled = false;
+                                    Swal.fire('Error!', error.message || 'Failed to delete item', 'error');
+                                });
                         }
                     });
                 });
@@ -249,7 +291,7 @@
             document.getElementById('exportBtn')?.addEventListener('click', function() {
                 const rows = [];
                 const headers = [];
-                
+
                 document.querySelectorAll('#inventoryTableBody thead th').forEach(header => {
                     headers.push(header.textContent.trim());
                 });
@@ -264,7 +306,9 @@
                 });
 
                 const csvContent = rows.join('\n');
-                const blob = new Blob([csvContent], { type: 'text/csv' });
+                const blob = new Blob([csvContent], {
+                    type: 'text/csv'
+                });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
@@ -306,7 +350,7 @@
                             let message = 'Potential duplicates found:\n';
                             if (checkData.serial_exists) message += `• Serial Number "${payload.serial_number}" exists\n`;
                             if (checkData.pr_exists) message += `• PR Number "${payload.pr_number}" exists\n`;
-                            
+
                             const result = await Swal.fire({
                                 title: 'Duplicate Detected',
                                 text: message,

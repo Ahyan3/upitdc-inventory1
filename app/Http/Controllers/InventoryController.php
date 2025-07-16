@@ -202,39 +202,43 @@ class InventoryController extends Controller
     public function delete(Request $request, Equipment $equipment)
     {
         if (!Auth::check()) {
-            Log::error('No authenticated user found for delete');
-            return redirect()->route('login')->with('error', 'Please log in to delete equipment.');
+            return response()->json([
+                'success' => false,
+                'message' => 'Please log in to delete equipment.'
+            ], 401);
         }
 
         try {
-            $oldValues = $equipment->toArray();
+            // Log the deletion
             HistoryLog::create([
                 'action' => 'Deleted',
                 'action_date' => now(),
                 'model' => 'Equipment',
                 'model_id' => $equipment->id,
-                'old_values' => json_encode($oldValues),
+                'old_values' => json_encode($equipment->toArray()),
                 'new_values' => null,
-                'user_id' => Auth::id() ?? 1,
-                'staff_id' => $equipment->staff_id ?? 1,
+                'user_id' => Auth::id(),
+                'staff_id' => $equipment->staff_id ?? null,
                 'ip_address' => $request->ip(),
                 'user_agent' => $request->userAgent(),
-                'description' => "Deleted equipment: {$equipment->equipment_name}, Serial: {$equipment->serial_number}",
+                'description' => "Deleted equipment: {$equipment->equipment_name}",
             ]);
-            Log::info('History log created for delete', ['equipment_id' => $equipment->id]);
 
             $equipment->delete();
-            return redirect()->route('inventory')->with('success', 'Equipment deleted successfully.');
-        } catch (\Exception $e) {
-            Log::error('Error in delete: ' . $e->getMessage(), [
-                'equipment_id' => $equipment->id,
-                'stack_trace' => $e->getTraceAsString()
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Equipment deleted successfully'
             ]);
-            return redirect()->back()->with('error', 'Failed to delete equipment: ' . $e->getMessage());
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to delete equipment: ' . $e->getMessage()
+            ], 500);
         }
     }
 
-   public function checkDuplicates(Request $request)
+    public function checkDuplicates(Request $request)
     {
         try {
             $request->validate([
@@ -248,17 +252,14 @@ class InventoryController extends Controller
             return response()->json([
                 'serial_exists' => $serialExists,
                 'pr_exists' => $prExists,
-                'message' => $serialExists ? 'Serial number already exists' : 
-                            ($prExists ? 'PR number already exists' : 'No duplicates found')
+                'message' => $serialExists ? 'Serial number already exists' : ($prExists ? 'PR number already exists' : 'No duplicates found')
             ]);
-
         } catch (\Exception $e) {
-            Log::error('Duplicate check failed: '.$e->getMessage());
+            Log::error('Duplicate check failed: ' . $e->getMessage());
             return response()->json([
                 'error' => 'Duplicate check failed',
                 'details' => $e->getMessage()
             ], 500);
         }
     }
-
 }
