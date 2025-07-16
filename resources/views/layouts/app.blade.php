@@ -12,7 +12,7 @@
 </head>
 <body class="font-sans antialiased">
     <!-- Fixed Header -->
-    <header class="fixed top-0 left-0 right-0 bg-white shadow-sm z-50">
+    <header class="fixed top-0 left-0 right-0 bg-white shadow-sm z-50 border-b-4 border-[#00553d]">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
             <div class="flex items-center">
                 <img src="{{ asset('images/ITDC.png') }}" alt="Company Logo" class="h-10 mr-3" onerror="this.src='/images/ITDC.png'">

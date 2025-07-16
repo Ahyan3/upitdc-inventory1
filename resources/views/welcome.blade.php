@@ -1,18 +1,17 @@
 <x-app-layout>
-    <!-- Background Image -->
+    <!-- Background Image (fixed, full viewport) -->
     <div class="fixed inset-0 -z-10">
         <img src="{{ asset('/images/upd-oblation.jpg') }}" alt="UP Diliman Campus"
              class="w-full h-full object-cover opacity-60">
     </div>
 
-    <!-- Main Content Area -->
-    <div class="flex flex-col min-h-screen">
-        <!-- Spacer for header (matches header height) -->
-        <div class="h-20"></div>
-
-        <!-- Centered Content -->
-        <div class="flex-grow flex items-center justify-center px-4">
-            <div class="bg-white bg-opacity-80 p-8 rounded-xl shadow-md text-center animate-fade-in max-w-md w-full">
+    <!-- Main Container (fills viewport without scrolling) -->
+    <div class="relative flex flex-col min-h-screen">
+        <!-- Header space (from app-layout) will appear here automatically -->
+        
+        <!-- Centered Content (flex-grow to push footer down) -->
+        <main class="flex-grow flex items-center justify-center px-4">
+            <div class="bg-white bg-opacity-80 p-8 rounded-xl shadow-md text-center animate-fade-in max-w-md w-full border-b-4 border-[#ffcc34] & [#00553d]">
                 @auth
                     <h2 class="text-lg font-bold text-gray-900 mb-4">Welcome Back!</h2>
                     <p class="text-base text-gray-600 mb-6">Manage your equipment and issuances</p>
@@ -35,9 +34,9 @@
                     </div>
                 @endauth
             </div>
-        </div>
+        </main>
 
-        <!-- Footer -->
+        <!-- Footer (fixed at bottom) -->
         <footer style="background-color: #90143c;" class="text-white py-4 w-full">
             <div class="container mx-auto px-4 text-center">
                 <p class="text-xs">
