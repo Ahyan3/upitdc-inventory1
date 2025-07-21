@@ -9,5 +9,49 @@ class Settings extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['key', 'value', 'type', 'description'];
+    protected $table = 'settings';
+
+    protected $fillable = [
+        'key',
+        'value',
+        'type',
+        'description',
+    ];
+
+    protected $casts = [
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+    ];
+
+    /**
+     * Get a setting value by key
+     */
+    public static function get($key, $default = null)
+    {
+        $setting = self::where('key', $key)->first();
+        return $setting ? $setting->value : $default;
+    }
+
+    /**
+     * Set a setting value by key
+     */
+    public static function set($key, $value, $type = 'string', $description = null)
+    {
+        return self::updateOrCreate(
+            ['key' => $key],
+            [
+                'value' => $value,
+                'type' => $type,
+                'description' => $description
+            ]
+        );
+    }
+
+    /**
+     * Get all settings as key-value pairs
+     */
+    public static function getAllSettings()
+    {
+        return self::pluck('value', 'key')->toArray();
+    }
 }

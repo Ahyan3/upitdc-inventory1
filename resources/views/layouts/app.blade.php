@@ -11,7 +11,7 @@
     @vite(['resources/css/app.css', 'resources/js/app.js', 'resources/js/inventory.js'])
 </head>
 <body class="font-sans antialiased bg-gray-100 min-h-screen">
-    <!-- Fixed Header -->
+    <!-- Header -->
     <header class="fixed top-0 left-0 right-0 bg-white shadow-sm z-50 border-b-4 border-[#ffcc34]">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
             <div class="flex items-center">
@@ -28,7 +28,7 @@
                         <a href="{{ route('inventory') }}" class="px-3 py-2 text-sm font-medium {{ Route::is('inventory') ? 'text-gray-500 bg-gray-100' : 'text-black hover:bg-gray-100' }} rounded-md transition duration-200">
                             <i class="fas fa-boxes mr-1"></i> Inventory
                         </a>
-                        <a href="{{ route('staff') }}" class="px-3 py-2 text-sm font-medium {{ Route::is('staff') ? 'text-gray-500 bg-gray-100' : 'text-black hover:bg-gray-100' }} rounded-md transition duration-200">
+                        <a href="{{ route('staff.index') }}" class="px-3 py-2 text-sm font-medium {{ Route::is('staff') ? 'text-gray-500 bg-gray-100' : 'text-black hover:bg-gray-100' }} rounded-md transition duration-200">
                             <i class="fas fa-users mr-1"></i> Staff
                         </a>
                         <a href="{{ route('history') }}" class="px-3 py-2 text-sm font-medium {{ Route::is('history') ? 'text-gray-500 bg-gray-100' : 'text-black hover:bg-gray-100' }} rounded-md transition duration-200">
@@ -90,7 +90,7 @@
                     <a href="{{ route('inventory') }}" class="px-3 py-2 text-sm font-medium {{ Route::is('inventory') ? 'text-gray-500 bg-gray-100' : 'text-black hover:bg-gray-100' }} rounded-md transition duration-200">
                         <i class="fas fa-boxes mr-1"></i> Inventory
                     </a>
-                    <a href="{{ route('staff') }}" class="px-3 py-2 text-sm font-medium {{ Route::is('staff') ? 'text-gray-500 bg-gray-100' : 'text-black hover:bg-gray-100' }} rounded-md transition duration-200">
+                    <a href="{{ route('staff.index') }}" class="px-3 py-2 text-sm font-medium {{ Route::is('staff') ? 'text-gray-500 bg-gray-100' : 'text-black hover:bg-gray-100' }} rounded-md transition duration-200">
                         <i class="fas fa-users mr-1"></i> Staff
                     </a>
                     <a href="{{ route('history') }}" class="px-3 py-2 text-sm font-medium {{ Route::is('history') ? 'text-gray-500 bg-gray-100' : 'text-black hover:bg-gray-100' }} rounded-md transition duration-200">

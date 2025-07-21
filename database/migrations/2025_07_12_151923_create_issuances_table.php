@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('equipment_id')->constrained()->onDelete('cascade');
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->foreignId('staff_id')->nullable()->constrained()->onDelete('set null');
+            $table->unsignedBigInteger('staff_id')->nullable();
             $table->datetime('issued_at');
             $table->datetime('expected_return_at');
             $table->datetime('returned_at')->nullable();

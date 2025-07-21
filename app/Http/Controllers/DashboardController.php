@@ -13,7 +13,7 @@ class DashboardController extends Controller
     {
         // Total Equipment Count with filters
         $equipmentQuery = Equipment::query();
-        
+
         // Apply equipment filter if requested
         if ($request->has('equipment_filter')) {
             switch ($request->equipment_filter) {
@@ -26,10 +26,10 @@ class DashboardController extends Controller
                 case 'quarter':
                     $equipmentQuery->where('created_at', '>=', Carbon::now()->startOfQuarter());
                     break;
-                // 'all' is default
+                    // 'all' is default
             }
         }
-        
+
         $totalEquipment = $equipmentQuery->count();
 
         // Active Issuances
@@ -43,25 +43,25 @@ class DashboardController extends Controller
 
         // Inventory Data with filters
         $inventoryQuery = Equipment::with('department');
-        
+
         // Apply inventory status filter if requested
         if ($request->has('inventory_status')) {
             $inventoryQuery->where('status', $request->inventory_status);
         }
-        
+
         // Apply search if requested
         if ($request->has('inventory_search')) {
             $search = $request->inventory_search;
-            $inventoryQuery->where(function($query) use ($search) {
+            $inventoryQuery->where(function ($query) use ($search) {
                 $query->where('equipment_name', 'like', "%$search%")
-                      ->orWhere('model_brand', 'like', "%$search%")
-                      ->orWhere('serial_no', 'like', "%$search%")
-                      ->orWhereHas('department', function($q) use ($search) {
-                          $q->where('name', 'like', "%$search%");
-                      });
+                    ->orWhere('model_brand', 'like', "%$search%")
+                    ->orWhere('serial_no', 'like', "%$search%")
+                    ->orWhereHas('department', function ($q) use ($search) {
+                        $q->where('name', 'like', "%$search%");
+                    });
             });
         }
-        
+
         $inventory = $inventoryQuery->get();
 
         return view('dashboard', [
@@ -69,7 +69,12 @@ class DashboardController extends Controller
             'activeIssuances' => $activeIssuances,
             'issuances' => $issuances,
             'inventory' => $inventory,
-            'filters' => $request->only(['equipment_filter', 'inventory_status', 'inventory_search'])
+            'filters' => $request->only(['equipment_filter', 'inventory_status', 'inventory_search']),
+            
+            'totalStaff' => \App\Models\Staff::count(),
+            'totalIssuedEquipment' => \App\Models\Issuance::where('status', 'issued')->count(),
+            'totalReturnedEquipment' => \App\Models\Issuance::where('status', 'returned')->count(),
+            'pendingRequests' => \App\Models\Issuance::where('status', 'pending')->count()
         ]);
     }
 }

@@ -17,7 +17,7 @@ return new class extends Migration
             $table->datetime('needed_until');
             $table->text('purpose');
             $table->text('notes')->nullable();
-            $table->foreignId('approved_by')->nullable()->constrained('staff')->onDelete('set null');
+            $table->unsignedBigInteger('approved_by')->nullable();
             $table->datetime('approved_at')->nullable();
             $table->timestamps();
         });

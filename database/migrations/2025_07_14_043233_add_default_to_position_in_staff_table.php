@@ -9,7 +9,9 @@ class AddDefaultToPositionInStaffTable extends Migration
     public function up()
     {
         Schema::table('staff', function (Blueprint $table) {
-            $table->string('position')->default('Staff')->change();
+            if (!Schema::hasColumn('staff', 'position')) {
+                $table->string('position')->default('')->after('name');
+            }
         });
     }
 

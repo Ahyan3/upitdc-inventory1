@@ -9,6 +9,12 @@ class HistoryLog extends Model
 {
     use HasFactory;
 
+    protected $casts = [
+        'action_date' => 'datetime',
+        'old_values' => 'array',
+        'new_values' => 'array',
+    ];
+
     protected $fillable = [
         'action',
         'action_date',
@@ -20,6 +26,16 @@ class HistoryLog extends Model
         'staff_id',
         'ip_address',
         'user_agent',
-        'description',
+        'description'
     ];
+
+    public function staff()
+    {
+        return $this->belongsTo(Staff::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }

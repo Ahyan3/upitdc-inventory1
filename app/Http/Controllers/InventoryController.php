@@ -8,6 +8,7 @@ use App\Models\HistoryLog;
 use App\Models\Staff;
 use App\Models\User;
 use App\Models\Settings;
+use App\Models\Department;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -20,17 +21,28 @@ class InventoryController extends Controller
         try {
             $equipment = Equipment::with('department')->get();
             $issuances = Issuance::with('equipment')->get();
+            $departments = Department::all();
+            $historyLogs = HistoryLog::with(['user', 'staff'])->orderBy('action_date', 'desc')->get();
+            $equipmentData = $equipment->groupBy('equipment_name')->map->count()->toArray();
             Log::info('Inventory index loaded', [
                 'equipment_count' => $equipment->count(),
                 'issuances_count' => $issuances->count(),
+                'history_logs_count' => $historyLogs->count(),
                 'user_id' => Auth::id() ?? 'none'
             ]);
-            return view('inventory', compact('equipment', 'issuances'));
+            return view('inventory', compact('equipment', 'issuances', 'departments', 'historyLogs', 'equipmentData'));
         } catch (\Exception $e) {
             Log::error('Error in index: ' . $e->getMessage(), ['stack_trace' => $e->getTraceAsString()]);
             return redirect()->back()->with('error', 'Failed to load inventory: ' . $e->getMessage());
         }
     }
+
+    public function total()
+    {
+        $count = DB::table('staff')->count();
+        return response()->json(['count' => $count]);
+    }
+
 
     public function create()
     {
@@ -260,6 +272,82 @@ class InventoryController extends Controller
                 'error' => 'Duplicate check failed',
                 'details' => $e->getMessage()
             ], 500);
+        }
+    }
+
+    public function view(Equipment $equipment)
+    {
+        try {
+            Log::info('Equipment viewed', ['equipment_id' => $equipment->id, 'user_id' => Auth::id() ?? 'none']);
+            return view('inventory.view', compact('equipment'));
+        } catch (\Exception $e) {
+            Log::error('Error in view: ' . $e->getMessage(), ['stack_trace' => $e->getTraceAsString()]);
+            return redirect()->back()->with('error', 'Failed to load equipment: ' . $e->getMessage());
+        }
+    }
+
+    public function edit(Equipment $equipment)
+    {
+        try {
+            $departments = Department::all();
+            Log::info('Equipment edit accessed', ['equipment_id' => $equipment->id, 'user_id' => Auth::id() ?? 'none']);
+            return view('inventory.edit', compact('equipment', 'departments'));
+        } catch (\Exception $e) {
+            Log::error('Error in edit: ' . $e->getMessage(), ['stack_trace' => $e->getTraceAsString()]);
+            return redirect()->back()->with('error', 'Failed to load edit form: ' . $e->getMessage());
+        }
+    }
+
+    public function update(Request $request, Equipment $equipment)
+    {
+        if (!Auth::check()) {
+            Log::error('No authenticated user found for update');
+            return redirect()->route('login')->with('error', 'Please log in to update equipment.');
+        }
+
+        $validated = $request->validate([
+            'staff_name' => 'required|string|max:255',
+            'department_id' => 'required|exists:departments,id',
+            'equipment_name' => 'required|string|max:255',
+            'model_brand' => 'required|string|max:255',
+            'serial_number' => 'required|string|max:255|unique:equipment,serial_number,' . $equipment->id,
+            'date_issued' => 'required|date',
+            'pr_number' => 'required|string|max:255',
+            'status' => 'required|string|in:available,issued',
+            'remarks' => 'nullable|string|max:255',
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            $oldValues = $equipment->toArray();
+            $equipment->update($validated);
+            Log::info('Equipment updated', ['equipment_id' => $equipment->id]);
+
+            HistoryLog::create([
+                'action' => 'Updated',
+                'action_date' => now(),
+                'model' => 'Equipment',
+                'model_id' => $equipment->id,
+                'old_values' => json_encode($oldValues),
+                'new_values' => json_encode($validated),
+                'user_id' => Auth::id(),
+                'staff_id' => $equipment->staff_id ?? null,
+                'ip_address' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+                'description' => "Updated equipment: {$equipment->equipment_name}, PR: {$validated['pr_number']}, Serial: {$equipment->serial_number}",
+            ]);
+            Log::info('History log created for update', ['equipment_id' => $equipment->id]);
+
+            DB::commit();
+            return redirect()->route('inventory')->with('success', 'Equipment updated successfully.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error in update: ' . $e->getMessage(), [
+                'equipment_id' => $equipment->id,
+                'stack_trace' => $e->getTraceAsString()
+            ]);
+            return redirect()->back()->with('error', 'Failed to update equipment: ' . $e->getMessage())->withInput();
         }
     }
 }

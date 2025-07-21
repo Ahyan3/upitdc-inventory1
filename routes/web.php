@@ -14,6 +14,7 @@ use App\Models\Request;
 use App\Models\Settings;
 use App\Models\HistoryLog;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Log;
 
 Route::get('/', function () {
     return view('welcome');
@@ -31,20 +32,30 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/check-duplicates', [InventoryController::class, 'checkDuplicates'])->name('inventory.check-duplicates');
         Route::post('/return/{issuance}', [InventoryController::class, 'return'])->name('inventory.return');
         Route::delete('/{equipment}', [InventoryController::class, 'delete'])->name('inventory.delete');
+        Route::get('inventory/{equipment}', [InventoryController::class, 'view'])->name('inventory.view');
+        Route::get('inventory/{equipment}/edit', [InventoryController::class, 'edit'])->name('inventory.edit');
+        Route::put('inventory/{equipment}', [InventoryController::class, 'update'])->name('inventory.update');
     });
 
     // Staff Routes
     Route::prefix('staff')->group(function () {
-        Route::get('/', [StaffController::class, 'index'])->name('staff');
-        Route::post('/', [StaffController::class, 'store'])->name('staff.store');
-        Route::patch('/{staff}', [StaffController::class, 'update'])->name('staff.update');
-        Route::delete('/{staff}', [StaffController::class, 'destroy'])->name('staff.destroy');
+    Route::get('/', [StaffController::class, 'index'])->name('staff.index');
+    Route::post('/', [StaffController::class, 'store'])->name('staff.store');
+    
+    // Single staff routes
+    Route::prefix('{staff}')->group(function () {
+        Route::get('/edit', [StaffController::class, 'edit'])->name('staff.edit');
+        Route::put('/', [StaffController::class, 'update'])->name('staff.update');
+        Route::get('/history-logs', [StaffController::class, 'historyLogs'])->name('staff.history-logs');
+        Route::put('/status', [StaffController::class, 'updateStatus'])->name('staff.status');
+        Route::delete('/', [StaffController::class, 'destroy'])->name('staff.destroy');
     });
+});
 
     // History Route
     Route::get('/history', function () {
         return view('history', [
-            'history_logs' => \App\Models\HistoryLog::orderBy('action_date', 'desc')->get()
+            'history_logs' => \App\Models\HistoryLog::orderBy('created_at', 'desc')->get()
         ]);
     })->name('history');
 
@@ -52,7 +63,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::prefix('settings')->group(function () {
         Route::get('/', [SettingsController::class, 'index'])->name('settings');
         Route::patch('/', [SettingsController::class, 'update'])->name('settings.update');
-        
+
         // Department Routes
         Route::post('/department', [SettingsController::class, 'storeDepartment'])->name('settings.department.store');
         Route::patch('/department/{department}', [SettingsController::class, 'updateDepartment'])->name('settings.department.update');
@@ -67,4 +78,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 });
 
-require __DIR__.'/auth.php';
+
+
+require __DIR__ . '/auth.php';

@@ -30,3 +30,30 @@
         transform: translateX(0);
     }
 }
+
+/* Staff Management Styles */
+.status-badge-active {
+    @apply px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800;
+}
+
+.status-badge-resigned {
+    @apply px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800;
+}
+
+.animate-fade-in {
+    animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+.animate-pulse {
+    animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
