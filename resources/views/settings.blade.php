@@ -1,47 +1,47 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-sm text-gray-800 leading-tight">
+        <h2 class="font-semibold text-base text-[#00553d] leading-tight">
             {{ __('Settings') }}
         </h2>
     </x-slot>
 
     <div class="flex min-h-screen bg-gray-50">
-        <button id="toggleSidebar" class="md:hidden fixed top-4 left-4 z-50 bg-gray-800 text-white p-2 rounded-lg">
-            <i class="fas fa-bars text-xs"></i>
+        <button id="toggleSidebar" class="md:hidden fixed top-4 left-4 z-50 bg-[#90143c] text-white p-2 rounded-lg border border-[#ffcc34]">
+            <i class="fas fa-bars text-sm"></i>
         </button>
 
         <!-- Main Content -->
         <div class="flex-1 container mx-auto px-4 py-8 w-full">
             <div class="text-center mb-10 animate-fade-in w-full">
-                <h2 class="text-lg font-bold text-red-600">Settings</h2>
-                <p class="text-xs text-gray-600">Configure system settings and manage departments</p>
+                <h2 class="text-base font-bold text-[#90143c]">Settings</h2>
+                <p class="text-[0.65rem] text-[#00553d]">Configure system settings and manage departments</p>
             </div>
 
             <!-- System Settings Form -->
-            <div class="bg-white rounded-xl shadow-md overflow-hidden form-card mb-8 w-full">
-                <div class="bg-red-600 px-6 py-4">
-                    <h2 class="text-sm font-semibold text-white">System Settings</h2>
+            <div class="bg-white rounded-xl shadow-md overflow-hidden form-card mb-8 w-full border border-[#ffcc34]">
+                <div class="bg-[#90143c] px-5 py-3">
+                    <h2 class="text-xs font-semibold text-white">System Settings</h2>
                 </div>
-                <div class="p-6">
-                    <form id="settings-form" action="{{ route('settings.update') }}" method="POST" class="space-y-4" aria-label="Settings Form">
+                <div class="p-5">
+                    <form id="settings-form" action="{{ route('settings.update') }}" method="POST" class="space-y-3" aria-label="Settings Form">
                         @csrf
                         @method('PATCH')
                         <div>
-                            <label for="system_title" class="block text-xs font-medium text-gray-700 mb-1">System Title *</label>
-                            <input type="text" name="system_title" id="system_title" value="{{ $settings['system_title'] ?? 'UPITDC - Inventory System' }}" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500 text-xs" aria-label="System Title">
-                            <p class="text-xs text-gray-500 mt-1">{{ $settingsDetails['system_title']->description ?? 'The title displayed in the application header.' }}</p>
+                            <label for="system_title" class="block text-[0.65rem] font-medium text-[#00553d] mb-1">System Title *</label>
+                            <input type="text" name="system_title" id="system_title" value="{{ $settings['system_title'] ?? 'UPITDC - Inventory System' }}" required class="w-full px-3 py-1.5 border border-[#ffcc34] rounded-lg focus:ring-[#00553d] focus:border-[#00553d] text-sm" aria-label="System Title">
+                            <p class="text-[0.65rem] text-[#00553d] mt-1">{{ $settingsDetails['system_title']->description ?? 'The title displayed in the application header.' }}</p>
                         </div>
                         <div>
-                            <label for="default_return_period" class="block text-xs font-medium text-gray-700 mb-1">Default Return Period (days) *</label>
-                            <input type="number" name="default_return_period" id="default_return_period" value="{{ $settings['default_return_period'] ?? 30 }}" min="1" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500 text-xs" aria-label="Default Return Period">
-                            <p class="text-xs text-gray-500 mt-1">{{ $settingsDetails['default_return_period']->description ?? 'Default number of days for equipment return.' }}</p>
+                            <label for="default_return_period" class="block text-[0.65rem] font-medium text-[#00553d] mb-1">Default Return Period (days) *</label>
+                            <input type="number" name="default_return_period" id="default_return_period" value="{{ $settings['default_return_period'] ?? 30 }}" min="1" required class="w-full px-3 py-1.5 border border-[#ffcc34] rounded-lg focus:ring-[#00553d] focus:border-[#00553d] text-sm" aria-label="Default Return Period">
+                            <p class="text-[0.65rem] text-[#00553d] mt-1">{{ $settingsDetails['default_return_period']->description ?? 'Default number of days for equipment return.' }}</p>
                         </div>
                         <div>
-                            <label for="allow_duplicate_pr" class="block text-xs font-medium text-gray-700 mb-1">Allow Duplicate PR Numbers</label>
-                            <input type="checkbox" name="allow_duplicate_pr" id="allow_duplicate_pr" value="1" {{ ($settings['allow_duplicate_pr'] ?? 0) == 1 ? 'checked' : '' }} class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded">
-                            <p class="text-xs text-gray-500 mt-1">{{ $settingsDetails['allow_duplicate_pr']->description ?? 'Allow duplicate PR numbers in equipment records.' }}</p>
+                            <label for="allow_duplicate_pr" class="block text-[0.65rem] font-medium text-[#00553d] mb-1">Allow Duplicate PR Numbers</label>
+                            <input type="checkbox" name="allow_duplicate_pr" id="allow_duplicate_pr" value="1" {{ ($settings['allow_duplicate_pr'] ?? 0) == 1 ? 'checked' : '' }} class="h-3 w-3 text-[#00553d] focus:ring-[#00553d] border-[#ffcc34] rounded">
+                            <p class="text-[0.65rem] text-[#00553d] mt-1">{{ $settingsDetails['allow_duplicate_pr']->description ?? 'Allow duplicate PR numbers in equipment records.' }}</p>
                         </div>
-                        <button type="submit" id="save-settings-btn" class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition duration-200 text-xs" aria-label="Save Settings">
+                        <button type="submit" id="save-settings-btn" class="w-full bg-[#00553d] hover:bg-[#003d2b] text-white font-medium py-1.5 px-3 rounded-lg transition duration-200 border border-[#ffcc34] text-sm" aria-label="Save Settings">
                             Save Settings
                         </button>
                     </form>
@@ -49,47 +49,47 @@
             </div>
 
             <!-- Department Management -->
-            <div class="bg-white rounded-xl shadow-md overflow-hidden form-card w-full">
-                <div class="bg-red-600 px-6 py-4">
-                    <h2 class="text-sm font-semibold text-white">Manage Departments</h2>
+            <div class="bg-white rounded-xl shadow-md overflow-hidden form-card w-full border border-[#ffcc34]">
+                <div class="bg-[#90143c] px-5 py-3">
+                    <h2 class="text-xs font-semibold text-white">Manage Departments</h2>
                 </div>
-                <div class="p-6">
+                <div class="p-5">
                     <!-- Add Department Form -->
-                    <form id="department-form" action="{{ route('settings.department.store') }}" method="POST" class="space-y-4 mb-8" aria-label="Add Department Form">
+                    <form id="department-form" action="{{ route('settings.department.store') }}" method="POST" class="space-y-3 mb-8" aria-label="Add Department Form">
                         @csrf
                         <div>
-                            <label for="department_name" class="block text-xs font-medium text-gray-700 mb-1">New Department Name *</label>
-                            <input type="text" name="department_name" id="department_name" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500 text-xs" aria-label="Department Name">
+                            <label for="department_name" class="block text-[0.65rem] font-medium text-[#00553d] mb-1">New Department Name *</label>
+                            <input type="text" name="department_name" id="department_name" required class="w-full px-3 py-1.5 border border-[#ffcc34] rounded-lg focus:ring-[#00553d] focus:border-[#00553d] text-sm" aria-label="Department Name">
                         </div>
-                        <button type="submit" id="add-department-btn" class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition duration-200 text-xs" aria-label="Add Department">
+                        <button type="submit" id="add-department-btn" class="w-full bg-[#00553d] hover:bg-[#003d2b] text-white font-medium py-1.5 px-3 rounded-lg transition duration-200 border border-[#ffcc34] text-sm" aria-label="Add Department">
                             Add Department
                         </button>
                     </form>
 
                     <!-- Departments List -->
                     <div class="overflow-x-auto w-full">
-                        <table class="min-w-full table-auto divide-y divide-gray-200" aria-label="Departments List">
-                            <thead class="bg-green-50">
+                        <table class="min-w-full table-auto divide-y divide-[#ffcc34]" aria-label="Departments List">
+                            <thead class="bg-[#ffcc34]">
                                 <tr>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-green-800 uppercase tracking-wider">Department Name</th>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-green-800 uppercase tracking-wider">Actions</th>
+                                    <th scope="col" class="px-5 py-2 text-left text-[0.65rem] font-medium text-[#00553d] uppercase tracking-wider">Department Name</th>
+                                    <th scope="col" class="px-5 py-2 text-left text-[0.65rem] font-medium text-[#00553d] uppercase tracking-wider">Actions</th>
                                 </tr>
                             </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
+                            <tbody class="bg-white divide-y divide-[#ffcc34]">
                                 @if ($departments->isEmpty())
                                 <tr>
-                                    <td colspan="2" class="px-6 py-4 text-center text-gray-500 text-xs">No Departments</td>
+                                    <td colspan="2" class="px-5 py-3 text-center text-[#00553d] text-xs">No Departments</td>
                                 </tr>
                                 @else
                                 @foreach ($departments as $department)
                                 <tr>
-                                    <td class="px-6 py-4 whitespace-nowrap text-xs">{{ $department->name }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-xs">
-                                        <button type="button" class="text-blue-600 hover:text-blue-900 edit-department-btn" data-id="{{ $department->id }}" data-name="{{ $department->name }}">Edit</button>
+                                    <td class="px-5 py-3 whitespace-nowrap text-xs text-[#00553d]">{{ $department->name }}</td>
+                                    <td class="px-5 py-3 whitespace-nowrap text-xs">
+                                        <button type="button" class="text-[#00553d] hover:text-[#ffcc34] edit-department-btn" data-id="{{ $department->id }}" data-name="{{ $department->name }}">Edit</button>
                                         <form action="{{ route('settings.department.destroy', $department) }}" method="POST" class="inline delete-department-form">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="button" class="text-red-600 hover:text-red-900 delete-department-btn" data-name="{{ $department->name }}">Delete</button>
+                                            <button type="button" class="text-[#90143c] hover:text-[#6b102d] delete-department-btn" data-name="{{ $department->name }}">Delete</button>
                                         </form>
                                     </td>
                                 </tr>
@@ -128,13 +128,13 @@
                         text: "Do you want to save these settings?",
                         icon: 'question',
                         showCancelButton: true,
-                        confirmButtonColor: '#16a34a',
-                        cancelButtonColor: '#d33',
+                        confirmButtonColor: '#00553d',
+                        cancelButtonColor: '#90143c',
                         confirmButtonText: 'Yes, save it!',
                         cancelButtonText: 'Cancel',
                         customClass: {
-                            title: 'text-sm',
-                            content: 'text-xs'
+                            title: 'text-xs',
+                            content: 'text-[0.65rem]'
                         }
                     }).then((result) => {
                         if (result.isConfirmed) {
@@ -161,13 +161,13 @@
                         text: `Do you want to add "${departmentName}" as a new department?`,
                         icon: 'question',
                         showCancelButton: true,
-                        confirmButtonColor: '#16a34a',
-                        cancelButtonColor: '#d33',
+                        confirmButtonColor: '#00553d',
+                        cancelButtonColor: '#90143c',
                         confirmButtonText: 'Yes, add it!',
                         cancelButtonText: 'Cancel',
                         customClass: {
-                            title: 'text-sm',
-                            content: 'text-xs'
+                            title: 'text-xs',
+                            content: 'text-[0.65rem]'
                         }
                     }).then((result) => {
                         if (result.isConfirmed) {
@@ -191,13 +191,13 @@
                         text: "This action cannot be undone! Equipment linked to this department will have no department assigned.",
                         icon: 'warning',
                         showCancelButton: true,
-                        confirmButtonColor: '#d33',
+                        confirmButtonColor: '#90143c',
                         cancelButtonColor: '#3085d6',
                         confirmButtonText: 'Yes, delete it!',
                         cancelButtonText: 'Cancel',
                         customClass: {
-                            title: 'text-sm',
-                            content: 'text-xs'
+                            title: 'text-xs',
+                            content: 'text-[0.65rem]'
                         }
                     }).then((result) => {
                         if (result.isConfirmed) {
@@ -219,8 +219,8 @@
                         input: 'text',
                         inputValue: departmentName,
                         showCancelButton: true,
-                        confirmButtonColor: '#3085d6',
-                        cancelButtonColor: '#d33',
+                        confirmButtonColor: '#00553d',
+                        cancelButtonColor: '#90143c',
                         confirmButtonText: 'Save',
                         cancelButtonText: 'Cancel',
                         inputValidator: (value) => {
@@ -229,9 +229,9 @@
                             }
                         },
                         customClass: {
-                            title: 'text-sm',
-                            content: 'text-xs',
-                            input: 'text-xs'
+                            title: 'text-xs',
+                            content: 'text-[0.65rem]',
+                            input: 'text-sm'
                         }
                     }).then((result) => {
                         if (result.isConfirmed) {
@@ -260,10 +260,10 @@
                 title: 'Success!',
                 text: "{{ session('success') }}",
                 icon: 'success',
-                confirmButtonColor: '#16a34a',
+                confirmButtonColor: '#00553d',
                 customClass: {
-                    title: 'text-sm',
-                    content: 'text-xs'
+                    title: 'text-xs',
+                    content: 'text-[0.65rem]'
                 }
             });
         });
@@ -278,10 +278,10 @@
                 title: 'Error!',
                 text: "{{ session('error') }}",
                 icon: 'error',
-                confirmButtonColor: '#d33',
+                confirmButtonColor: '#90143c',
                 customClass: {
-                    title: 'text-sm',
-                    content: 'text-xs'
+                    title: 'text-xs',
+                    content: 'text-[0.65rem]'
                 }
             });
         });

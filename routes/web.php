@@ -39,18 +39,18 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Staff Routes
     Route::prefix('staff')->group(function () {
-    Route::get('/', [StaffController::class, 'index'])->name('staff.index');
-    Route::post('/', [StaffController::class, 'store'])->name('staff.store');
-    
-    // Single staff routes
-    Route::prefix('{staff}')->group(function () {
-        Route::get('/edit', [StaffController::class, 'edit'])->name('staff.edit');
-        Route::put('/', [StaffController::class, 'update'])->name('staff.update');
-        Route::get('/history-logs', [StaffController::class, 'historyLogs'])->name('staff.history-logs');
-        Route::put('/status', [StaffController::class, 'updateStatus'])->name('staff.status');
-        Route::delete('/', [StaffController::class, 'destroy'])->name('staff.destroy');
+        Route::get('/', [StaffController::class, 'index'])->name('staff.index');
+        Route::post('/', [StaffController::class, 'store'])->name('staff.store');
+
+        // Single staff routes
+        Route::prefix('{staff}')->group(function () {
+            Route::get('/edit', [StaffController::class, 'edit'])->name('staff.edit');
+            Route::put('/', [StaffController::class, 'update'])->name('staff.update');
+            Route::get('/history-logs', [StaffController::class, 'historyLogs'])->name('staff.history-logs');
+            Route::put('/status', [StaffController::class, 'updateStatus'])->name('staff.status');
+            Route::delete('/', [StaffController::class, 'destroy'])->name('staff.destroy');
+        });
     });
-});
 
     // History Route
     Route::get('/history', function () {
@@ -78,6 +78,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 });
 
-
+// routes/web.php
+Route::get('/test-inventory', function () {
+    return 'Test inventory route works!';
+})->name('test.inventory');
 
 require __DIR__ . '/auth.php';

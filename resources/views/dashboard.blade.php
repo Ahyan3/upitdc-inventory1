@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-sm text-gray-800 leading-tight">
+        <h2 class="font-semibold text-base text-[#00553d] leading-tight">
             {{ __('Dashboard') }}
         </h2>
     </x-slot>
@@ -8,62 +8,62 @@
     <div class="min-h-screen bg-gray-50">
         <div class="container mx-auto px-4 py-8 w-full">
             <div class="text-center mb-10 animate-fade-in w-full">
-                <h2 class="text-lg font-bold text-red-600">UPITDC - Inventory System</h2>
-                <p class="text-xs text-gray-600">Welcome to your dashboard</p>
+                <h2 class="text-base font-bold text-[#90143c]">UPITDC - Inventory System</h2>
+                <p class="text-[0.65rem] text-[#00553d]">Welcome to your dashboard</p>
             </div>
 
             <!-- Stats -->
             <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8 w-full" id="statsContainer">
-                <a href="{{ route('staff.index') }}" class="bg-white rounded-xl shadow-md p-6 hover:bg-gray-100 transition duration-200 block stat-item" data-name="Total Staff">
-                    <h3 class="text-xs font-semibold text-gray-700">Total Staff</h3>
-                    <p class="text-lg font-bold text-green-600">{{ $totalStaff ?? 'N/A' }}</p>
+                <a href="{{ route('staff.index') }}" class="bg-white rounded-xl shadow-md p-5 hover:bg-gray-100 transition duration-200 block stat-item border border-[#ffcc34]" data-name="Total Staff">
+                    <h3 class="text-[0.65rem] font-semibold text-[#00553d]">Total Staff</h3>
+                    <p class="text-base font-bold text-[#00553d]">{{ $totalStaff ?? 'N/A' }}</p>
                 </a>
-                <a href="{{ route('inventory') }}" class="bg-white rounded-xl shadow-md p-6 hover:bg-gray-100 transition duration-200 block stat-item" data-name="Total Issued Equipment">
-                    <h3 class="text-xs font-semibold text-gray-700">Total Issued Equipment</h3>
-                    <p class="text-lg font-bold text-green-600">{{ $totalIssuedEquipment ?? 'N/A' }}</p>
+                <a href="{{ route('inventory') }}" class="bg-white rounded-xl shadow-md p-5 hover:bg-gray-100 transition duration-200 block stat-item border border-[#ffcc34]" data-name="Total Issued Equipment">
+                    <h3 class="text-[0.65rem] font-semibold text-[#00553d]">Total Issued Equipment</h3>
+                    <p class="text-base font-bold text-[#00553d]">{{ $totalIssuedEquipment ?? 'N/A' }}</p>
                 </a>
-                <a href="{{ route('inventory') }}" class="bg-white rounded-xl shadow-md p-6 hover:bg-gray-100 transition duration-200 block stat-item" data-name="Total Returned Equipment">
-                    <h3 class="text-xs font-semibold text-gray-700">Total Returned Equipment</h3>
-                    <p class="text-lg font-bold text-green-600">{{ $totalReturnedEquipment ?? 'N/A' }}</p>
+                <a href="{{ route('inventory') }}" class="bg-white rounded-xl shadow-md p-5 hover:bg-gray-100 transition duration-200 block stat-item border border-[#ffcc34]" data-name="Total Returned Equipment">
+                    <h3 class="text-[0.65rem] font-semibold text-[#00553d]">Total Returned Equipment</h3>
+                    <p class="text-base font-bold text-[#00553d]">{{ $totalReturnedEquipment ?? 'N/A' }}</p>
                 </a>
-                <a href="{{ route('inventory') }}" class="bg-white rounded-xl shadow-md p-6 hover:bg-gray-100 transition duration-200 block stat-item" data-name="Pending Requests">
-                    <h3 class="text-xs font-semibold text-gray-700">Pending Requests</h3>
-                    <p class="text-lg font-bold text-green-600">{{ $pendingRequests ?? 'N/A' }}</p>
+                <a href="{{ route('inventory') }}" class="bg-white rounded-xl shadow-md p-5 hover:bg-gray-100 transition duration-200 block stat-item border border-[#ffcc34]" data-name="Pending Requests">
+                    <h3 class="text-[0.65rem] font-semibold text-[#00553d]">Pending Requests</h3>
+                    <p class="text-base font-bold text-[#00553d]">{{ $pendingRequests ?? 'N/A' }}</p>
                 </a>
-                <a href="{{ route('inventory') }}" class="bg-white rounded-xl shadow-md p-6 hover:bg-gray-100 transition duration-200 block stat-item" data-name="Active Issuances">
-                    <h3 class="text-xs font-semibold text-gray-700">Active Issuances</h3>
-                    <p class="text-lg font-bold text-green-600">{{ $activeIssuances ?? 'N/A' }}</p>
+                <a href="{{ route('inventory') }}" class="bg-white rounded-xl shadow-md p-5 hover:bg-gray-100 transition duration-200 block stat-item border border-[#ffcc34]" data-name="Active Issuances">
+                    <h3 class="text-[0.65rem] font-semibold text-[#00553d]">Active Issuances</h3>
+                    <p class="text-base font-bold text-[#00553d]">{{ $activeIssuances ?? 'N/A' }}</p>
                 </a>
             </div>
 
             <!-- Filter for Stats with Search Bar -->
-            <div class="bg-white rounded-xl shadow-md p-6 mb-8 w-full">
+            <div class="bg-white rounded-xl shadow-md p-5 mb-8 w-full border border-[#ffcc34]">
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <form id="stats-filter-form" method="GET" action="{{ route('dashboard') }}" class="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-2 w-full md:w-auto">
                         <div class="relative">
                             <input type="text" name="stats_search" id="stats-search" placeholder="Search stats..."
-                                class="w-full pl-8 pr-3 py-1 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-1 focus:ring-green-500"
+                                class="w-full pl-8 pr-3 py-1 border border-[#ffcc34] rounded-md text-xs focus:outline-none focus:ring-1 focus:ring-[#00553d]"
                                 value="{{ request('stats_search') }}">
-                            <div class="absolute left-2 top-2 text-gray-400">
-                                <i class="fas fa-search"></i>
+                            <div class="absolute left-2 top-2 text-[#00553d]">
+                                <i class="fas fa-search text-xs"></i>
                             </div>
                         </div>
                         <div class="relative">
-                            <select name="time_filter" id="time-filter" class="appearance-none bg-gray-100 border border-gray-300 rounded-md px-3 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-green-500">
+                            <select name="time_filter" id="time-filter" class="appearance-none bg-gray-100 border border-[#ffcc34] rounded-md px-3 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-[#00553d]">
                                 <option value="all" {{ request('time_filter') == 'all' ? 'selected' : '' }}>All Time</option>
                                 <option value="day" {{ request('time_filter') == 'day' ? 'selected' : '' }}>Today</option>
                                 <option value="week" {{ request('time_filter') == 'week' ? 'selected' : '' }}>This Week</option>
                                 <option value="month" {{ request('time_filter') == 'month' ? 'selected' : '' }}>This Month</option>
                                 <option value="year" {{ request('time_filter') == 'year' ? 'selected' : '' }}>This Year</option>
                             </select>
-                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                                <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-[#00553d]">
+                                <svg class="fill-current h-3 w-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
                                     <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
                                 </svg>
                             </div>
                         </div>
                         <div class="relative">
-                            <select name="type_filter" id="type-filter" class="appearance-none bg-gray-100 border border-gray-300 rounded-md px-3 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-green-500">
+                            <select name="type_filter" id="type-filter" class="appearance-none bg-gray-100 border border-[#ffcc34] rounded-md px-3 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-[#00553d]">
                                 <option value="total" {{ request('type_filter') == 'total' ? 'selected' : '' }}>Total</option>
                                 <option value="available" {{ request('type_filter') == 'available' ? 'selected' : '' }}>Available</option>
                                 <option value="not_working" {{ request('type_filter') == 'not_working' ? 'selected' : '' }}>Not Working</option>
@@ -71,50 +71,50 @@
                                 <option value="not_returned" {{ request('type_filter') == 'not_returned' ? 'selected' : '' }}>Not Returned</option>
                                 <option value="returned" {{ request('type_filter') == 'returned' ? 'selected' : '' }}>Returned</option>
                             </select>
-                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                                <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-[#00553d]">
+                                <svg class="fill-current h-3 w-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
                                     <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
                                 </svg>
                             </div>
                         </div>
-                        <button type="submit" class="bg-green-500 text-white px-3 py-1 rounded-md text-xs hover:bg-green-600">Filter</button>
+                        <button type="submit" class="bg-[#00553d] text-white px-3 py-1 rounded-md text-xs hover:bg-[#003d2b] border border-[#ffcc34]">Filter</button>
                     </form>
                 </div>
             </div>
 
             <!-- Recent Issuances -->
-            <div class="bg-white rounded-xl shadow-md overflow-hidden mb-8 w-full">
-                <div class="bg-gray-800 px-6 py-4">
-                    <h2 class="text-sm font-semibold text-white">Recent Issuances</h2>
+            <div class="bg-white rounded-xl shadow-md overflow-hidden mb-8 w-full border border-[#ffcc34]">
+                <div class="bg-[#00553d] px-5 py-3">
+                    <h2 class="text-xs font-semibold text-white">Recent Issuances</h2>
                 </div>
-                <div class="p-6">
+                <div class="p-5">
                     <div class="overflow-x-auto w-full">
-                        <table class="min-w-full table-auto divide-y divide-gray-200" aria-label="Recent Issuances">
-                            <thead class="bg-green-50">
+                        <table class="min-w-full table-auto divide-y divide-[#ffcc34]" aria-label="Recent Issuances">
+                            <thead class="bg-[#ffcc34]">
                                 <tr>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-green-800 uppercase tracking-wider">Staff</th>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-green-800 uppercase tracking-wider">Department</th>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-green-800 uppercase tracking-wider">Equipment</th>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-green-800 uppercase tracking-wider">Model/Brand</th>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-green-800 uppercase tracking-wider">Date Issued</th>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-green-800 uppercase tracking-wider">Status</th>
+                                    <th scope="col" class="px-5 py-2 text-left text-[0.65rem] font-medium text-[#00553d] uppercase tracking-wider">Staff</th>
+                                    <th scope="col" class="px-5 py-2 text-left text-[0.65rem] font-medium text-[#00553d] uppercase tracking-wider">Department</th>
+                                    <th scope="col" class="px-5 py-2 text-left text-[0.65rem] font-medium text-[#00553d] uppercase tracking-wider">Equipment</th>
+                                    <th scope="col" class="px-5 py-2 text-left text-[0.65rem] font-medium text-[#00553d] uppercase tracking-wider">Model/Brand</th>
+                                    <th scope="col" class="px-5 py-2 text-left text-[0.65rem] font-medium text-[#00553d] uppercase tracking-wider">Date Issued</th>
+                                    <th scope="col" class="px-5 py-2 text-left text-[0.65rem] font-medium text-[#00553d] uppercase tracking-wider">Status</th>
                                 </tr>
                             </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
+                            <tbody class="bg-white divide-y divide-[#ffcc34]">
                                 @if ($issuances->isEmpty())
                                 <tr>
-                                    <td colspan="6" class="px-6 py-4 text-center text-gray-500 text-xs">No Current Record</td>
+                                    <td colspan="6" class="px-5 py-3 text-center text-[#00553d] text-xs">No Current Record</td>
                                 </tr>
                                 @else
                                 @foreach ($issuances as $issuance)
                                 <tr>
-                                    <td class="px-6 py-4 whitespace-nowrap text-xs">{{ $issuance->staff->name ?? 'N/A' }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-xs">{{ $issuance->equipment->department->name ?? 'N/A' }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-xs">{{ $issuance->equipment->equipment_name ?? 'N/A' }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-xs">{{ $issuance->equipment->model_brand ?? 'N/A' }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-xs">{{ $issuance->issued_at }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $issuance->status == 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800' }}">{{ ucfirst($issuance->status) }}</span>
+                                    <td class="px-5 py-3 whitespace-nowrap text-xs text-[#00553d]">{{ $issuance->staff->name ?? 'N/A' }}</td>
+                                    <td class="px-5 py-3 whitespace-nowrap text-xs text-[#00553d]">{{ $issuance->equipment->department->name ?? 'N/A' }}</td>
+                                    <td class="px-5 py-3 whitespace-nowrap text-xs text-[#00553d]">{{ $issuance->equipment->equipment_name ?? 'N/A' }}</td>
+                                    <td class="px-5 py-3 whitespace-nowrap text-xs text-[#00553d]">{{ $issuance->equipment->model_brand ?? 'N/A' }}</td>
+                                    <td class="px-5 py-3 whitespace-nowrap text-xs text-[#00553d]">{{ $issuance->issued_at }}</td>
+                                    <td class="px-5 py-3 whitespace-nowrap">
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $issuance->status == 'active' ? 'bg-[#ffcc34] text-[#00553d]' : 'bg-gray-100 text-[#00553d]' }}">{{ ucfirst($issuance->status) }}</span>
                                     </td>
                                 </tr>
                                 @endforeach
@@ -126,14 +126,14 @@
             </div>
 
             <!-- Inventory Log -->
-            <div class="bg-white rounded-xl shadow-md overflow-hidden mb-8 w-full">
-                <div class="bg-gray-800 px-6 py-4 flex justify-between items-center">
-                    <h2 class="text-sm font-semibold text-white">Inventory Log</h2>
+            <div class="bg-white rounded-xl shadow-md overflow-hidden mb-8 w-full border border-[#ffcc34]">
+                <div class="bg-[#00553d] px-5 py-3 flex justify-between items-center">
+                    <h2 class="text-xs font-semibold text-white">Inventory Log</h2>
                     <form method="GET" action="{{ route('dashboard') }}" class="flex space-x-2">
                         <input type="text" name="inventory_search" id="inventory-search" placeholder="Search inventory..."
-                            class="px-3 py-1 rounded-md text-xs border border-gray-300 focus:outline-none focus:ring-1 focus:ring-green-500" value="{{ request('inventory_search') }}">
+                            class="px-3 py-1 rounded-md text-xs border border-[#ffcc34] focus:outline-none focus:ring-1 focus:ring-[#00553d]" value="{{ request('inventory_search') }}">
                         <select name="inventory_status" id="inventory-status-filter"
-                            class="bg-gray-100 border border-gray-300 rounded-md px-3 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-green-500">
+                            class="bg-gray-100 border border-[#ffcc34] rounded-md px-3 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-[#00553d]">
                             <option value="all" {{ request('inventory_status') == 'all' ? 'selected' : '' }}>All Status</option>
                             <option value="available" {{ request('inventory_status') == 'available' ? 'selected' : '' }}>Available</option>
                             <option value="not_working" {{ request('inventory_status') == 'not_working' ? 'selected' : '' }}>Not Working</option>
@@ -141,38 +141,38 @@
                             <option value="not_returned" {{ request('inventory_status') == 'not_returned' ? 'selected' : '' }}>Not Returned</option>
                             <option value="returned" {{ request('inventory_status') == 'returned' ? 'selected' : '' }}>Returned</option>
                         </select>
-                        <button type="submit" class="bg-green-500 text-white px-3 py-1 rounded-md text-xs hover:bg-green-600">Filter</button>
+                        <button type="submit" class="bg-[#00553d] text-white px-3 py-1 rounded-md text-xs hover:bg-[#003d2b] border border-[#ffcc34]">Filter</button>
                     </form>
                 </div>
-                <div class="p-6">
+                <div class="p-5">
                     <div class="overflow-x-auto w-full">
-                        <table class="min-w-full table-auto divide-y divide-gray-200" aria-label="Current Inventory">
-                            <thead class="bg-blue-50">
+                        <table class="min-w-full table-auto divide-y divide-[#ffcc34]" aria-label="Current Inventory">
+                            <thead class="bg-[#ffcc34]">
                                 <tr>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-blue-800 uppercase tracking-wider">Equipment</th>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-blue-800 uppercase tracking-wider">Model/Brand</th>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-blue-800 uppercase tracking-wider">Serial No.</th>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-blue-800 uppercase tracking-wider">Department</th>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-blue-800 uppercase tracking-wider">Status</th>
+                                    <th scope="col" class="px-5 py-2 text-left text-[0.65rem] font-medium text-[#00553d] uppercase tracking-wider">Equipment</th>
+                                    <th scope="col" class="px-5 py-2 text-left text-[0.65rem] font-medium text-[#00553d] uppercase tracking-wider">Model/Brand</th>
+                                    <th scope="col" class="px-5 py-2 text-left text-[0.65rem] font-medium text-[#00553d] uppercase tracking-wider">Serial No.</th>
+                                    <th scope="col" class="px-5 py-2 text-left text-[0.65rem] font-medium text-[#00553d] uppercase tracking-wider">Department</th>
+                                    <th scope="col" class="px-5 py-2 text-left text-[0.65rem] font-medium text-[#00553d] uppercase tracking-wider">Status</th>
                                 </tr>
                             </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
+                            <tbody class="bg-white divide-y divide-[#ffcc34]">
                                 @forelse($inventory as $item)
                                 <tr>
-                                    <td class="px-6 py-4 whitespace-nowrap text-xs">{{ $item->equipment_name }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-xs">{{ $item->model_brand }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-xs">{{ $item->serial_number }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-xs">{{ $item->department->name ?? 'N/A' }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
+                                    <td class="px-5 py-3 whitespace-nowrap text-xs text-[#00553d]">{{ $item->equipment_name }}</td>
+                                    <td class="px-5 py-3 whitespace-nowrap text-xs text-[#00553d]">{{ $item->model_brand }}</td>
+                                    <td class="px-5 py-3 whitespace-nowrap text-xs text-[#00553d]">{{ $item->serial_number }}</td>
+                                    <td class="px-5 py-3 whitespace-nowrap text-xs text-[#00553d]">{{ $item->department->name ?? 'N/A' }}</td>
+                                    <td class="px-5 py-3 whitespace-nowrap">
                                         @php
                                         $statusClasses = [
-                                        'available' => 'bg-green-100 text-green-800',
-                                        'not_working' => 'bg-red-100 text-red-800',
-                                        'working' => 'bg-blue-100 text-blue-800',
-                                        'not_returned' => 'bg-yellow-100 text-yellow-800',
-                                        'returned' => 'bg-purple-100 text-purple-800'
+                                        'available' => 'bg-[#ffcc34] text-[#00553d]',
+                                        'not_working' => 'bg-[#90143c] text-white',
+                                        'working' => 'bg-[#00553d] text-white',
+                                        'not_returned' => 'bg-yellow-100 text-[#00553d]',
+                                        'returned' => 'bg-gray-100 text-[#00553d]'
                                         ];
-                                        $statusClass = $statusClasses[$item->status] ?? 'bg-gray-100 text-gray-800';
+                                        $statusClass = $statusClasses[$item->status] ?? 'bg-gray-100 text-[#00553d]';
                                         @endphp
                                         <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $statusClass }}">
                                             {{ ucfirst(str_replace('_', ' ', $item->status)) }}
@@ -181,7 +181,7 @@
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="5" class="px-6 py-4 text-center text-gray-500 text-xs">No inventory items found</td>
+                                    <td colspan="5" class="px-5 py-3 text-center text-[#00553d] text-xs">No inventory items found</td>
                                 </tr>
                                 @endforelse
                             </tbody>
@@ -191,11 +191,11 @@
             </div>
 
             <!-- Equipment Issuance Graph -->
-            <div class="bg-white rounded-xl shadow-md overflow-hidden animate-fade-in mb-8 w-full">
-                <div class="bg-gray-800 px-6 py-4">
-                    <h2 class="text-sm font-semibold text-white">Equipment Issuance Statistics</h2>
+            <div class="bg-white rounded-xl shadow-md overflow-hidden animate-fade-in mb-8 w-full border border-[#ffcc34]">
+                <div class="bg-[#00553d] px-5 py-3">
+                    <h2 class="text-xs font-semibold text-white">Equipment Issuance Statistics</h2>
                 </div>
-                <div class="p-6">
+                <div class="p-5">
                     <canvas id="equipmentChart" class="w-full h-64" data-equipment="{{ json_encode($equipmentData ?? []) }}"></canvas>
                 </div>
             </div>
@@ -203,7 +203,7 @@
     </div>
     <x-auth-footer />
 
-     @section('scripts')
+    @section('scripts')
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <!-- Add Font Awesome if not already included -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
@@ -253,7 +253,7 @@
 
             function updateDashboardCounts() {
                 // Show loading state
-                document.querySelectorAll('[data-name] .text-green-600').forEach(el => {
+                document.querySelectorAll('[data-name] .text-[#00553d]').forEach(el => {
                     const originalText = el.dataset.originalText || el.textContent;
                     el.dataset.originalText = originalText;
                     el.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
@@ -272,14 +272,14 @@
                 .then(data => {
                     console.log('Dashboard counts updated at:', data.lastUpdated);
                     
-                    updateCountElement('[data-name="Total Staff"] .text-green-600', data.totalStaff);
-                    updateCountElement('[data-name="Total Issued Equipment"] .text-green-600', data.totalIssuedEquipment);
-                    updateCountElement('[data-name="Total Returned Equipment"] .text-green-600', data.totalReturnedEquipment);
-                    updateCountElement('[data-name="Pending Requests"] .text-green-600', data.pendingRequests);
+                    updateCountElement('[data-name="Total Staff"] .text-[#00553d]', data.totalStaff);
+                    updateCountElement('[data-name="Total Issued Equipment"] .text-[#00553d]', data.totalIssuedEquipment);
+                    updateCountElement('[data-name="Total Returned Equipment"] .text-[#00553d]', data.totalReturnedEquipment);
+                    updateCountElement('[data-name="Pending Requests"] .text-[#00553d]', data.pendingRequests);
                 })
                 .catch(error => {
                     console.error('Error fetching dashboard counts:', error);
-                    document.querySelectorAll('[data-name] .text-green-600').forEach(el => {
+                    document.querySelectorAll('[data-name] .text-[#00553d]').forEach(el => {
                         if (el.dataset.originalText) {
                             el.textContent = el.dataset.originalText;
                         }

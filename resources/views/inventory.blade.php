@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-sm text-gray-800 leading-tight">
+        <h2 class="font-semibold text-base text-[#00553d] leading-tight">
             {{ __('Inventory') }}
         </h2>
     </x-slot>
@@ -12,31 +12,31 @@
 
             <!-- Header -->
             <div class="text-center mb-10 animate-fade-in w-full">
-                <h2 class="text-lg font-bold text-red-600">Inventory Management</h2>
-                <p class="text-xs text-gray-600">Manage equipment issuance and returns</p>
+                <h2 class="text-base font-bold text-[#90143c]">Inventory Management</h2>
+                <p class="text-[0.65rem] text-[#00553d]">Manage equipment issuance and returns</p>
             </div>
 
             <!-- Accordion Forms Section -->
             <div class="space-y-4 w-full mb-8">
                 <!-- Issue Equipment Accordion -->
-                <div class="bg-white rounded-xl shadow-md overflow-hidden w-full">
-                    <button class="accordion-toggle w-full flex justify-between items-center p-6 bg-red-600 text-white text-sm font-semibold rounded-t-xl hover:bg-red-700 transition duration-200">
+                <div class="bg-white rounded-xl shadow-md overflow-hidden w-full border border-[#ffcc34]">
+                    <button class="accordion-toggle w-full flex justify-between items-center p-5 bg-[#90143c] text-white text-xs font-semibold rounded-t-xl hover:bg-[#6b102d] transition duration-200">
                         <span>Issue Equipment</span>
-                        <svg class="w-4 h-4 transform transition-transform duration-200 rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <svg class="w-3 h-3 transform transition-transform duration-200 rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                         </svg>
                     </button>
-                    <div class="accordion-content p-6">
-                        <form id="issueForm" action="{{ route('inventory.issue') }}" method="POST" class="space-y-4">
+                    <div class="accordion-content p-5">
+                        <form id="issueForm" action="{{ route('inventory.issue') }}" method="POST" class="space-y-3">
                             @csrf
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
-                                    <label for="staff_name" class="block text-xs font-medium text-gray-700 mb-1">Staff Name *</label>
-                                    <input type="text" name="staff_name" id="staff_name" required class="w-full px-3 py-1 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500 text-xs">
+                                    <label for="staff_name" class="block text-[0.65rem] font-medium text-[#00553d] mb-1">Staff Name *</label>
+                                    <input type="text" name="staff_name" id="staff_name" required class="w-full px-3 py-1.5 border border-[#ffcc34] rounded-lg focus:ring-[#00553d] focus:border-[#00553d] text-sm">
                                 </div>
                                 <div>
-                                    <label for="department_id" class="block text-xs font-medium text-gray-700 mb-1">Department *</label>
-                                    <select name="department_id" id="department_id" required class="w-full px-3 py-1 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500 text-xs">
+                                    <label for="department_id" class="block text-[0.65rem] font-medium text-[#00553d] mb-1">Department *</label>
+                                    <select name="department_id" id="department_id" required class="w-full px-3 py-1.5 border border-[#ffcc34] rounded-lg focus:ring-[#00553d] focus:border-[#00553d] text-sm">
                                         <option value="">Select Department</option>
                                         @foreach ($departments as $department)
                                         <option value="{{ $department->id }}">{{ $department->name }}</option>
@@ -44,38 +44,38 @@
                                     </select>
                                 </div>
                                 <div>
-                                    <label for="equipment_name" class="block text-xs font-medium text-gray-700 mb-1">Equipment Name *</label>
-                                    <input type="text" name="equipment_name" id="equipment_name" required class="w-full px-3 py-1 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500 text-xs">
+                                    <label for="equipment_name" class="block text-[0.65rem] font-medium text-[#00553d] mb-1">Equipment Name *</label>
+                                    <input type="text" name="equipment_name" id="equipment_name" required class="w-full px-3 py-1.5 border border-[#ffcc34] rounded-lg focus:ring-[#00553d] focus:border-[#00553d] text-sm">
                                 </div>
                                 <div>
-                                    <label for="model_brand" class="block text-xs font-medium text-gray-700 mb-1">Model/Brand *</label>
-                                    <input type="text" name="model_brand" id="model_brand" required class="w-full px-3 py-1 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500 text-xs">
+                                    <label for="model_brand" class="block text-[0.65rem] font-medium text-[#00553d] mb-1">Model/Brand *</label>
+                                    <input type="text" name="model_brand" id="model_brand" required class="w-full px-3 py-1.5 border border-[#ffcc34] rounded-lg focus:ring-[#00553d] focus:border-[#00553d] text-sm">
                                 </div>
                                 <div>
-                                    <label for="date_issued" class="block text-xs font-medium text-gray-700 mb-1">Date Issued *</label>
-                                    <input type="date" name="date_issued" id="date_issued" value="{{ now()->format('Y-m-d') }}" required class="w-full px-3 py-1 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500 text-xs">
+                                    <label for="date_issued" class="block text-[0.65rem] font-medium text-[#00553d] mb-1">Date Issued *</label>
+                                    <input type="date" name="date_issued" id="date_issued" value="{{ now()->format('Y-m-d') }}" required class="w-full px-3 py-1.5 border border-[#ffcc34] rounded-lg focus:ring-[#00553d] focus:border-[#00553d] text-sm">
                                 </div>
                                 <div>
-                                    <label for="serial_number" class="block text-xs font-medium text-gray-700 mb-1">Serial Number *</label>
-                                    <input type="text" name="serial_number" id="serial_number" required class="w-full px-3 py-1 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500 text-xs">
+                                    <label for="serial_number" class="block text-[0.65rem] font-medium text-[#00553d] mb-1">Serial Number *</label>
+                                    <input type="text" name="serial_number" id="serial_number" required class="w-full px-3 py-1.5 border border-[#ffcc34] rounded-lg focus:ring-[#00553d] focus:border-[#00553d] text-sm">
                                 </div>
                                 <div>
-                                    <label for="pr_number" class="block text-xs font-medium text-gray-700 mb-1">PR Number *</label>
-                                    <input type="text" name="pr_number" id="pr_number" required class="w-full px-3 py-1 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500 text-xs">
+                                    <label for="pr_number" class="block text-[0.65rem] font-medium text-[#00553d] mb-1">PR Number *</label>
+                                    <input type="text" name="pr_number" id="pr_number" required class="w-full px-3 py-1.5 border border-[#ffcc34] rounded-lg focus:ring-[#00553d] focus:border-[#00553d] text-sm">
                                 </div>
                                 <div>
-                                    <label for="status" class="block text-xs font-medium text-gray-700 mb-1">Status *</label>
-                                    <select name="status" id="status" required class="w-full px-3 py-1 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500 text-xs">
+                                    <label for="status" class="block text-[0.65rem] font-medium text-[#00553d] mb-1">Status *</label>
+                                    <select name="status" id="status" required class="w-full px-3 py-1.5 border border-[#ffcc34] rounded-lg focus:ring-[#00553d] focus:border-[#00553d] text-sm">
                                         <option value="available">Available</option>
                                         <option value="issued">Issued</option>
                                     </select>
                                 </div>
                                 <div class="md:col-span-2">
-                                    <label for="remarks" class="block text-xs font-medium text-gray-700 mb-1">Remarks</label>
-                                    <textarea name="remarks" id="remarks" class="w-full px-3 py-1 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500 text-xs"></textarea>
+                                    <label for="remarks" class="block text-[0.65rem] font-medium text-[#00553d] mb-1">Remarks</label>
+                                    <textarea name="remarks" id="remarks" class="w-full px-3 py-1.5 border border-[#ffcc34] rounded-lg focus:ring-[#00553d] focus:border-[#00553d] text-sm"></textarea>
                                 </div>
                             </div>
-                            <button type="submit" class="w-full mt-4 bg-green-600 hover:bg-green-700 text-white font-medium py-1 px-3 rounded-lg transition duration-200 text-xs">
+                            <button type="submit" class="w-full mt-4 bg-[#00553d] hover:bg-[#003d2b] text-white font-medium py-1.5 px-3 rounded-lg transition duration-200 border border-[#ffcc34] text-sm">
                                 Issue Equipment
                             </button>
                         </form>
@@ -83,27 +83,27 @@
                 </div>
 
                 <!-- Return Equipment Accordion -->
-                <div class="bg-white rounded-xl shadow-md overflow-hidden w-full">
-                    <button class="accordion-toggle w-full flex justify-between items-center p-6 bg-red-600 text-white text-sm font-semibold rounded-t-xl hover:bg-red-700 transition duration-200">
+                <div class="bg-white rounded-xl shadow-md overflow-hidden w-full border border-[#ffcc34]">
+                    <button class="accordion-toggle w-full flex justify-between items-center p-5 bg-[#90143c] text-white text-xs font-semibold rounded-t-xl hover:bg-[#6b102d] transition duration-200">
                         <span>Return Equipment</span>
-                        <svg class="w-4 h-4 transform transition-transform duration-200 rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <svg class="w-3 h-3 transform transition-transform duration-200 rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                         </svg>
                     </button>
-                    <div class="accordion-content p-6">
+                    <div class="accordion-content p-5">
                         @if ($issuances->whereNull('date_returned')->isEmpty())
-                        <div class="text-center text-gray-500 py-4 text-xs">No equipment currently issued out</div>
+                        <div class="text-center text-[#00553d] py-4 text-xs">No equipment currently issued out</div>
                         @else
                         <!-- Search and Filter Controls -->
                         <div class="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div class="relative">
-                                <input type="text" id="returnSearch" placeholder="Search equipment..." class="w-full pl-8 pr-3 py-1 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500 text-xs">
-                                <div class="absolute left-2 top-2 text-gray-400">
-                                    <i class="fas fa-search"></i>
+                                <input type="text" id="returnSearch" placeholder="Search equipment..." class="w-full pl-8 pr-3 py-1.5 border border-[#ffcc34] rounded-lg focus:ring-[#00553d] focus:border-[#00553d] text-sm">
+                                <div class="absolute left-2 top-2 text-[#00553d]">
+                                    <i class="fas fa-search text-xs"></i>
                                 </div>
                             </div>
                             <div>
-                                <select id="returnDepartmentFilter" class="w-full px-3 py-1 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500 text-xs">
+                                <select id="returnDepartmentFilter" class="w-full px-3 py-1.5 border border-[#ffcc34] rounded-lg focus:ring-[#00553d] focus:border-[#00553d] text-sm">
                                     <option value="">All Departments</option>
                                     @foreach ($departments as $department)
                                     <option value="{{ $department->name }}">{{ $department->name }}</option>
@@ -111,7 +111,7 @@
                                 </select>
                             </div>
                             <div>
-                                <select id="returnStatusFilter" class="w-full px-3 py-1 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500 text-xs">
+                                <select id="returnStatusFilter" class="w-full px-3 py-1.5 border border-[#ffcc34] rounded-lg focus:ring-[#00553d] focus:border-[#00553d] text-sm">
                                     <option value="">All Equipment</option>
                                     <option value="laptop">Laptops</option>
                                     <option value="desktop">Desktops</option>
@@ -123,46 +123,46 @@
                         <!-- Equipment Accordions -->
                         <div class="space-y-4 w-full" id="returnEquipmentContainer">
                             @foreach ($issuances->whereNull('date_returned') as $issuance)
-                            <div class="equipment-accordion bg-gray-50 rounded-lg overflow-hidden shadow-sm w-full">
-                                <button class="equipment-toggle w-full flex justify-between items-center p-4 bg-gray-200 hover:bg-gray-300 transition duration-200">
+                            <div class="equipment-accordion bg-gray-50 rounded-lg overflow-hidden shadow-sm w-full border border-[#ffcc34]">
+                                <button class="equipment-toggle w-full flex justify-between items-center p-4 bg-[#ffcc34] hover:bg-[#e6b82f] transition duration-200">
                                     <div class="text-left">
-                                        <h3 class="font-medium text-xs">{{ $issuance->equipment->equipment_name ?? 'N/A' }}</h3>
-                                        <p class="text-xs text-gray-600">{{ $issuance->staff->name ?? 'N/A' }} • {{ $issuance->department->name ?? 'N/A' }}</p>
+                                        <h3 class="font-medium text-xs text-[#00553d]">{{ $issuance->equipment->equipment_name ?? 'N/A' }}</h3>
+                                        <p class="text-[0.65rem] text-[#00553d]">{{ $issuance->staff->name ?? 'N/A' }} • {{ $issuance->department->name ?? 'N/A' }}</p>
                                     </div>
-                                    <svg class="w-4 h-4 transform transition-transform duration-200 rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <svg class="w-3 h-3 transform transition-transform duration-200 rotate-180" fill="none" stroke="#00553d" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                                     </svg>
                                 </button>
                                 <div class="equipment-content p-4">
-                                    <form action="{{ route('inventory.return', $issuance) }}" method="POST" class="space-y-4">
+                                    <form action="{{ route('inventory.return', $issuance) }}" method="POST" class="space-y-3">
                                         @csrf
                                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                             <div>
-                                                <label class="block text-xs font-medium text-gray-700 mb-1">Equipment</label>
-                                                <input type="text" value="{{ $issuance->equipment->equipment_name ?? 'N/A' }}" disabled class="w-full px-3 py-1 border border-gray-300 rounded-lg bg-gray-100 text-xs">
+                                                <label class="block text-[0.65rem] font-medium text-[#00553d] mb-1">Equipment</label>
+                                                <input type="text" value="{{ $issuance->equipment->equipment_name ?? 'N/A' }}" disabled class="w-full px-3 py-1.5 border border-[#ffcc34] rounded-lg bg-gray-100 text-sm">
                                             </div>
                                             <div>
-                                                <label class="block text-xs font-medium text-gray-700 mb-1">Staff</label>
-                                                <input type="text" value="{{ $issuance->staff->name ?? 'N/A' }}" disabled class="w-full px-3 py-1 border border-gray-300 rounded-lg bg-gray-100 text-xs">
+                                                <label class="block text-[0.65rem] font-medium text-[#00553d] mb-1">Staff</label>
+                                                <input type="text" value="{{ $issuance->staff->name ?? 'N/A' }}" disabled class="w-full px-3 py-1.5 border border-[#ffcc34] rounded-lg bg-gray-100 text-sm">
                                             </div>
                                             <div>
-                                                <label for="date_returned_{{ $issuance->id }}" class="block text-xs font-medium text-gray-700 mb-1">Date Returned *</label>
-                                                <input type="date" name="date_returned" id="date_returned_{{ $issuance->id }}" value="{{ now()->format('Y-m-d') }}" required class="w-full px-3 py-1 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500 text-xs">
+                                                <label for="date_returned_{{ $issuance->id }}" class="block text-[0.65rem] font-medium text-[#00553d] mb-1">Date Returned *</label>
+                                                <input type="date" name="date_returned" id="date_returned_{{ $issuance->id }}" value="{{ now()->format('Y-m-d') }}" required class="w-full px-3 py-1.5 border border-[#ffcc34] rounded-lg focus:ring-[#00553d] focus:border-[#00553d] text-sm">
                                             </div>
                                             <div>
-                                                <label for="condition_{{ $issuance->id }}" class="block text-xs font-medium text-gray-700 mb-1">Condition</label>
-                                                <select name="condition" id="condition_{{ $issuance->id }}" class="w-full px-3 py-1 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500 text-xs">
+                                                <label for="condition_{{ $issuance->id }}" class="block text-[0.65rem] font-medium text-[#00553d] mb-1">Condition</label>
+                                                <select name="condition" id="condition_{{ $issuance->id }}" class="w-full px-3 py-1.5 border border-[#ffcc34] rounded-lg focus:ring-[#00553d] focus:border-[#00553d] text-sm">
                                                     <option value="good">Good</option>
                                                     <option value="damaged">Damaged</option>
                                                     <option value="lost">Lost</option>
                                                 </select>
                                             </div>
                                             <div class="md:col-span-2">
-                                                <label for="remarks_{{ $issuance->id }}" class="block text-xs font-medium text-gray-700 mb-1">Remarks</label>
-                                                <textarea name="remarks" id="remarks_{{ $issuance->id }}" class="w-full px-3 py-1 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500 text-xs">{{ $issuance->return_notes ?? '' }}</textarea>
+                                                <label for="remarks_{{ $issuance->id }}" class="block text-[0.65rem] font-medium text-[#00553d] mb-1">Remarks</label>
+                                                <textarea name="remarks" id="remarks_{{ $issuance->id }}" class="w-full px-3 py-1.5 border border-[#ffcc34] rounded-lg focus:ring-[#00553d] focus:border-[#00553d] text-sm">{{ $issuance->return_notes ?? '' }}</textarea>
                                             </div>
                                         </div>
-                                        <button type="submit" class="w-full mt-4 bg-green-600 hover:bg-green-700 text-white font-medium py-1 px-3 rounded-lg transition duration-200 text-xs">
+                                        <button type="submit" class="w-full mt-4 bg-[#00553d] hover:bg-[#003d2b] text-white font-medium py-1.5 px-3 rounded-lg transition duration-200 border border-[#ffcc34] text-sm">
                                             Return Equipment
                                         </button>
                                     </form>
@@ -173,29 +173,29 @@
 
                         <!-- Pagination Controls -->
                         <div class="mt-6 flex items-center justify-between w-full">
-                            <div class="text-xs text-gray-500">
+                            <div class="text-[0.65rem] text-[#00553d]">
                                 Showing <span class="font-medium">1</span> to <span class="font-medium">5</span> of <span class="font-medium">{{ $issuances->whereNull('date_returned')->count() }}</span> results
                             </div>
                             <div class="flex space-x-2">
-                                <button class="px-2 py-1 border rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 text-xs">
+                                <button class="px-2 py-1 border rounded-lg bg-gray-100 text-[#00553d] hover:bg-gray-200 text-xs border-[#ffcc34]">
                                     « Previous
                                 </button>
-                                <button class="px-2 py-1 border rounded-lg bg-red-600 text-white hover:bg-red-700 text-xs">
+                                <button class="px-2 py-1 border rounded-lg bg-[#90143c] text-white hover:bg-[#6b102d] text-xs border-[#ffcc34]">
                                     1
                                 </button>
-                                <button class="px-2 py-1 border rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 text-xs">
+                                <button class="px-2 py-1 border rounded-lg bg-gray-100 text-[#00553d] hover:bg-gray-200 text-xs border-[#ffcc34]">
                                     2
                                 </button>
-                                <button class="px-2 py-1 border rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 text-xs">
+                                <button class="px-2 py-1 border rounded-lg bg-gray-100 text-[#00553d] hover:bg-gray-200 text-xs border-[#ffcc34]">
                                     3
                                 </button>
-                                <button class="px-2 py-1 border rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 text-xs">
+                                <button class="px-2 py-1 border rounded-lg bg-gray-100 text-[#00553d] hover:bg-gray-200 text-xs border-[#ffcc34]">
                                     4
                                 </button>
-                                <button class="px-2 py-1 border rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 text-xs">
+                                <button class="px-2 py-1 border rounded-lg bg-gray-100 text-[#00553d] hover:bg-gray-200 text-xs border-[#ffcc34]">
                                     5
                                 </button>
-                                <button class="px-2 py-1 border rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 text-xs">
+                                <button class="px-2 py-1 border rounded-lg bg-gray-100 text-[#00553d] hover:bg-gray-200 text-xs border-[#ffcc34]">
                                     Next »
                                 </button>
                             </div>
@@ -205,81 +205,81 @@
                 </div>
 
                 <!-- Current Inventory Table -->
-                <div class="bg-white rounded-xl shadow-md overflow-hidden animate-fade-in mb-8 w-full">
-                    <div class="bg-gray-800 px-6 py-4">
-                        <h2 class="text-sm font-semibold text-white">Current Inventory</h2>
+                <div class="bg-white rounded-xl shadow-md overflow-hidden animate-fade-in mb-8 w-full border border-[#ffcc34]">
+                    <div class="bg-[#00553d] px-5 py-3">
+                        <h2 class="text-xs font-semibold text-white">Current Inventory</h2>
                     </div>
-                    <div class="p-6">
+                    <div class="p-5">
                         <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4 w-full">
                             <div class="relative w-full md:w-64">
-                                <input type="text" id="searchInput" placeholder="Search inventory..." class="w-full pl-8 pr-3 py-1 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500 text-xs">
-                                <div class="absolute left-2 top-2 text-gray-400">
-                                    <i class="fas fa-search"></i>
+                                <input type="text" id="searchInput" placeholder="Search inventory..." class="w-full pl-8 pr-3 py-1.5 border border-[#ffcc34] rounded-lg focus:ring-[#00553d] focus:border-[#00553d] text-sm">
+                                <div class="absolute left-2 top-2 text-[#00553d]">
+                                    <i class="fas fa-search text-xs"></i>
                                 </div>
                             </div>
                             <div class="flex flex-wrap gap-2 w-full md:w-auto">
-                                <select id="departmentFilter" class="px-3 py-1 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500 text-xs">
+                                <select id="departmentFilter" class="px-3 py-1.5 border border-[#ffcc34] rounded-lg focus:ring-[#00553d] focus:border-[#00553d] text-sm">
                                     <option value="">All Departments</option>
                                     @foreach ($departments as $department)
                                     <option value="{{ $department->name }}">{{ $department->name }}</option>
                                     @endforeach
                                 </select>
-                                <select id="statusFilter" class="px-3 py-1 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500 text-xs">
+                                <select id="statusFilter" class="px-3 py-1.5 border border-[#ffcc34] rounded-lg focus:ring-[#00553d] focus:border-[#00553d] text-sm">
                                     <option value="">All Statuses</option>
                                     <option value="available">Available</option>
                                     <option value="issued">Issued</option>
                                 </select>
-                                <button id="exportBtn" class="bg-yellow-600 hover:bg-yellow-700 text-white font-medium py-1 px-3 rounded-lg transition duration-200 flex items-center text-xs">
-                                    <i class="fas fa-file-export mr-1"></i> Export CSV
+                                <button id="exportBtn" class="bg-[#90143c] hover:bg-[#6b102d] text-white font-medium py-1.5 px-3 rounded-lg transition duration-200 flex items-center border border-[#ffcc34] text-sm">
+                                    <i class="fas fa-file-export mr-1 text-xs"></i> Export CSV
                                 </button>
                             </div>
                         </div>
 
                         <div class="overflow-x-auto w-full">
-                            <table class="min-w-full table-auto divide-y divide-gray-200">
-                                <thead class="bg-green-50">
+                            <table class="min-w-full table-auto divide-y divide-[#ffcc34]">
+                                <thead class="bg-[#ffcc34]">
                                     <tr>
-                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-green-800 uppercase tracking-wider">Staff</th>
-                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-green-800 uppercase tracking-wider">Department</th>
-                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-green-800 uppercase tracking-wider">Equipment</th>
-                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-green-800 uppercase tracking-wider">Model/Brand</th>
-                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-green-800 uppercase tracking-wider">Date Issued</th>
-                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-green-800 uppercase tracking-wider">Serial</th>
-                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-green-800 uppercase tracking-wider">PR Number</th>
-                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-green-800 uppercase tracking-wider">Status</th>
-                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-green-800 uppercase tracking-wider">Actions</th>
+                                        <th scope="col" class="px-5 py-2 text-left text-[0.65rem] font-medium text-[#00553d] uppercase tracking-wider">Staff</th>
+                                        <th scope="col" class="px-5 py-2 text-left text-[0.65rem] font-medium text-[#00553d] uppercase tracking-wider">Department</th>
+                                        <th scope="col" class="px-5 py-2 text-left text-[0.65rem] font-medium text-[#00553d] uppercase tracking-wider">Equipment</th>
+                                        <th scope="col" class="px-5 py-2 text-left text-[0.65rem] font-medium text-[#00553d] uppercase tracking-wider">Model/Brand</th>
+                                        <th scope="col" class="px-5 py-2 text-left text-[0.65rem] font-medium text-[#00553d] uppercase tracking-wider">Date Issued</th>
+                                        <th scope="col" class="px-5 py-2 text-left text-[0.65rem] font-medium text-[#00553d] uppercase tracking-wider">Serial</th>
+                                        <th scope="col" class="px-5 py-2 text-left text-[0.65rem] font-medium text-[#00553d] uppercase tracking-wider">PR Number</th>
+                                        <th scope="col" class="px-5 py-2 text-left text-[0.65rem] font-medium text-[#00553d] uppercase tracking-wider">Status</th>
+                                        <th scope="col" class="px-5 py-2 text-left text-[0.65rem] font-medium text-[#00553d] uppercase tracking-wider">Actions</th>
                                     </tr>
                                 </thead>
-                                <tbody id="inventoryTableBody" class="bg-white divide-y divide-gray-200">
+                                <tbody id="inventoryTableBody" class="bg-white divide-y divide-[#ffcc34]">
                                     @if ($equipment->isEmpty())
                                     <tr>
-                                        <td colspan="9" class="px-6 py-4 text-center text-gray-500 text-xs">No equipment records found</td>
+                                        <td colspan="9" class="px-5 py-3 text-center text-[#00553d] text-xs">No equipment records found</td>
                                     </tr>
                                     @else
                                     @foreach ($equipment as $item)
                                     <tr class="hover:bg-gray-50">
-                                        <td class="px-6 py-4 whitespace-nowrap text-xs">{{ $item->staff_name }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-xs">{{ $item->department->name ?? 'N/A' }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-xs">{{ $item->equipment_name }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-xs">{{ $item->model_brand }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-xs">{{ $item->date_issued }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-xs">{{ $item->serial_number }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-xs">{{ $item->pr_number }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $item->status == 'issued' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800' }}">{{ ucfirst($item->status) }}</span>
+                                        <td class="px-5 py-3 whitespace-nowrap text-xs text-[#00553d]">{{ $item->staff_name }}</td>
+                                        <td class="px-5 py-3 whitespace-nowrap text-xs text-[#00553d]">{{ $item->department->name ?? 'N/A' }}</td>
+                                        <td class="px-5 py-3 whitespace-nowrap text-xs text-[#00553d]">{{ $item->equipment_name }}</td>
+                                        <td class="px-5 py-3 whitespace-nowrap text-xs text-[#00553d]">{{ $item->model_brand }}</td>
+                                        <td class="px-5 py-3 whitespace-nowrap text-xs text-[#00553d]">{{ $item->date_issued }}</td>
+                                        <td class="px-5 py-3 whitespace-nowrap text-xs text-[#00553d]">{{ $item->serial_number }}</td>
+                                        <td class="px-5 py-3 whitespace-nowrap text-xs text-[#00553d]">{{ $item->pr_number }}</td>
+                                        <td class="px-5 py-3 whitespace-nowrap">
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $item->status == 'issued' ? 'bg-[#ffcc34] text-[#00553d]' : 'bg-gray-100 text-[#00553d]' }}">{{ ucfirst($item->status) }}</span>
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap flex space-x-2">
-                                            <a href="{{ route('inventory.view', $item->id) }}" class="text-blue-600 hover:text-blue-900" title="View Details">
-                                                <i class="fas fa-eye"></i>
+                                        <td class="px-5 py-3 whitespace-nowrap flex space-x-2">
+                                            <a href="{{ route('inventory.view', $item->id) }}" class="text-[#90143c] hover:text-[#6b102d]" title="View Details">
+                                                <i class="fas fa-eye text-xs"></i>
                                             </a>
-                                            <a href="{{ route('inventory.edit', $item->id) }}" class="text-yellow-600 hover:text-yellow-900" title="Edit">
-                                                <i class="fas fa-edit"></i>
+                                            <a href="{{ route('inventory.edit', $item->id) }}" class="text-[#90143c] hover:text-[#6b102d]" title="Edit">
+                                                <i class="fas fa-edit text-xs"></i>
                                             </a>
                                             <form action="{{ route('inventory.delete', $item->id) }}" method="POST" class="inline delete-form">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="button" class="text-red-600 hover:text-red-900 delete-btn" data-item="{{ $item->equipment_name }}" title="Delete">
-                                                    <i class="fas fa-trash-alt"></i>
+                                                <button type="button" class="text-[#90143c] hover:text-[#6b102d] delete-btn" data-item="{{ $item->equipment_name }}" title="Delete">
+                                                    <i class="fas fa-trash-alt text-xs"></i>
                                                 </button>
                                             </form>
                                         </td>
@@ -293,35 +293,35 @@
                 </div>
 
                 <!-- History Log Table -->
-                <div class="bg-white rounded-xl shadow-md overflow-hidden animate-fade-in mb-8 w-full">
-                    <div class="bg-gray-800 px-6 py-4">
-                        <h2 class="text-sm font-semibold text-white">History Log</h2>
+                <div class="bg-white rounded-xl shadow-md overflow-hidden animate-fade-in mb-8 w-full border border-[#ffcc34]">
+                    <div class="bg-[#00553d] px-5 py-3">
+                        <h2 class="text-xs font-semibold text-white">History Log</h2>
                     </div>
-                    <div class="p-6">
+                    <div class="p-5">
                         <div class="overflow-x-auto w-full">
-                            <table class="min-w-full table-auto divide-y divide-gray-200">
-                                <thead class="bg-green-50">
+                            <table class="min-w-full table-auto divide-y divide-[#ffcc34]">
+                                <thead class="bg-[#ffcc34]">
                                     <tr>
-                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-green-800 uppercase tracking-wider">Action</th>
-                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-green-800 uppercase tracking-wider">Date</th>
-                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-green-800 uppercase tracking-wider">User</th>
-                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-green-800 uppercase tracking-wider">Staff</th>
-                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-green-800 uppercase tracking-wider">Description</th>
+                                        <th scope="col" class="px-5 py-2 text-left text-[0.65rem] font-medium text-[#00553d] uppercase tracking-wider">Action</th>
+                                        <th scope="col" class="px-5 py-2 text-left text-[0.65rem] font-medium text-[#00553d] uppercase tracking-wider">Date</th>
+                                        <th scope="col" class="px-5 py-2 text-left text-[0.65rem] font-medium text-[#00553d] uppercase tracking-wider">User</th>
+                                        <th scope="col" class="px-5 py-2 text-left text-[0.65rem] font-medium text-[#00553d] uppercase tracking-wider">Staff</th>
+                                        <th scope="col" class="px-5 py-2 text-left text-[0.65rem] font-medium text-[#00553d] uppercase tracking-wider">Description</th>
                                     </tr>
                                 </thead>
-                                <tbody id="historyTableBody" class="bg-white divide-y divide-gray-200">
+                                <tbody id="historyTableBody" class="bg-white divide-y divide-[#ffcc34]">
                                     @if ($historyLogs->isEmpty())
                                     <tr>
-                                        <td colspan="5" class="px-6 py-4 text-center text-gray-500 text-xs">No history records found</td>
+                                        <td colspan="5" class="px-5 py-3 text-center text-[#00553d] text-xs">No history records found</td>
                                     </tr>
                                     @else
                                     @foreach ($historyLogs as $log)
                                     <tr class="hover:bg-gray-50">
-                                        <td class="px-6 py-4 whitespace-nowrap text-xs">{{ $log->action }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-xs">{{ $log->action_date }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-xs">{{ $log->user->name ?? 'N/A' }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-xs">{{ $log->staff->name ?? 'N/A' }}</td>
-                                        <td class="px-6 py-4 text-xs">{{ $log->description }}</td>
+                                        <td class="px-5 py-3 whitespace-nowrap text-xs text-[#00553d]">{{ $log->action }}</td>
+                                        <td class="px-5 py-3 whitespace-nowrap text-xs text-[#00553d]">{{ $log->action_date }}</td>
+                                        <td class="px-5 py-3 whitespace-nowrap text-xs text-[#00553d]">{{ $log->user->name ?? 'N/A' }}</td>
+                                        <td class="px-5 py-3 whitespace-nowrap text-xs text-[#00553d]">{{ $log->staff->name ?? 'N/A' }}</td>
+                                        <td class="px-5 py-3 text-xs text-[#00553d]">{{ $log->description }}</td>
                                     </tr>
                                     @endforeach
                                     @endif
@@ -332,11 +332,11 @@
                 </div>
 
                 <!-- Equipment Issuance Graph -->
-                <div class="bg-white rounded-xl shadow-md overflow-hidden animate-fade-in mb-8 w-full">
-                    <div class="bg-gray-800 px-6 py-4">
-                        <h2 class="text-sm font-semibold text-white">Equipment Issuance Statistics</h2>
+                <div class="bg-white rounded-xl shadow-md overflow-hidden animate-fade-in mb-8 w-full border border-[#ffcc34]">
+                    <div class="bg-[#00553d] px-5 py-3">
+                        <h2 class="text-xs font-semibold text-white">Equipment Issuance Statistics</h2>
                     </div>
-                    <div class="p-6">
+                    <div class="p-5">
                         <canvas id="equipmentChart" class="w-full h-64" data-equipment="{{ json_encode($equipmentData) }}"></canvas>
                     </div>
                 </div>
@@ -349,28 +349,27 @@
         <script src="{{ asset('js/inventory.js') }}"></script>
 
         <script>
-    const apiUrl = "{{ url('/api/total-staff') }}";
+            const apiUrl = "{{ url('/api/total-staff') }}";
 
-    function updateStaffCount() {
-        fetch(apiUrl)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
-            .then(data => {
-                document.getElementById('staff-count').innerText = data.count;
-            })
-            .catch(error => {
-                console.error('Error fetching staff count:', error);
-            });
-    }
+            function updateStaffCount() {
+                fetch(apiUrl)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        document.getElementById('staff-count').innerText = data.count;
+                    })
+                    .catch(error => {
+                        console.error('Error fetching staff count:', error);
+                    });
+            }
 
-    updateStaffCount();
-    setInterval(updateStaffCount, 5000);
-</script>
-
+            updateStaffCount();
+            setInterval(updateStaffCount, 5000);
+        </script>
 
         <script>
             document.addEventListener('DOMContentLoaded', function() {
@@ -415,14 +414,12 @@
                 const paginationButtons = document.querySelectorAll('.pagination-button');
                 paginationButtons.forEach(button => {
                     button.addEventListener('click', function() {
-                        // This would typically make an AJAX call to load the next page
-                        // For demo purposes, we'll just update the active state
                         paginationButtons.forEach(btn => {
-                            btn.classList.remove('bg-red-600', 'text-white');
-                            btn.classList.add('bg-gray-100', 'text-gray-700');
+                            btn.classList.remove('bg-[#90143c]', 'text-white');
+                            btn.classList.add('bg-gray-100', 'text-[#00553d]');
                         });
-                        this.classList.add('bg-red-600', 'text-white');
-                        this.classList.remove('bg-gray-100', 'text-gray-700');
+                        this.classList.add('bg-[#90143c]', 'text-white');
+                        this.classList.remove('bg-gray-100', 'text-[#00553d]');
                     });
                 });
             });
@@ -461,9 +458,13 @@
                             text: "This action cannot be undone!",
                             icon: "warning",
                             showCancelButton: true,
-                            confirmButtonColor: '#d33',
+                            confirmButtonColor: '#90143c',
                             cancelButtonColor: '#3085d6',
-                            confirmButtonText: 'Yes, delete it!'
+                            confirmButtonText: 'Yes, delete it!',
+                            customClass: {
+                                title: 'text-xs',
+                                content: 'text-[0.65rem]'
+                            }
                         }).then((result) => {
                             if (result.isConfirmed) {
                                 const originalHtml = this.innerHTML;
@@ -492,7 +493,16 @@
                                     .then(data => {
                                         if (data.success) {
                                             form.closest('tr').remove();
-                                            Swal.fire('Deleted!', data.message, 'success');
+                                            Swal.fire({
+                                                title: 'Deleted!',
+                                                text: data.message,
+                                                icon: 'success',
+                                                confirmButtonColor: '#00553d',
+                                                customClass: {
+                                                    title: 'text-xs',
+                                                    content: 'text-[0.65rem]'
+                                                }
+                                            });
                                         } else {
                                             throw new Error(data.message);
                                         }
@@ -500,7 +510,16 @@
                                     .catch(error => {
                                         this.innerHTML = originalHtml;
                                         this.disabled = false;
-                                        Swal.fire('Error!', error.message || 'Failed to delete item', 'error');
+                                        Swal.fire({
+                                            title: 'Error!',
+                                            text: error.message || 'Failed to delete item',
+                                            icon: 'error',
+                                            confirmButtonColor: '#90143c',
+                                            customClass: {
+                                                title: 'text-xs',
+                                                content: 'text-[0.65rem]'
+                                            }
+                                        });
                                     });
                             }
                         });
@@ -608,8 +627,14 @@
                                     text: message,
                                     icon: 'warning',
                                     showCancelButton: !checkData.serial_exists,
+                                    confirmButtonColor: '#00553d',
+                                    cancelButtonColor: '#90143c',
                                     confirmButtonText: checkData.serial_exists ? 'OK' : 'Proceed Anyway',
-                                    cancelButtonText: 'Cancel'
+                                    cancelButtonText: 'Cancel',
+                                    customClass: {
+                                        title: 'text-xs',
+                                        content: 'text-[0.65rem]'
+                                    }
                                 });
 
                                 if (result.isConfirmed && !checkData.serial_exists) {
@@ -627,7 +652,12 @@
                             Swal.fire({
                                 title: 'Error',
                                 text: 'Failed to validate data. Please try again.',
-                                icon: 'error'
+                                icon: 'error',
+                                confirmButtonColor: '#90143c',
+                                customClass: {
+                                    title: 'text-xs',
+                                    content: 'text-[0.65rem]'
+                                }
                             });
                         }
                     });
@@ -640,15 +670,16 @@
                     const labels = equipmentData.map(item => item.equipment_name);
                     const data = equipmentData.map(item => item.issuance_count);
 
-                    new Chart(ctx, {
-                        type: 'bar',
+                    ```chartjs
+                    {
+                        type: "bar",
                         data: {
                             labels: labels,
                             datasets: [{
-                                label: 'Issuance Count',
+                                label: "Issuance Count",
                                 data: data,
-                                backgroundColor: 'rgba(34, 197, 94, 0.7)',
-                                borderColor: 'rgba(34, 197, 94, 1)',
+                                backgroundColor: "#ffcc34",
+                                borderColor: "#00553d",
                                 borderWidth: 1
                             }]
                         },
@@ -659,18 +690,32 @@
                                     beginAtZero: true,
                                     title: {
                                         display: true,
-                                        text: 'Number of Issuances',
+                                        text: "Number of Issuances",
                                         font: {
-                                            size: 12
+                                            size: 10
+                                        },
+                                        color: "#00553d"
+                                    },
+                                    ticks: {
+                                        color: "#00553d",
+                                        font: {
+                                            size: 10
                                         }
                                     }
                                 },
                                 x: {
                                     title: {
                                         display: true,
-                                        text: 'Equipment Type',
+                                        text: "Equipment Type",
                                         font: {
-                                            size: 12
+                                            size: 10
+                                        },
+                                        color: "#00553d"
+                                    },
+                                    ticks: {
+                                        color: "#00553d",
+                                        font: {
+                                            size: 10
                                         }
                                     }
                                 }
@@ -679,13 +724,15 @@
                                 legend: {
                                     labels: {
                                         font: {
-                                            size: 12
-                                        }
+                                            size: 10
+                                        },
+                                        color: "#00553d"
                                     }
                                 }
                             }
                         }
-                    });
+                    }
+                    ```
                 }
             });
         </script>

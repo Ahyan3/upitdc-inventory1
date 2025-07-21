@@ -1,48 +1,48 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+        <h2 class="font-semibold text-lg text-[#00553d] leading-tight">
             {{ __('Staff Management') }}
         </h2>
     </x-slot>
 
     <div class="flex min-h-screen bg-gray-50">
-        <button id="toggleSidebar" class="md:hidden fixed top-4 left-4 z-50 bg-gray-800 text-white p-2 rounded-lg">
-            <i class="fas fa-bars"></i>
+        <button id="toggleSidebar" class="md:hidden fixed top-4 left-4 z-50 bg-[#90143c] text-white p-2 rounded-lg border border-[#ffcc34]">
+            <i class="fas fa-bars text-sm"></i>
         </button>
 
         <!-- Main Content -->
         <div class="flex-1 container mx-auto px-4 py-8">
             <div class="text-center mb-10 animate-fade-in">
-                <h2 class="text-xl font-bold text-red-600">Staff Management</h2>
-                <p class="text-xs text-black-600">Manage staff members</p>
+                <h2 class="text-lg font-bold text-[#90143c]">Staff Management</h2>
+                <p class="text-[0.65rem] text-[#00553d]">Manage staff members</p>
             </div>
 
             <!-- Buttons for Add Staff and Filter -->
             <div class="flex justify-between mb-8">
-                <button id="openAddStaffModal" class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition duration-200 flex items-center" aria-label="Add New Staff">
-                    <i class="fas fa-plus mr-2"></i> Add Staff
+                <button id="openAddStaffModal" class="bg-[#00553d] hover:bg-[#003d2b] text-white font-medium py-1.5 px-3 rounded-lg transition duration-200 flex items-center border border-[#ffcc34] text-sm" aria-label="Add New Staff">
+                    <i class="fas fa-plus mr-1 text-xs"></i> Add Staff
                 </button>
-                <button id="openFilterModal" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition duration-200 flex items-center" aria-label="Filter Staff">
-                    <i class="fas fa-filter mr-2"></i> Filter
+                <button id="openFilterModal" class="bg-[#90143c] hover:bg-[#6b102d] text-white font-medium py-1.5 px-3 rounded-lg transition duration-200 flex items-center border border-[#ffcc34] text-sm" aria-label="Filter Staff">
+                    <i class="fas fa-filter mr-1 text-xs"></i> Filter
                 </button>
             </div>
 
             <!-- Add Staff Modal -->
-            <div id="addStaffModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden flex items-center justify-center z-50">
-                <div class="bg-white rounded-xl shadow-lg max-w-md w-full mx-4">
-                    <div class="bg-red-600 px-6 py-4 rounded-t-xl">
-                        <h2 class="text-sm font-semibold text-white">Add Staff</h2>
+            <div id="addStaffModal" class="fixed inset-0 bg-[#00553d] bg-opacity-50 hidden flex items-center justify-center z-50">
+                <div class="bg-white rounded-xl shadow-lg max-w-md w-full mx-4 border border-[#ffcc34]">
+                    <div class="bg-[#90143c] px-5 py-3 rounded-t-xl">
+                        <h2 class="text-xs font-semibold text-white">Add Staff</h2>
                     </div>
-                    <div class="p-6">
-                        <form id="addStaffForm" action="{{ route('staff.store') }}" method="POST" class="space-y-4" aria-label="Add Staff Form">
+                    <div class="p-5">
+                        <form id="addStaffForm" action="{{ route('staff.store') }}" method="POST" class="space-y-3" aria-label="Add Staff Form">
                             @csrf
                             <div>
-                                <label for="name" class="block text-xs font-medium text-gray-700 mb-1">Name *</label>
-                                <input type="text" name="name" id="name" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500" aria-label="Staff Name">
+                                <label for="name" class="block text-[0.65rem] font-medium text-[#00553d] mb-1">Name *</label>
+                                <input type="text" name="name" id="name" required class="w-full px-3 py-1.5 border border-[#ffcc34] rounded-lg focus:ring-[#00553d] focus:border-[#00553d] text-sm" aria-label="Staff Name">
                             </div>
                             <div>
-                                <label for="department" class="block text-xs font-medium text-gray-700 mb-1">Department *</label>
-                                <select name="department" id="department" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500" aria-label="Department">
+                                <label for="department" class="block text-[0.65rem] font-medium text-[#00553d] mb-1">Department *</label>
+                                <select name="department" id="department" required class="w-full px-3 py-1.5 border border-[#ffcc34] rounded-lg focus:ring-[#00553d] focus:border-[#00553d] text-sm" aria-label="Department">
                                     <option value="">Select Department</option>
                                     @if(isset($departments) && $departments->count() > 0)
                                     @foreach($departments as $department)
@@ -59,22 +59,22 @@
                                 </select>
                             </div>
                             <div>
-                                <label for="email" class="block text-xs font-medium text-gray-700 mb-1">Email *</label>
-                                <input type="email" name="email" id="email" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500" aria-label="Email">
+                                <label for="email" class="block text-[0.65rem] font-medium text-[#00553d] mb-1">Email *</label>
+                                <input type="email" name="email" id="email" required class="w-full px-3 py-1.5 border border-[#ffcc34] rounded-lg focus:ring-[#00553d] focus:border-[#00553d] text-sm" aria-label="Email">
                             </div>
                             <div>
-                                <label for="status" class="block text-xs font-medium text-gray-700 mb-1">Status *</label>
-                                <select name="status" id="status" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500" aria-label="Status">
+                                <label for="status" class="block text-[0.65rem] font-medium text-[#00553d] mb-1">Status *</label>
+                                <select name="status" id="status" required class="w-full px-3 py-1.5 border border-[#ffcc34] rounded-lg focus:ring-[#00553d] focus:border-[#00553d] text-sm" aria-label="Status">
                                     <option value="">Select Status</option>
                                     <option value="Active">Active</option>
                                     <option value="Resigned">Resigned</option>
                                 </select>
                             </div>
-                            <div class="flex gap-3">
-                                <button type="submit" class="flex-1 bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition duration-200" aria-label="Add Staff">
+                            <div class="flex gap-2">
+                                <button type="submit" class="flex-1 bg-[#00553d] hover:bg-[#003d2b] text-white font-medium py-1.5 px-3 rounded-lg transition duration-200 border border-[#ffcc34] text-sm" aria-label="Add Staff">
                                     Add Staff
                                 </button>
-                                <button type="button" onclick="closeAddStaffModal()" class="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded-lg transition duration-200">
+                                <button type="button" onclick="closeAddStaffModal()" class="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-medium py-1.5 px-3 rounded-lg transition duration-200 border border-[#ffcc34] text-sm">
                                     Cancel
                                 </button>
                             </div>
@@ -84,16 +84,16 @@
             </div>
 
             <!-- Filter Modal -->
-            <div id="filterModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden flex items-center justify-center z-50">
-                <div class="bg-white rounded-xl shadow-lg max-w-md w-full mx-4">
-                    <div class="bg-blue-600 px-6 py-4 rounded-t-xl">
-                        <h2 class="text-sm font-semibold text-white">Filter Staff</h2>
+            <div id="filterModal" class="fixed inset-0 bg-[#00553d] bg-opacity-50 hidden flex items-center justify-center z-50">
+                <div class="bg-white rounded-xl shadow-lg max-w-md w-full mx-4 border border-[#ffcc34]">
+                    <div class="bg-[#90143c] px-5 py-3 rounded-t-xl">
+                        <h2 class="text-xs font-semibold text-white">Filter Staff</h2>
                     </div>
-                    <div class="p-6">
-                        <form id="filterForm" class="space-y-4" aria-label="Filter Staff Form">
+                    <div class="p-5">
+                        <form id="filterForm" class="space-y-3" aria-label="Filter Staff Form">
                             <div>
-                                <label for="filterDepartment" class="block text-xs font-medium text-gray-700 mb-1">Department</label>
-                                <select name="filterDepartment" id="filterDepartment" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500" aria-label="Filter Department">
+                                <label for="filterDepartment" class="block text-[0.65rem] font-medium text-[#00553d] mb-1">Department</label>
+                                <select name="filterDepartment" id="filterDepartment" class="w-full px-3 py-1.5 border border-[#ffcc34] rounded-lg focus:ring-[#00553d] focus:border-[#00553d] text-sm" aria-label="Filter Department">
                                     <option value="">All Departments</option>
                                     @if(isset($departments) && $departments->count() > 0)
                                     @foreach($departments as $department)
@@ -105,18 +105,18 @@
                                 </select>
                             </div>
                             <div>
-                                <label for="filterStatus" class="block text-xs font-medium text-gray-700 mb-1">Status</label>
-                                <select name="filterStatus" id="filterStatus" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500" aria-label="Filter Status">
+                                <label for="filterStatus" class="block text-[0.65rem] font-medium text-[#00553d] mb-1">Status</label>
+                                <select name="filterStatus" id="filterStatus" class="w-full px-3 py-1.5 border border-[#ffcc34] rounded-lg focus:ring-[#00553d] focus:border-[#00553d] text-sm" aria-label="Filter Status">
                                     <option value="">All Statuses</option>
                                     <option value="Active">Active</option>
                                     <option value="Resigned">Resigned</option>
                                 </select>
                             </div>
-                            <div class="flex gap-3">
-                                <button type="button" onclick="applyFilter()" class="flex-1 bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition duration-200">
+                            <div class="flex gap-2">
+                                <button type="button" onclick="applyFilter()" class="flex-1 bg-[#00553d] hover:bg-[#003d2b] text-white font-medium py-1.5 px-3 rounded-lg transition duration-200 border border-[#ffcc34] text-sm">
                                     Apply Filter
                                 </button>
-                                <button type="button" onclick="closeFilterModal()" class="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded-lg transition duration-200">
+                                <button type="button" onclick="closeFilterModal()" class="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-medium py-1.5 px-3 rounded-lg transition duration-200 border border-[#ffcc34] text-sm">
                                     Cancel
                                 </button>
                             </div>
@@ -126,57 +126,57 @@
             </div>
 
             <!-- Staff Listing -->
-            <div class="bg-white rounded-xl shadow-md overflow-hidden animate-fade-in">
-                <div class="bg-gray-800 px-6 py-4">
-                    <h2 class="text-sm font-semibold text-white">Staff Members</h2>
+            <div class="bg-white rounded-xl shadow-md overflow-hidden animate-fade-in border border-[#ffcc34]">
+                <div class="bg-[#00553d] px-5 py-3">
+                    <h2 class="text-xs font-semibold text-white">Staff Members</h2>
                 </div>
-                <div class="p-6">
+                <div class="p-5">
                     <div class="flex justify-between items-center mb-4">
                         <div class="relative w-64">
-                            <input type="text" id="searchInput" placeholder="Search staff..." class="w-full text-sm pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500" aria-label="Search staff">
-                            <div class="absolute left-3 top-2.5 text-gray-400">
-                                <i class="fas fa-search"></i>
+                            <input type="text" id="searchInput" placeholder="Search staff..." class="w-full text-xs pl-8 pr-3 py-1.5 border border-[#ffcc34] rounded-lg focus:ring-[#00553d] focus:border-[#00553d]" aria-label="Search staff">
+                            <div class="absolute left-2 top-2 text-[#00553d]">
+                                <i class="fas fa-search text-xs"></i>
                             </div>
                         </div>
-                        <button id="exportBtn" class="bg-yellow-600 text-sm hover:bg-yellow-700 text-white font-medium py-2 px-4 rounded-lg transition duration-200 flex items-center" aria-label="Export to CSV">
-                            <i class="fas fa-file-export mr-2"></i> Export CSV
+                        <button id="exportBtn" class="bg-[#ffcc34] text-xs hover:bg-[#e6b82f] text-[#00553d] font-medium py-1.5 px-3 rounded-lg transition duration-200 flex items-center border border-[#90143c]" aria-label="Export to CSV">
+                            <i class="fas fa-class-file-export mr-1 text-xs"></i> Export CSV
                         </button>
                     </div>
 
                     @if ($staff->isEmpty())
                     <div class="text-center py-6">
-                        <p class="text-lg text-gray-600">No Current Record</p>
+                        <p class="text-base text-[#00553d]">No Current Record</p>
                     </div>
                     @else
                     <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200" aria-label="Staff Records">
-                            <thead class="bg-green-50">
+                        <table class="min-w-full divide-y divide-[#ffcc34]" aria-label="Staff Records">
+                            <thead class="bg-[#ffcc34]">
                                 <tr>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-green-800 uppercase tracking-wider">Name</th>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-green-800 uppercase tracking-wider">Department</th>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-green-800 uppercase tracking-wider">Email</th>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-green-800 uppercase tracking-wider">Status</th>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-green-800 uppercase tracking-wider">Actions</th>
+                                    <th scope="col" class="px-5 py-2 text-left text-[0.65rem] font-medium text-[#00553d] uppercase tracking-wider">Name</th>
+                                    <th scope="col" class="px-5 py-2 text-left text-[0.65rem] font-medium text-[#00553d] uppercase tracking-wider">Department</th>
+                                    <th scope="col" class="px-5 py-2 text-left text-[0.65rem] font-medium text-[#00553d] uppercase tracking-wider">Email</th>
+                                    <th scope="col" class="px-5 py-2 text-left text-[0.65rem] font-medium text-[#00553d] uppercase tracking-wider">Status</th>
+                                    <th scope="col" class="px-5 py-2 text-left text-[0.65rem] font-medium text-[#00553d] uppercase tracking-wider">Actions</th>
                                 </tr>
                             </thead>
-                            <tbody id="staffTableBody" class="bg-white divide-y divide-gray-200">
+                            <tbody id="staffTableBody" class="bg-white divide-y divide-[#ffcc34]">
                                 @foreach ($staff as $member)
                                 <tr>
-                                    <td class="px-6 py-4 whitespace-nowrap">{{ $member->name }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap">{{ $member->department }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap">{{ $member->email }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <span class="{{ $member->status === 'Active' ? 'text-green-600' : 'text-red-600' }}">
+                                    <td class="px-5 py-3 whitespace-nowrap text-sm">{{ $member->name }}</td>
+                                    <td class="px-5 py-3 whitespace-nowrap text-sm">{{ $member->department }}</td>
+                                    <td class="px-5 py-3 whitespace-nowrap text-sm">{{ $member->email }}</td>
+                                    <td class="px-5 py-3 whitespace-nowrap">
+                                        <span class="{{ $member->status === 'Active' ? 'text-[#00553d]' : 'text-[#90143c]' }} text-sm">
                                             {{ $member->status }}
                                         </span>
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <button class="text-green-600 hover:text-green-900 mr-3" data-id="{{ $member->id }}" data-name="{{ $member->name }}" onclick="viewHistoryLogs(this)" aria-label="View logs for {{ $member->name }}">View</button>
-                                        <button class="text-blue-600 hover:text-blue-900 mr-3" data-id="{{ $member->id }}" onclick="editStaff(this)" aria-label="Edit staff {{ $member->name }}">Edit</button>
+                                    <td class="px-5 py-3 whitespace-nowrap">
+                                        <button class="text-[#00553d] hover:text-[#003d2b] mr-2 text-sm" data-id="{{ $member->id }}" data-name="{{ $member->name }}" onclick="viewHistoryLogs(this)" aria-label="View logs for {{ $member->name }}">View</button>
+                                        <button class="text-[#90143c] hover:text-[#6b102d] mr-2 text-sm" data-id="{{ $member->id }}" onclick="editStaff(this)" aria-label="Edit staff {{ $member->name }}">Edit</button>
                                         <form action="{{ route('staff.destroy', $member->id) }}" method="POST" class="inline delete-staff-form" data-name="{{ $member->name }}">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="text-red-600 hover:text-red-900" aria-label="Delete staff {{ $member->name }}">Delete</button>
+                                            <button type="submit" class="text-[#90143c] hover:text-[#6b102d] text-sm" aria-label="Delete staff {{ $member->name }}">Delete</button>
                                         </form>
                                     </td>
                                 </tr>
@@ -191,23 +191,23 @@
     </div>
 
     <!-- Edit Staff Modal -->
-    <div id="editModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden flex items-center justify-center z-50">
-        <div class="bg-white rounded-xl shadow-lg max-w-md w-full mx-4">
-            <div class="bg-blue-600 px-6 py-4 rounded-t-xl">
-                <h2 class="text-xl font-semibold text-white">Edit Staff</h2>
+    <div id="editModal" class="fixed inset-0 bg-[#00553d] bg-opacity-50 hidden flex items-center justify-center z-50">
+        <div class="bg-white rounded-xl shadow-lg max-w-md w-full mx-4 border border-[#ffcc34]">
+            <div class="bg-[#90143c] px-5 py-3 rounded-t-xl">
+                <h2 class="text-base font-semibold text-white">Edit Staff</h2>
             </div>
-            <div class="p-6">
-                <form id="editStaffForm" method="POST" action="" class="space-y-4">
+            <div class="p-5">
+                <form id="editStaffForm" method="POST" action="" class="space-y-3">
                     @csrf
                     @method('PUT')
                     <input type="hidden" name="id" id="editId">
                     <div>
-                        <label for="editName" class="block text-sm font-medium text-gray-700 mb-1">Name *</label>
-                        <input type="text" name="name" id="editName" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500">
+                        <label for="editName" class="block text-xs font-medium text-[#00553d] mb-1">Name *</label>
+                        <input type="text" name="name" id="editName" required class="w-full px-3 py-1.5 border border-[#ffcc34] rounded-lg focus:ring-[#00553d] focus:border-[#00553d] text-sm">
                     </div>
                     <div>
-                        <label for="editDepartment" class="block text-sm font-medium text-gray-700 mb-1">Department *</label>
-                        <select name="department" id="editDepartment" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500">
+                        <label for="editDepartment" class="block text-xs font-medium text-[#00553d] mb-1">Department *</label>
+                        <select name="department" id="editDepartment" required class="w-full px-3 py-1.5 border border-[#ffcc34] rounded-lg focus:ring-[#00553d] focus:border-[#00553d] text-sm">
                             <option value="">Select Department</option>
                             @if(isset($departments) && $departments->count() > 0)
                             @foreach($departments as $department)
@@ -219,27 +219,27 @@
                         </select>
                     </div>
                     <div>
-                        <label for="editEmail" class="block text-sm font-medium text-gray-700 mb-1">Email *</label>
-                        <input type="email" name="email" id="editEmail" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500">
+                        <label for="editEmail" class="block text-xs font-medium text-[#00553d] mb-1">Email *</label>
+                        <input type="email" name="email" id="editEmail" required class="w-full px-3 py-1.5 border border-[#ffcc34] rounded-lg focus:ring-[#00553d] focus:border-[#00553d] text-sm">
                     </div>
                     <div>
-                        <label for="editStatus" class="block text-sm font-medium text-gray-700 mb-1">Status *</label>
-                        <div class="flex gap-3 items-center">
-                            <select name="status" id="editStatus" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500">
+                        <label for="editStatus" class="block text-xs font-medium text-[#00553d] mb-1">Status *</label>
+                        <div class="flex gap-2 items-center">
+                            <select name="status" id="editStatus" required class="w-full px-3 py-1.5 border border-[#ffcc34] rounded-lg focus:ring-[#00553d] focus:border-[#00553d] text-sm">
                                 <option value="">Select Status</option>
                                 <option value="Active">Active</option>
                                 <option value="Resigned">Resigned</option>
                             </select>
-                            <button type="button" id="toggleStatusBtn" onclick="toggleStatus()" class="bg-yellow-600 hover:bg-yellow-700 text-white font-medium py-2 px-4 rounded-lg transition duration-200" aria-label="Toggle Staff Status">
+                            <button type="button" id="toggleStatusBtn" onclick="toggleStatus()" class="bg-[#ffcc34] hover:bg-[#e6b82f] text-[#00553d] font-medium py-1.5 px-3 rounded-lg transition duration-200 border border-[#90143c] text-sm" aria-label="Toggle Staff Status">
                                 Toggle Status
                             </button>
                         </div>
                     </div>
-                    <div class="flex gap-3">
-                        <button type="submit" class="flex-1 bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition duration-200">
+                    <div class="flex gap-2">
+                        <button type="submit" class="flex-1 bg-[#00553d] hover:bg-[#003d2b] text-white font-medium py-1.5 px-3 rounded-lg transition duration-200 border border-[#ffcc34] text-sm">
                             Update Staff
                         </button>
-                        <button type="button" onclick="closeEditModal()" class="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded-lg transition duration-200">
+                        <button type="button" onclick="closeEditModal()" class="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-medium py-1.5 px-3 rounded-lg transition duration-200 border border-[#ffcc34] text-sm">
                             Cancel
                         </button>
                     </div>
@@ -249,21 +249,21 @@
     </div>
 
     <!-- History Logs Modal -->
-    <div id="historyLogsModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden flex items-center justify-center z-50">
-        <div class="bg-white rounded-xl shadow-lg max-w-6xl w-full mx-4 max-h-[80vh] flex flex-col">
-            <div class="bg-green-600 px-6 py-4 rounded-t-xl">
-                <h2 class="text-xl font-semibold text-white">History Logs</h2>
-                <button onclick="closeHistoryLogsModal()" class="absolute top-4 right-4 text-white hover:text-gray-200">
-                    <i class="fas fa-times"></i>
+    <div id="historyLogsModal" class="fixed inset-0 bg-[#00553d] bg-opacity-50 hidden flex items-center justify-center z-50">
+        <div class="bg-white rounded-xl shadow-lg max-w-6xl w-full mx-4 max-h-[80vh] flex flex-col border border-[#ffcc34]">
+            <div class="bg-[#00553d] px-5 py-3 rounded-t-xl">
+                <h2 class="text-base font-semibold text-white">History Logs</h2>
+                <button onclick="closeHistoryLogsModal()" class="absolute top-3 right-3 text-white hover:text-gray-200">
+                    <i class="fas fa-times text-sm"></i>
                 </button>
             </div>
-            <div class="p-6 overflow-y-auto flex-1">
+            <div class="p-5 overflow-y-auto flex-1">
                 <div id="historyLogsContent">
                     <!-- History logs will be loaded here -->
                 </div>
             </div>
-            <div class="px-6 py-4 bg-gray-50 rounded-b-xl">
-                <button onclick="closeHistoryLogsModal()" class="bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded-lg transition duration-200">
+            <div class="px-5 py-3 bg-gray-50 rounded-b-xl border-t border-[#ffcc34]">
+                <button onclick="closeHistoryLogsModal()" class="bg-gray-600 hover:bg-gray-700 text-white font-medium py-1.5 px-3 rounded-lg transition duration-200 border border-[#ffcc34] text-sm">
                     Close
                 </button>
             </div>
@@ -416,8 +416,12 @@
             const editDepartmentSelect = document.getElementById('editDepartment');
             editDepartmentSelect.value = department;
 
+            // Update toggle button text
+            updateToggleButtonText(status);
+
             // Show modal
             document.getElementById('editModal').classList.remove('hidden');
+            document.getElementById('editModal').classList.add('flex');
         }
 
         // Update the form submission handler
@@ -475,12 +479,12 @@
             const toggleBtn = document.getElementById('toggleStatusBtn');
             if (status === 'Active') {
                 toggleBtn.textContent = 'Mark as Resigned';
-                toggleBtn.classList.remove('bg-green-600', 'hover:bg-green-700');
-                toggleBtn.classList.add('bg-red-600', 'hover:bg-red-700');
+                toggleBtn.classList.remove('bg-[#00553d]', 'hover:bg-[#003d2b]');
+                toggleBtn.classList.add('bg-[#90143c]', 'hover:bg-[#6b102d]');
             } else {
                 toggleBtn.textContent = 'Mark as Active';
-                toggleBtn.classList.remove('bg-red-600', 'hover:bg-red-700');
-                toggleBtn.classList.add('bg-green-600', 'hover:bg-green-700');
+                toggleBtn.classList.remove('bg-[#90143c]', 'hover:bg-[#6b102d]');
+                toggleBtn.classList.add('bg-[#00553d]', 'hover:bg-[#003d2b]');
             }
         }
 
@@ -491,23 +495,6 @@
             statusSelect.value = newStatus;
             updateToggleButtonText(newStatus);
         }
-
-        function openEditModal(staff) {
-            const form = document.getElementById('editStaffForm');
-            form.action = `/staff/${staff.id}`;
-
-            // Set hidden ID field
-            document.getElementById('editId').value = staff.id;
-
-            // Set other fields
-            document.getElementById('editName').value = staff.name;
-            document.getElementById('editDepartment').value = staff.department;
-            document.getElementById('editEmail').value = staff.email;
-            document.getElementById('editStatus').value = staff.status;
-
-            document.getElementById('editModal').classList.remove('hidden');
-        }
-
 
         function closeEditModal() {
             document.getElementById('editModal').classList.add('hidden');
@@ -531,7 +518,7 @@
                     text: "This action cannot be undone.",
                     icon: 'warning',
                     showCancelButton: true,
-                    confirmButtonColor: '#d33',
+                    confirmButtonColor: '#901c',
                     cancelButtonColor: '#3085d6',
                     confirmButtonText: 'Yes, delete it!'
                 }).then((result) => {
@@ -625,14 +612,14 @@
 
             document.getElementById('historyLogsContent').innerHTML = `
                 <div class="text-center py-8">
-                    <i class="fas fa-spinner fa-spin text-2xl text-gray-400"></i>
-                    <p class="mt-2 text-gray-600">Loading history logs...</p>
+                    <i class="fas fa-spinner fa-spin text-xl text-[#00553d]"></i>
+                    <p class="mt-2 text-[#00553d] text-sm">Loading history logs...</p>
                 </div>
             `;
 
             fetch(`/staff/${staffId}/history-logs`, {
                     headers: {
-                        'Accept': 'application/json',
+                        'Accept': 'application+json',
                     },
                 })
                 .then(response => {
@@ -651,7 +638,7 @@
                     } else {
                         document.getElementById('historyLogsContent').innerHTML = `
                         <div class="text-center py-8">
-                            <p class="text-gray-600">No history logs found for this staff member.</p>
+                            <p class="text-sm text-[#00553d]">No history logs found for this staff member.</p>
                         </div>
                     `;
                     }
@@ -659,9 +646,9 @@
                 .catch(error => {
                     console.error('Error:', error);
                     document.getElementById('historyLogsContent').innerHTML = `
-                    <div class="text-center py-8 text-red-600">
-                        <p>Error loading history logs: ${error.message}</p>
-                        <p class="text-sm mt-2">Please check the console for more details.</p>
+                    <div class="text-center py-8 text-[#90143c]">
+                        <p class="text-sm">Error loading history logs: ${error.message}</p>
+                        <p class="text-xs mt-2">Please check the console for more details.</p>
                     </div>
                 `;
                 });
@@ -673,21 +660,21 @@
         function renderHistoryLogs(data) {
             let html = `
                 <div class="mb-4">
-                    <h3 class="font-semibold text-lg">Staff: ${data.staff_name}</h3>
-                    <p class="text-sm text-gray-600">Total Logs: ${data.logs.length}</p>
+                    <h3 class="font-semibold text-base text-[#00553d]">Staff: ${data.staff_name}</h3>
+                    <p class="text-xs text-[#00553d]">Total Logs: ${data.logs.length}</p>
                 </div>
                 <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
+                    <table class="min-w-full divide-y divide-[#ffcc34]">
+                        <thead class="bg-[#ffcc34]">
                             <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                                <th class="px-6 py-3 text-left text_xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Model</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Changes</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+                                <th class="px-5 py-2 text-left text-[0.65rem] font-medium text-[#00553d] uppercase tracking-wider">Date</th>
+                                <th class="px-5 py-2 text-left text-[0.65rem] font-medium text-[#00553d] uppercase tracking-wider">Action</th>
+                                <th class="px-5 py-2 text-left text-[0.65rem] font-medium text-[#00553d] uppercase tracking-wider">Model</th>
+                                <th class="px-5 py-2 text-left text-[0.5rem] font-medium text-[#00553d] uppercase tracking-wider">Changes</th>
+                                <th class="px-5 py-2 text-left text-[0.65rem] font-medium text-[#00553d] uppercase tracking-wider">Description</th>
                             </tr>
                         </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
+                        <tbody class="bg-white divide-y divide-[#ffcc34]">
             `;
 
             data.logs.forEach(log => {
@@ -712,11 +699,11 @@
 
                 html += `
                     <tr>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm">${log.action_date}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm">${log.action}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm">${log.model} (ID: ${log.model_id})</td>
-                        <td class="px-6 py-4 text-sm changes-cell">${changes}</td>
-                        <td class="px-6 py-4 text-sm">${log.description || '-'}</td>
+                        <td class="px-5 py-3 whitespace-nowrap text-xs text-[#00553d]">${log.action_date}</td>
+                        <td class="px-5 py-3 whitespace-nowrap text-xs text-[#00553d]">${log.action}</td>
+                        <td class="px-5 py-3 whitespace-nowrap text-xs text-[#00553d]">${log.model} (ID: ${log.model_id})</td>
+                        <td class="px-5 py-3 text-xs text-[#00553d] changes-cell">${changes}</td>
+                        <td class="px-5 py-3 text-xs text-[#00553d]">${log.description || '-'}</td>
                     </tr>
                 `;
             });
@@ -748,7 +735,7 @@
                         return response.json();
                     })
                     .then(data => {
-                        const staffCountElement = document.querySelector('[data-name="Total Staff"] .text-green-600');
+                        const staffCountElement = document.querySelector('[data-name="Total Staff"] .text-[#00553d]');
                         if (staffCountElement) {
                             staffCountElement.textContent = data.count;
                         }
