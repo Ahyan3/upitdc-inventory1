@@ -127,8 +127,8 @@
 
             <!-- Staff Listing -->
             <div class="bg-white rounded-xl shadow-md overflow-hidden animate-fade-in border border-[#ffcc34]">
-                <div class="bg-[#00553d] px-5 py-3">
-                    <h2 class="text-xs font-semibold text-white">Staff Members</h2>
+                <div class="bg-[#90143c] px-5 py-3">
+                    <h2 class="text-xs font-semibold text-white">Staff List</h2>
                 </div>
                 <div class="p-5">
                     <div class="flex justify-between items-center mb-4">

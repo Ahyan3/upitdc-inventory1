@@ -19,6 +19,8 @@ class SettingsController extends Controller
 
     public function update(Request $request)
     {
+        Log::info('Update Request Data:', $request->all());
+
         $validated = $request->validate([
             'system_title' => 'required|string|max:255',
             'default_return_period' => 'required|integer|min:1',
@@ -26,6 +28,8 @@ class SettingsController extends Controller
         ]);
 
         try {
+            Log::info('Updating settings:', $validated);
+
             Settings::updateOrCreate(
                 ['key' => 'system_title'],
                 [
@@ -34,6 +38,7 @@ class SettingsController extends Controller
                     'description' => 'The title displayed in the application header.',
                 ]
             );
+
             Settings::updateOrCreate(
                 ['key' => 'default_return_period'],
                 [

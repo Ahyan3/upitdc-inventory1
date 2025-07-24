@@ -113,138 +113,27 @@ document.addEventListener('DOMContentLoaded', function () {
                             _method: 'DELETE'
                         })
                     })
-                    .then(response => {
-                        if (!response.ok) {
-                            return response.json().then(err => { throw err; });
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        if (data.success) {
-                            form.closest('tr').remove();
-                            Swal.fire('Deleted!', data.message, 'success');
-                        } else {
-                            throw new Error(data.message);
-                        }
-                    })
-                    .catch(error => {
-                        this.innerHTML = originalHtml;
-                        this.disabled = false;
-                        Swal.fire('Error!', error.message || 'Failed to delete item', 'error');
-                    });
+                        .then(response => {
+                            if (!response.ok) {
+                                return response.json().then(err => { throw err; });
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            if (data.success) {
+                                form.closest('tr').remove();
+                                Swal.fire('Deleted!', data.message, 'success');
+                            } else {
+                                throw new Error(data.message);
+                            }
+                        })
+                        .catch(error => {
+                            this.innerHTML = originalHtml;
+                            this.disabled = false;
+                            Swal.fire('Error!', error.message || 'Failed to delete item', 'error');
+                        });
                 }
             });
         });
     });
-
-    // Form submission with duplicate check
-    const issueForm = document.getElementById('issueForm');
-    if (issueForm) {
-        issueForm.addEventListener('submit', async function (e) {
-            e.preventDefault();
-
-            const formData = new FormData(this);
-            const payload = Object.fromEntries(formData.entries());
-
-            try {
-                const checkResponse = await fetch('{{ route("inventory.check-duplicates") }}', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                    },
-                    body: JSON.stringify({
-                        serial_number: payload.serial_number,
-                        pr_number: payload.pr_number
-                    })
-                });
-
-                if (!checkResponse.ok) throw new Error(`HTTP error! Status: ${checkResponse.status}`);
-
-                const checkData = await checkResponse.json();
-                if (checkData.serial_exists || checkData.pr_exists) {
-                    let message = 'Potential duplicates found:\n';
-                    if (checkData.serial_exists) message += `• Serial Number "${payload.serial_number}" exists\n`;
-                    if (checkData.pr_exists) message += `• PR Number "${payload.pr_number}" exists\n`;
-
-                    const result = await Swal.fire({
-                        title: 'Duplicate Detected',
-                        text: message,
-                        icon: 'warning',
-                        showCancelButton: !checkData.serial_exists,
-                        confirmButtonText: checkData.serial_exists ? 'OK' : 'Proceed Anyway',
-                        cancelButtonText: 'Cancel'
-                    });
-
-                    if (result.isConfirmed && !checkData.serial_exists) {
-                        this.submit();
-                    }
-                } else {
-                    this.submit();
-                }
-            } catch (error) {
-                Swal.fire({
-                    title: 'Error',
-                    text: 'Failed to validate data. Please try again.',
-                    icon: 'error'
-                });
-            }
-        });
-    }
-
-    // Line Graph for Equipment Issuance
-    const canvas = document.getElementById('equipmentChart');
-    if (canvas) {
-        try {
-            const equipmentData = JSON.parse(canvas.dataset.equipment || '{}');
-            console.log('Equipment Data:', equipmentData); // Debug: Check data in console
-            const labels = Object.keys(equipmentData);
-            const data = Object.values(equipmentData);
-
-            if (labels.length === 0) {
-                console.warn('No equipment data available for the chart');
-                canvas.style.display = 'none'; // Hide canvas if no data
-                return;
-            }
-
-            const ctx = canvas.getContext('2d');
-            new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Equipment Issuance Count',
-                        data: data,
-                        borderColor: 'rgba(34, 197, 94, 1)',
-                        backgroundColor: 'rgba(34, 197, 94, 0.2)',
-                        fill: true,
-                        tension: 0.4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            title: {
-                                display: true,
-                                text: 'Number of Issuances'
-                            }
-                        },
-                        x: {
-                            title: {
-                                display: true,
-                                text: 'Equipment Type'
-                            }
-                        }
-                    }
-                }
-            });
-        } catch (error) {
-            console.error('Error initializing chart:', error);
-            canvas.style.display = 'none'; // Hide canvas on error
-        }
-    } else {
-        console.error('Canvas element #equipmentChart not found');
-    }
 });

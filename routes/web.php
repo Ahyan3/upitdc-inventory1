@@ -5,14 +5,9 @@ use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\StaffController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\DashboardController;
-use App\Models\Equipment;
-use App\Models\Issuance;
-use App\Models\Department;
+use App\Http\Controllers\HistoryController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\View;
-use App\Models\Request;
-use App\Models\Settings;
-use App\Models\HistoryLog;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Log;
 
@@ -23,13 +18,15 @@ Route::get('/', function () {
 Route::middleware(['auth', 'verified'])->group(function () {
     // Dashboard Routes
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/history', [HistoryController::class, 'history'])->name('history');
 
     // Inventory Routes
     Route::prefix('inventory')->group(function () {
         Route::get('/', [InventoryController::class, 'index'])->name('inventory');
         Route::get('/issue', [InventoryController::class, 'create'])->name('inventory.create');
         Route::post('/issue', [InventoryController::class, 'issue'])->name('inventory.issue');
-        Route::post('/check-duplicates', [InventoryController::class, 'checkDuplicates'])->name('inventory.check-duplicates');
+        // Route::get('/inventory/check-duplicates', [InventoryController::class, 'checkDuplicates'])->name('inventory.check-duplicates');
+        Route::post('/inventory/check-duplicates', [InventoryController::class, 'checkDuplicates'])->name('inventory.check-duplicates');
         Route::post('/return/{issuance}', [InventoryController::class, 'return'])->name('inventory.return');
         Route::delete('/{equipment}', [InventoryController::class, 'delete'])->name('inventory.delete');
         Route::get('inventory/{equipment}', [InventoryController::class, 'view'])->name('inventory.view');
@@ -58,11 +55,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
             'history_logs' => \App\Models\HistoryLog::orderBy('created_at', 'desc')->get()
         ]);
     })->name('history');
+    Route::get('/history', [HistoryController::class, 'history'])->name('history');
 
     // Settings Routes
     Route::prefix('settings')->group(function () {
         Route::get('/', [SettingsController::class, 'index'])->name('settings');
-        Route::patch('/', [SettingsController::class, 'update'])->name('settings.update');
+        Route::patch('/settings', [SettingsController::class, 'update'])->name('settings.update');
 
         // Department Routes
         Route::post('/department', [SettingsController::class, 'storeDepartment'])->name('settings.department.store');

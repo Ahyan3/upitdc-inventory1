@@ -17,18 +17,26 @@
                 <p class="text-[0.65rem] text-[#00553d]">Configure system settings and manage departments</p>
             </div>
 
-            <!-- System Settings Form -->
+            <!-- System Settings Accordion -->
             <div class="bg-white rounded-xl shadow-md overflow-hidden form-card mb-8 w-full border border-[#ffcc34]">
-                <div class="bg-[#90143c] px-5 py-3">
-                    <h2 class="text-xs font-semibold text-white">System Settings</h2>
-                </div>
-                <div class="p-5">
+                <button class="accordion-toggle w-full flex justify-between items-center p-5 bg-[#90143c] text-white text-xs font-semibold rounded-t-xl hover:bg-[#6b102d] transition duration-200">
+                    <span>System Settings</span>
+                    <svg class="w-3 h-3 transform transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </button>
+                <div class="accordion-content p-5 hidden">
                     <form id="settings-form" action="{{ route('settings.update') }}" method="POST" class="space-y-3" aria-label="Settings Form">
                         @csrf
                         @method('PATCH')
                         <div>
                             <label for="system_title" class="block text-[0.65rem] font-medium text-[#00553d] mb-1">System Title *</label>
-                            <input type="text" name="system_title" id="system_title" value="{{ $settings['system_title'] ?? 'UPITDC - Inventory System' }}" required class="w-full px-3 py-1.5 border border-[#ffcc34] rounded-lg focus:ring-[#00553d] focus:border-[#00553d] text-sm" aria-label="System Title">
+                            <input type="text" name="system_title" id="system_title"
+                                value="{{ $settings['system_title'] ?? 'UPITDC - Inventory System' }}"
+                                required
+                                class="w-full px-3 py-1.5 border border-[#ffcc34] rounded-lg focus:ring-[#00553d] focus:border-[#00553d] text-sm bg-gray-100 cursor-not-allowed"
+                                aria-label="System Title"
+                                readonly>
                             <p class="text-[0.65rem] text-[#00553d] mt-1">{{ $settingsDetails['system_title']->description ?? 'The title displayed in the application header.' }}</p>
                         </div>
                         <div>
@@ -48,12 +56,15 @@
                 </div>
             </div>
 
-            <!-- Department Management -->
+            <!-- Department Management Accordion -->
             <div class="bg-white rounded-xl shadow-md overflow-hidden form-card w-full border border-[#ffcc34]">
-                <div class="bg-[#90143c] px-5 py-3">
-                    <h2 class="text-xs font-semibold text-white">Manage Departments</h2>
-                </div>
-                <div class="p-5">
+                <button class="accordion-toggle w-full flex justify-between items-center p-5 bg-[#90143c] text-white text-xs font-semibold rounded-t-xl hover:bg-[#6b102d] transition duration-200">
+                    <span>Manage Departments</span>
+                    <svg class="w-3 h-3 transform transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </button>
+                <div class="accordion-content p-5">
                     <!-- Add Department Form -->
                     <form id="department-form" action="{{ route('settings.department.store') }}" method="POST" class="space-y-3 mb-8" aria-label="Add Department Form">
                         @csrf
@@ -115,152 +126,166 @@
                 document.head.appendChild(metaTag);
             }
 
-            // SweetAlert2 for Save Settings
-            const settingsForm = document.getElementById('settings-form');
-            const saveSettingsBtn = document.getElementById('save-settings-btn');
+            // Accordion functionality
+            const accordionToggles = document.querySelectorAll('.accordion-toggle');
+            accordionToggles.forEach(toggle => {
+                toggle.addEventListener('click', function() {
+                    const content = this.nextElementSibling;
+                    const icon = this.querySelector('svg');
 
-            if (settingsForm) {
-                settingsForm.addEventListener('submit', function(e) {
-                    e.preventDefault();
+                    // Toggle content visibility
+                    content.classList.toggle('hidden');
 
-                    Swal.fire({
-                        title: 'Save Settings?',
-                        text: "Do you want to save these settings?",
-                        icon: 'question',
-                        showCancelButton: true,
-                        confirmButtonColor: '#00553d',
-                        cancelButtonColor: '#90143c',
-                        confirmButtonText: 'Yes, save it!',
-                        cancelButtonText: 'Cancel',
-                        customClass: {
-                            title: 'text-xs',
-                            content: 'text-[0.65rem]'
-                        }
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            saveSettingsBtn.disabled = true;
-                            saveSettingsBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
-                            this.submit();
-                        }
-                    });
+                    // Rotate icon
+                    icon.classList.toggle('rotate-180');
                 });
-            }
 
-            // SweetAlert2 for Add Department
-            const departmentForm = document.getElementById('department-form');
-            const addDepartmentBtn = document.getElementById('add-department-btn');
+                // SweetAlert2 for Save Settings
+                const settingsForm = document.getElementById('settings-form');
+                const saveSettingsBtn = document.getElementById('save-settings-btn');
 
-            if (departmentForm) {
-                departmentForm.addEventListener('submit', function(e) {
-                    e.preventDefault();
+                if (settingsForm) {
+                    settingsForm.addEventListener('submit', function(e) {
+                        e.preventDefault();
 
-                    const departmentName = document.getElementById('department_name').value;
-
-                    Swal.fire({
-                        title: 'Add Department?',
-                        text: `Do you want to add "${departmentName}" as a new department?`,
-                        icon: 'question',
-                        showCancelButton: true,
-                        confirmButtonColor: '#00553d',
-                        cancelButtonColor: '#90143c',
-                        confirmButtonText: 'Yes, add it!',
-                        cancelButtonText: 'Cancel',
-                        customClass: {
-                            title: 'text-xs',
-                            content: 'text-[0.65rem]'
-                        }
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            addDepartmentBtn.disabled = true;
-                            addDepartmentBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding...';
-                            this.submit();
-                        }
-                    });
-                });
-            }
-
-            // SweetAlert2 for Delete Department
-            const deleteButtons = document.querySelectorAll('.delete-department-btn');
-            deleteButtons.forEach(button => {
-                button.addEventListener('click', function() {
-                    const form = this.closest('form');
-                    const departmentName = this.getAttribute('data-name');
-
-                    Swal.fire({
-                        title: `Delete "${departmentName}"?`,
-                        text: "This action cannot be undone! Equipment linked to this department will have no department assigned.",
-                        icon: 'warning',
-                        showCancelButton: true,
-                        confirmButtonColor: '#90143c',
-                        cancelButtonColor: '#3085d6',
-                        confirmButtonText: 'Yes, delete it!',
-                        cancelButtonText: 'Cancel',
-                        customClass: {
-                            title: 'text-xs',
-                            content: 'text-[0.65rem]'
-                        }
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            form.submit();
-                        }
-                    });
-                });
-            });
-
-            // SweetAlert2 for Edit Department
-            const editButtons = document.querySelectorAll('.edit-department-btn');
-            editButtons.forEach(button => {
-                button.addEventListener('click', function() {
-                    const departmentId = this.getAttribute('data-id');
-                    const departmentName = this.getAttribute('data-name');
-
-                    Swal.fire({
-                        title: 'Edit Department',
-                        input: 'text',
-                        inputValue: departmentName,
-                        showCancelButton: true,
-                        confirmButtonColor: '#00553d',
-                        cancelButtonColor: '#90143c',
-                        confirmButtonText: 'Save',
-                        cancelButtonText: 'Cancel',
-                        inputValidator: (value) => {
-                            if (!value) {
-                                return 'Department name is required!';
+                        Swal.fire({
+                            title: 'Save Settings?',
+                            text: "Do you want to save these settings?",
+                            icon: 'question',
+                            showCancelButton: true,
+                            confirmButtonColor: '#00553d',
+                            cancelButtonColor: '#90143c',
+                            confirmButtonText: 'Yes, save it!',
+                            cancelButtonText: 'Cancel',
+                            customClass: {
+                                title: 'text-xs',
+                                content: 'text-[0.65rem]'
                             }
-                        },
-                        customClass: {
-                            title: 'text-xs',
-                            content: 'text-[0.65rem]',
-                            input: 'text-sm'
-                        }
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            const form = document.createElement('form');
-                            form.method = 'POST';
-                            form.action = `/settings/department/${departmentId}`;
-                            form.innerHTML = `
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                saveSettingsBtn.disabled = true;
+                                saveSettingsBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+                                this.submit();
+                            }
+                        });
+                    });
+                }
+
+                // SweetAlert2 for Add Department
+                const departmentForm = document.getElementById('department-form');
+                const addDepartmentBtn = document.getElementById('add-department-btn');
+
+                if (departmentForm) {
+                    departmentForm.addEventListener('submit', function(e) {
+                        e.preventDefault();
+
+                        const departmentName = document.getElementById('department_name').value;
+
+                        Swal.fire({
+                            title: 'Add Department?',
+                            text: `Do you want to add "${departmentName}" as a new department?`,
+                            icon: 'question',
+                            showCancelButton: true,
+                            confirmButtonColor: '#00553d',
+                            cancelButtonColor: '#90143c',
+                            confirmButtonText: 'Yes, add it!',
+                            cancelButtonText: 'Cancel',
+                            customClass: {
+                                title: 'text-xs',
+                                content: 'text-[0.65rem]'
+                            }
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                addDepartmentBtn.disabled = true;
+                                addDepartmentBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding...';
+                                this.submit();
+                            }
+                        });
+                    });
+                }
+
+                // SweetAlert2 for Delete Department
+                const deleteButtons = document.querySelectorAll('.delete-department-btn');
+                deleteButtons.forEach(button => {
+                    button.addEventListener('click', function() {
+                        const form = this.closest('form');
+                        const departmentName = this.getAttribute('data-name');
+
+                        Swal.fire({
+                            title: `Delete "${departmentName}"?`,
+                            text: "This action cannot be undone! Equipment linked to this department will have no department assigned.",
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonColor: '#90143c',
+                            cancelButtonColor: '#3085d6',
+                            confirmButtonText: 'Yes, delete it!',
+                            cancelButtonText: 'Cancel',
+                            customClass: {
+                                title: 'text-xs',
+                                content: 'text-[0.65rem]'
+                            }
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                form.submit();
+                            }
+                        });
+                    });
+                });
+
+                // SweetAlert2 for Edit Department
+                const editButtons = document.querySelectorAll('.edit-department-btn');
+                editButtons.forEach(button => {
+                    button.addEventListener('click', function() {
+                        const departmentId = this.getAttribute('data-id');
+                        const departmentName = this.getAttribute('data-name');
+
+                        Swal.fire({
+                            title: 'Edit Department',
+                            input: 'text',
+                            inputValue: departmentName,
+                            showCancelButton: true,
+                            confirmButtonColor: '#00553d',
+                            cancelButtonColor: '#90143c',
+                            confirmButtonText: 'Save',
+                            cancelButtonText: 'Cancel',
+                            inputValidator: (value) => {
+                                if (!value) {
+                                    return 'Department name is required!';
+                                }
+                            },
+                            customClass: {
+                                title: 'text-xs',
+                                content: 'text-[0.65rem]',
+                                input: 'text-sm'
+                            }
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                const form = document.createElement('form');
+                                form.method = 'POST';
+                                form.action = `/settings/department/${departmentId}`;
+                                form.innerHTML = `
                                 <input type="hidden" name="_token" value="${document.querySelector('meta[name="csrf-token"]').content}">
                                 <input type="hidden" name="_method" value="PATCH">
                                 <input type="hidden" name="department_name" value="${result.value}">
                             `;
-                            document.body.appendChild(form);
-                            form.submit();
-                        }
+                                document.body.appendChild(form);
+                                form.submit();
+                            }
+                        });
                     });
                 });
             });
         });
     </script>
 
-    <!-- Laravel Blade-controlled success alert -->
+    <!-- Laravel Blade-controlled success and error alerts -->
     @if (session('success'))
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', function() {
             Swal.fire({
                 title: 'Success!',
                 text: "{{ session('success') }}",
                 icon: 'success',
-                confirmButtonColor: '#00553d',
                 customClass: {
                     title: 'text-xs',
                     content: 'text-[0.65rem]'
@@ -270,15 +295,13 @@
     </script>
     @endif
 
-    <!-- Laravel Blade-controlled error alert -->
     @if (session('error'))
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', function() {
             Swal.fire({
                 title: 'Error!',
                 text: "{{ session('error') }}",
                 icon: 'error',
-                confirmButtonColor: '#90143c',
                 customClass: {
                     title: 'text-xs',
                     content: 'text-[0.65rem]'
@@ -287,5 +310,8 @@
         });
     </script>
     @endif
+
+    </script>
+
     <x-auth-footer />
 </x-app-layout>

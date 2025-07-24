@@ -77,14 +77,14 @@
                                 </svg>
                             </div>
                         </div>
-                        <button type="submit" class="bg-[#00553d] text-white px-3 py-1 rounded-md text-xs hover:bg-[#003d2b] border border-[#ffcc34]">Filter</button>
+                        <button type="submit" class="bg-[#90143c] text-white px-3 py-1 rounded-md text-xs hover:bg-[#003d2b] border border-[#ffcc34]">Filter</button>
                     </form>
                 </div>
             </div>
 
             <!-- Recent Issuances -->
             <div class="bg-white rounded-xl shadow-md overflow-hidden mb-8 w-full border border-[#ffcc34]">
-                <div class="bg-[#00553d] px-5 py-3">
+                <div class="bg-[#90143c] px-5 py-3">
                     <h2 class="text-xs font-semibold text-white">Recent Issuances</h2>
                 </div>
                 <div class="p-5">
@@ -92,10 +92,12 @@
                         <table class="min-w-full table-auto divide-y divide-[#ffcc34]" aria-label="Recent Issuances">
                             <thead class="bg-[#ffcc34]">
                                 <tr>
-                                    <th scope="col" class="px-5 py-2 text-left text-[0.65rem] font-medium text-[#00553d] uppercase tracking-wider">Staff</th>
+                                    <th scope="col" class="px-5 py-2 text-left text-[0.65rem] font-medium text-[#00553d] uppercase tracking-wider">Staff Name</th>
                                     <th scope="col" class="px-5 py-2 text-left text-[0.65rem] font-medium text-[#00553d] uppercase tracking-wider">Department</th>
                                     <th scope="col" class="px-5 py-2 text-left text-[0.65rem] font-medium text-[#00553d] uppercase tracking-wider">Equipment</th>
                                     <th scope="col" class="px-5 py-2 text-left text-[0.65rem] font-medium text-[#00553d] uppercase tracking-wider">Model/Brand</th>
+                                    <th scope="col" class="px-5 py-2 text-left text-[0.65rem] font-medium text-[#00553d] uppercase tracking-wider">Serial No.</th>
+                                    <th scope="col" class="px-5 py-2 text-left text-[0.65rem] font-medium text-[#00553d] uppercase tracking-wider">PR No.</th>
                                     <th scope="col" class="px-5 py-2 text-left text-[0.65rem] font-medium text-[#00553d] uppercase tracking-wider">Date Issued</th>
                                     <th scope="col" class="px-5 py-2 text-left text-[0.65rem] font-medium text-[#00553d] uppercase tracking-wider">Status</th>
                                 </tr>
@@ -112,6 +114,8 @@
                                     <td class="px-5 py-3 whitespace-nowrap text-xs text-[#00553d]">{{ $issuance->equipment->department->name ?? 'N/A' }}</td>
                                     <td class="px-5 py-3 whitespace-nowrap text-xs text-[#00553d]">{{ $issuance->equipment->equipment_name ?? 'N/A' }}</td>
                                     <td class="px-5 py-3 whitespace-nowrap text-xs text-[#00553d]">{{ $issuance->equipment->model_brand ?? 'N/A' }}</td>
+                                    <td class="px-5 py-3 whitespace-nowrap text-xs text-[#00553d]">{{ $issuance->equipment->serial_number ?? 'N/A' }}</td>
+                                    <td class="px-5 py-3 whitespace-nowrap text-xs text-[#00553d]">{{ $issuance->equipment->pr_number ?? 'N/A' }}</td>
                                     <td class="px-5 py-3 whitespace-nowrap text-xs text-[#00553d]">{{ $issuance->issued_at }}</td>
                                     <td class="px-5 py-3 whitespace-nowrap">
                                         <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $issuance->status == 'active' ? 'bg-[#ffcc34] text-[#00553d]' : 'bg-gray-100 text-[#00553d]' }}">{{ ucfirst($issuance->status) }}</span>
@@ -127,7 +131,7 @@
 
             <!-- Inventory Log -->
             <div class="bg-white rounded-xl shadow-md overflow-hidden mb-8 w-full border border-[#ffcc34]">
-                <div class="bg-[#00553d] px-5 py-3 flex justify-between items-center">
+                <div class="bg-[#90143c] px-5 py-3 flex justify-between items-center">
                     <h2 class="text-xs font-semibold text-white">Inventory Log</h2>
                     <form method="GET" action="{{ route('dashboard') }}" class="flex space-x-2">
                         <input type="text" name="inventory_search" id="inventory-search" placeholder="Search inventory..."
@@ -136,12 +140,13 @@
                             class="bg-gray-100 border border-[#ffcc34] rounded-md px-3 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-[#00553d]">
                             <option value="all" {{ request('inventory_status') == 'all' ? 'selected' : '' }}>All Status</option>
                             <option value="available" {{ request('inventory_status') == 'available' ? 'selected' : '' }}>Available</option>
+                            <option value="issued" {{ request('inventory_status') == 'issued' ? 'selected' : '' }}>Issued</option>
                             <option value="not_working" {{ request('inventory_status') == 'not_working' ? 'selected' : '' }}>Not Working</option>
                             <option value="working" {{ request('inventory_status') == 'working' ? 'selected' : '' }}>Working</option>
                             <option value="not_returned" {{ request('inventory_status') == 'not_returned' ? 'selected' : '' }}>Not Returned</option>
                             <option value="returned" {{ request('inventory_status') == 'returned' ? 'selected' : '' }}>Returned</option>
                         </select>
-                        <button type="submit" class="bg-[#00553d] text-white px-3 py-1 rounded-md text-xs hover:bg-[#003d2b] border border-[#ffcc34]">Filter</button>
+                        <button type="submit" class="bg-[#90143c] text-white px-3 py-1 rounded-md text-xs hover:bg-[#003d2b] border border-[#ffcc34]">Filter</button>
                     </form>
                 </div>
                 <div class="p-5">
@@ -149,20 +154,26 @@
                         <table class="min-w-full table-auto divide-y divide-[#ffcc34]" aria-label="Current Inventory">
                             <thead class="bg-[#ffcc34]">
                                 <tr>
+                                    <th scope="col" class="px-5 py-2 text-left text-[0.65rem] font-medium text-[#00553d] uppercase tracking-wider">Staff Name</th>
+                                    <th scope="col" class="px-5 py-2 text-left text-[0.65rem] font-medium text-[#00553d] uppercase tracking-wider">Department</th>
                                     <th scope="col" class="px-5 py-2 text-left text-[0.65rem] font-medium text-[#00553d] uppercase tracking-wider">Equipment</th>
                                     <th scope="col" class="px-5 py-2 text-left text-[0.65rem] font-medium text-[#00553d] uppercase tracking-wider">Model/Brand</th>
                                     <th scope="col" class="px-5 py-2 text-left text-[0.65rem] font-medium text-[#00553d] uppercase tracking-wider">Serial No.</th>
-                                    <th scope="col" class="px-5 py-2 text-left text-[0.65rem] font-medium text-[#00553d] uppercase tracking-wider">Department</th>
+                                    <th scope="col" class="px-5 py-2 text-left text-[0.65rem] font-medium text-[#00553d] uppercase tracking-wider">PR No.</th>
+                                    <th scope="col" class="px-5 py-2 text-left text-[0.65rem] font-medium text-[#00553d] uppercase tracking-wider">Date Issued</th>
                                     <th scope="col" class="px-5 py-2 text-left text-[0.65rem] font-medium text-[#00553d] uppercase tracking-wider">Status</th>
-                                </tr>
+                                    <!-- <th scope="col" class="px-5 py-2 text-left text-[0.65rem] font-medium text-[#00553d] uppercase tracking-wider">Remarks</th>                                </tr> -->
                             </thead>
                             <tbody class="bg-white divide-y divide-[#ffcc34]">
                                 @forelse($inventory as $item)
                                 <tr>
+                                    <td class="px-5 py-3 whitespace-nowrap text-xs text-[#00553d]">{{ $item->staff_name  }}</td>
+                                    <td class="px-5 py-3 whitespace-nowrap text-xs text-[#00553d]">{{ $item->department->name ?? 'N/A' }}</td>
                                     <td class="px-5 py-3 whitespace-nowrap text-xs text-[#00553d]">{{ $item->equipment_name }}</td>
                                     <td class="px-5 py-3 whitespace-nowrap text-xs text-[#00553d]">{{ $item->model_brand }}</td>
                                     <td class="px-5 py-3 whitespace-nowrap text-xs text-[#00553d]">{{ $item->serial_number }}</td>
-                                    <td class="px-5 py-3 whitespace-nowrap text-xs text-[#00553d]">{{ $item->department->name ?? 'N/A' }}</td>
+                                    <td class="px-5 py-3 whitespace-nowrap text-xs text-[#00553d]">{{ $item->pr_number}}</td>
+                                    <td class="px-5 py-3 whitespace-nowrap text-xs text-[#00553d]">{{ $item->date_issued}}</td>
                                     <td class="px-5 py-3 whitespace-nowrap">
                                         @php
                                         $statusClasses = [
@@ -179,6 +190,7 @@
                                         </span>
                                     </td>
                                 </tr>
+                                <!-- <td class="px-5 py-3 whitespace-nowrap text-xs text-[#00553d]">{{ $item->remarks}}</td> -->
                                 @empty
                                 <tr>
                                     <td colspan="5" class="px-5 py-3 text-center text-[#00553d] text-xs">No inventory items found</td>
@@ -192,7 +204,7 @@
 
             <!-- Equipment Issuance Graph -->
             <div class="bg-white rounded-xl shadow-md overflow-hidden animate-fade-in mb-8 w-full border border-[#ffcc34]">
-                <div class="bg-[#00553d] px-5 py-3">
+                <div class="bg-[#90143c] px-5 py-3">
                     <h2 class="text-xs font-semibold text-white">Equipment Issuance Statistics</h2>
                 </div>
                 <div class="p-5">
@@ -205,9 +217,10 @@
 
     @section('scripts')
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <!-- Add Font Awesome if not already included -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
-    
+
+    {{-- <script src="{{ asset('js/inventory.js') }}"></script> --}}
+
     <script>
         // Auto-submit forms and other existing functionality
         document.getElementById('time-filter')?.addEventListener('change', function() {
@@ -230,10 +243,109 @@
             });
         });
 
+         // Chart initialization - FIXED VERSION
+            function initializeChart() {
+                const ctx = document.getElementById('equipmentChart');
+                if (!ctx) {
+                    console.log('Chart canvas not found');
+                    return;
+                }
+
+                try {
+                    const equipmentDataAttr = ctx.dataset.equipment;
+                    if (!equipmentDataAttr) {
+                        console.log('No equipment data found in canvas dataset');
+                        return;
+                    }
+
+                    const equipmentData = JSON.parse(equipmentDataAttr);
+                    if (!equipmentData || equipmentData.length === 0) {
+                        console.log('Equipment data is empty');
+                        return;
+                    }
+
+                    const labels = equipmentData.map(item => item.equipment_name || 'Unknown');
+                    const data = equipmentData.map(item => item.issuance_count || 0);
+
+                    // Destroy existing chart if it exists
+                    if (window.equipmentChart) {
+                        window.equipmentChart.destroy();
+                    }
+
+                    // Create new chart with proper Chart.js syntax
+                    window.equipmentChart = new Chart(ctx, {
+                        type: "bar",
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: "Issuance Count",
+                                data: data,
+                                backgroundColor: "#ffcc34",
+                                borderColor: "#00553d",
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    title: {
+                                        display: true,
+                                        text: "Number of Issuances",
+                                        font: {
+                                            size: 10
+                                        },
+                                        color: "#00553d"
+                                    },
+                                    ticks: {
+                                        color: "#00553d",
+                                        font: {
+                                            size: 10
+                                        }
+                                    }
+                                },
+                                x: {
+                                    title: {
+                                        display: true,
+                                        text: "Equipment Type",
+                                        font: {
+                                            size: 10
+                                        },
+                                        color: "#00553d"
+                                    },
+                                    ticks: {
+                                        color: "#00553d",
+                                        font: {
+                                            size: 10
+                                        }
+                                    }
+                                }
+                            },
+                            plugins: {
+                                legend: {
+                                    labels: {
+                                        font: {
+                                            size: 10
+                                        },
+                                        color: "#00553d"
+                                    }
+                                }
+                            }
+                        }
+                    });
+
+                    console.log('Chart initialized successfully');
+                } catch (error) {
+                    console.error('Error initializing chart:', error);
+                }
+            }
+
         // Equipment Chart - keep your existing implementation
         document.addEventListener('DOMContentLoaded', function() {
             // Chart initialization code...
-            
+
             // Dashboard counts functionality
             function updateCountElement(selector, value) {
                 const element = document.querySelector(selector);
@@ -260,32 +372,32 @@
                 });
 
                 fetch('/api/dashboard-counts', {
-                    headers: {
-                        'Accept': 'application/json',
-                        'X-Requested-With': 'XMLHttpRequest'
-                    }
-                })
-                .then(response => {
-                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                    return response.json();
-                })
-                .then(data => {
-                    console.log('Dashboard counts updated at:', data.lastUpdated);
-                    
-                    updateCountElement('[data-name="Total Staff"] .text-[#00553d]', data.totalStaff);
-                    updateCountElement('[data-name="Total Issued Equipment"] .text-[#00553d]', data.totalIssuedEquipment);
-                    updateCountElement('[data-name="Total Returned Equipment"] .text-[#00553d]', data.totalReturnedEquipment);
-                    updateCountElement('[data-name="Pending Requests"] .text-[#00553d]', data.pendingRequests);
-                })
-                .catch(error => {
-                    console.error('Error fetching dashboard counts:', error);
-                    document.querySelectorAll('[data-name] .text-[#00553d]').forEach(el => {
-                        if (el.dataset.originalText) {
-                            el.textContent = el.dataset.originalText;
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest'
                         }
+                    })
+                    .then(response => {
+                        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log('Dashboard counts updated at:', data.lastUpdated);
+
+                        updateCountElement('[data-name="Total Staff"] .text-[#00553d]', data.totalStaff);
+                        updateCountElement('[data-name="Total Issued Equipment"] .text-[#00553d]', data.totalIssuedEquipment);
+                        updateCountElement('[data-name="Total Returned Equipment"] .text-[#00553d]', data.totalReturnedEquipment);
+                        updateCountElement('[data-name="Pending Requests"] .text-[#00553d]', data.pendingRequests);
+                    })
+                    .catch(error => {
+                        console.error('Error fetching dashboard counts:', error);
+                        document.querySelectorAll('[data-name] .text-[#00553d]').forEach(el => {
+                            if (el.dataset.originalText) {
+                                el.textContent = el.dataset.originalText;
+                            }
+                        });
+                        showErrorNotification('Failed to update dashboard counts. Showing cached data.');
                     });
-                    showErrorNotification('Failed to update dashboard counts. Showing cached data.');
-                });
             }
 
             // Initial load

@@ -23,18 +23,12 @@ class Settings extends Model
         'updated_at' => 'datetime',
     ];
 
-    /**
-     * Get a setting value by key
-     */
     public static function get($key, $default = null)
     {
         $setting = self::where('key', $key)->first();
         return $setting ? $setting->value : $default;
     }
 
-    /**
-     * Set a setting value by key
-     */
     public static function set($key, $value, $type = 'string', $description = null)
     {
         return self::updateOrCreate(
@@ -47,9 +41,6 @@ class Settings extends Model
         );
     }
 
-    /**
-     * Get all settings as key-value pairs
-     */
     public static function getAllSettings()
     {
         return self::pluck('value', 'key')->toArray();

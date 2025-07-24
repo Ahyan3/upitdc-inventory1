@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Equipment;
 use App\Models\Issuance;
 use App\Models\HistoryLog;
+use App\Models\Inventory;
 use App\Models\Staff;
 use App\Models\User;
 use App\Models\Settings;
@@ -36,13 +37,6 @@ class InventoryController extends Controller
             return redirect()->back()->with('error', 'Failed to load inventory: ' . $e->getMessage());
         }
     }
-
-    public function total()
-    {
-        $count = DB::table('staff')->count();
-        return response()->json(['count' => $count]);
-    }
-
 
     public function create()
     {

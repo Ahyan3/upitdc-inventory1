@@ -206,7 +206,7 @@
 
                 <!-- Current Inventory Table -->
                 <div class="bg-white rounded-xl shadow-md overflow-hidden animate-fade-in mb-8 w-full border border-[#ffcc34]">
-                    <div class="bg-[#00553d] px-5 py-3">
+                    <div class="bg-[#90143c] px-5 py-3">
                         <h2 class="text-xs font-semibold text-white">Current Inventory</h2>
                     </div>
                     <div class="p-5">
@@ -294,7 +294,7 @@
 
                 <!-- History Log Table -->
                 <div class="bg-white rounded-xl shadow-md overflow-hidden animate-fade-in mb-8 w-full border border-[#ffcc34]">
-                    <div class="bg-[#00553d] px-5 py-3">
+                    <div class="bg-[#90143c] px-5 py-3">
                         <h2 class="text-xs font-semibold text-white">History Log</h2>
                     </div>
                     <div class="p-5">
@@ -333,262 +333,314 @@
 
                 <!-- Equipment Issuance Graph -->
                 <div class="bg-white rounded-xl shadow-md overflow-hidden animate-fade-in mb-8 w-full border border-[#ffcc34]">
-                    <div class="bg-[#00553d] px-5 py-3">
+                    <div class="bg-[#90143c] px-5 py-3">
                         <h2 class="text-xs font-semibold text-white">Equipment Issuance Statistics</h2>
                     </div>
                     <div class="p-5">
                         <canvas id="equipmentChart" class="w-full h-64" data-equipment="{{ json_encode($equipmentData) }}"></canvas>
                     </div>
+                    <!-- <div id="staff-count">Loading...</div> -->
                 </div>
             </div>
         </div>
 
         <!-- JavaScript Dependencies -->
-        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-        <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-        <script src="{{ asset('js/inventory.js') }}"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+    window.checkDuplicatesUrl = "{{ route('inventory.check-duplicates') }}";
 
-        <script>
-            const apiUrl = "{{ url('/api/total-staff') }}";
+    document.addEventListener('DOMContentLoaded', function () {
+        // Initialize Accordions
+        const accordionToggles = document.querySelectorAll('.accordion-toggle');
+        accordionToggles.forEach(toggle => {
+            toggle.addEventListener('click', () => {
+                const content = toggle.nextElementSibling;
+                const svg = toggle.querySelector('svg');
+                content.classList.toggle('hidden');
+                svg.classList.toggle('rotate-180');
+            });
+        });
 
-            function updateStaffCount() {
-                fetch(apiUrl)
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error('Network response was not ok');
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        document.getElementById('staff-count').innerText = data.count;
-                    })
-                    .catch(error => {
-                        console.error('Error fetching staff count:', error);
-                    });
-            }
+        // Initialize Equipment Toggles
+        const equipmentToggles = document.querySelectorAll('.equipment-toggle');
+        equipmentToggles.forEach(toggle => {
+            toggle.addEventListener('click', () => {
+                const content = toggle.nextElementSibling;
+                const svg = toggle.querySelector('svg');
+                content.classList.toggle('hidden');
+                svg.classList.toggle('rotate-180');
+            });
+        });
 
-            updateStaffCount();
-            setInterval(updateStaffCount, 5000);
-        </script>
+        // Form submission with duplicate check
+        const issueForm = document.getElementById('issueForm');
+        if (issueForm) {
+            issueForm.addEventListener('submit', async function (e) {
+                e.preventDefault();
 
-        <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                // Equipment accordion toggles
-                const equipmentToggles = document.querySelectorAll('.equipment-toggle');
-                equipmentToggles.forEach(toggle => {
-                    toggle.addEventListener('click', function() {
-                        const content = this.nextElementSibling;
-                        const icon = this.querySelector('svg');
+                const formData = new FormData(this);
+                const payload = Object.fromEntries(formData.entries());
+                const submitButton = this.querySelector('button[type="submit"]');
 
-                        content.classList.toggle('hidden');
-                        icon.classList.toggle('rotate-180');
-                    });
-                });
-
-                // Search and filter functionality for return equipment
-                const returnSearch = document.getElementById('returnSearch');
-                const returnDeptFilter = document.getElementById('returnDepartmentFilter');
-                const returnStatusFilter = document.getElementById('returnStatusFilter');
-
-                function filterReturnEquipment() {
-                    const searchTerm = returnSearch.value.toLowerCase();
-                    const department = returnDeptFilter.value;
-                    const equipmentType = returnStatusFilter.value;
-
-                    document.querySelectorAll('#returnEquipmentContainer .equipment-accordion').forEach(item => {
-                        const text = item.textContent.toLowerCase();
-                        const deptText = item.querySelector('p').textContent;
-                        const matchesSearch = text.includes(searchTerm);
-                        const matchesDept = !department || deptText.includes(department);
-                        const matchesType = !equipmentType || text.includes(equipmentType);
-
-                        item.style.display = matchesSearch && matchesDept && matchesType ? '' : 'none';
-                    });
+                if (!submitButton) {
+                    console.error('Submit button not found');
+                    return;
                 }
 
-                returnSearch.addEventListener('input', filterReturnEquipment);
-                returnDeptFilter.addEventListener('change', filterReturnEquipment);
-                returnStatusFilter.addEventListener('change', filterReturnEquipment);
-
-                // Pagination functionality (would need server-side implementation)
-                const paginationButtons = document.querySelectorAll('.pagination-button');
-                paginationButtons.forEach(button => {
-                    button.addEventListener('click', function() {
-                        paginationButtons.forEach(btn => {
-                            btn.classList.remove('bg-[#90143c]', 'text-white');
-                            btn.classList.add('bg-gray-100', 'text-[#00553d]');
-                        });
-                        this.classList.add('bg-[#90143c]', 'text-white');
-                        this.classList.remove('bg-gray-100', 'text-[#00553d]');
+                if (!payload.serial_number || !payload.pr_number) {
+                    Swal.fire({
+                        title: 'Error',
+                        text: 'Serial number and PR number are required.',
+                        icon: 'error',
+                        confirmButtonColor: '#90143c',
+                        customClass: {
+                            title: 'text-xs',
+                            content: 'text-[0.65rem]'
+                        }
                     });
-                });
-            });
+                    return;
+                }
 
-            document.addEventListener('DOMContentLoaded', function() {
-                // Accordion functionality
-                const accordionToggles = document.querySelectorAll('.accordion-toggle');
+                const originalButtonText = submitButton.innerHTML;
+                submitButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Checking...';
+                submitButton.disabled = true;
 
-                // Open all accordions by default
-                accordionToggles.forEach(toggle => {
-                    toggle.nextElementSibling.classList.remove('hidden');
-                    toggle.querySelector('svg').classList.add('rotate-180');
-                });
-
-                accordionToggles.forEach(toggle => {
-                    toggle.addEventListener('click', function() {
-                        const content = this.nextElementSibling;
-                        const icon = this.querySelector('svg');
-
-                        // Toggle content visibility
-                        content.classList.toggle('hidden');
-
-                        // Rotate icon
-                        icon.classList.toggle('rotate-180');
+                try {
+                    const checkResponse = await fetch(window.checkDuplicatesUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                        },
+                        body: JSON.stringify({
+                            serial_number: payload.serial_number,
+                            pr_number: payload.pr_number
+                        })
                     });
-                });
 
-                // Delete functionality
-                document.querySelectorAll('.delete-btn').forEach(button => {
-                    button.addEventListener('click', function() {
-                        const form = this.closest('form');
-                        const itemName = this.dataset.item;
+                    if (!checkResponse.ok) throw new Error(`HTTP error! Status: ${checkResponse.status}`);
 
-                        Swal.fire({
-                            title: `Delete "${itemName}"?`,
-                            text: "This action cannot be undone!",
-                            icon: "warning",
-                            showCancelButton: true,
-                            confirmButtonColor: '#90143c',
-                            cancelButtonColor: '#3085d6',
-                            confirmButtonText: 'Yes, delete it!',
+                    const checkData = await checkResponse.json();
+                    if (checkData.serial_exists || checkData.pr_exists) {
+                        let message = 'Potential duplicates found:\n';
+                        if (checkData.serial_exists) message += `• Serial Number "${payload.serial_number}" exists\n`;
+                        if (checkData.pr_exists) message += `• PR Number "${payload.pr_number}" exists\n`;
+
+                        const result = await Swal.fire({
+                            title: 'Duplicate Detected',
+                            text: message,
+                            icon: 'warning',
+                            showCancelButton: !checkData.serial_exists,
+                            confirmButtonColor: '#00553d',
+                            cancelButtonColor: '#90143c',
+                            confirmButtonText: checkData.serial_exists ? 'OK' : 'Proceed Anyway',
+                            cancelButtonText: 'Cancel',
                             customClass: {
                                 title: 'text-xs',
                                 content: 'text-[0.65rem]'
                             }
-                        }).then((result) => {
-                            if (result.isConfirmed) {
-                                const originalHtml = this.innerHTML;
-                                this.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Deleting...';
-                                this.disabled = true;
-
-                                fetch(form.action, {
-                                        method: 'POST',
-                                        headers: {
-                                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                                            'Accept': 'application/json',
-                                            'Content-Type': 'application/json'
-                                        },
-                                        body: JSON.stringify({
-                                            _method: 'DELETE'
-                                        })
-                                    })
-                                    .then(response => {
-                                        if (!response.ok) {
-                                            return response.json().then(err => {
-                                                throw err;
-                                            });
-                                        }
-                                        return response.json();
-                                    })
-                                    .then(data => {
-                                        if (data.success) {
-                                            form.closest('tr').remove();
-                                            Swal.fire({
-                                                title: 'Deleted!',
-                                                text: data.message,
-                                                icon: 'success',
-                                                confirmButtonColor: '#00553d',
-                                                customClass: {
-                                                    title: 'text-xs',
-                                                    content: 'text-[0.65rem]'
-                                                }
-                                            });
-                                        } else {
-                                            throw new Error(data.message);
-                                        }
-                                    })
-                                    .catch(error => {
-                                        this.innerHTML = originalHtml;
-                                        this.disabled = false;
-                                        Swal.fire({
-                                            title: 'Error!',
-                                            text: error.message || 'Failed to delete item',
-                                            icon: 'error',
-                                            confirmButtonColor: '#90143c',
-                                            customClass: {
-                                                title: 'text-xs',
-                                                content: 'text-[0.65rem]'
-                                            }
-                                        });
-                                    });
-                            }
                         });
+
+                        if (result.isConfirmed && !checkData.serial_exists) {
+                            this.submit();
+                        } else {
+                            submitButton.innerHTML = originalButtonText;
+                            submitButton.disabled = false;
+                        }
+                    } else {
+                        this.submit();
+                    }
+                } catch (error) {
+                    submitButton.innerHTML = originalButtonText;
+                    submitButton.disabled = false;
+                    Swal.fire({
+                        title: 'Error',
+                        text: 'Failed to validate data. Please try again.',
+                        icon: 'error',
+                        confirmButtonColor: '#90143c',
+                        customClass: {
+                            title: 'text-xs',
+                            content: 'text-[0.65rem]'
+                        }
                     });
+                }
+            });
+        }
+
+        // Chart initialization
+        const ctx = document.getElementById('equipmentChart');
+        if (ctx) {
+            try {
+                const equipmentDataAttr = ctx.dataset.equipment;
+                if (!equipmentDataAttr) {
+                    console.log('No equipment data found in canvas dataset');
+                    return;
+                }
+
+                const equipmentData = JSON.parse(equipmentDataAttr);
+                const labels = Object.keys(equipmentData);
+                const data = Object.values(equipmentData);
+
+                if (labels.length === 0) {
+                    console.log('Equipment data is empty');
+                    ctx.style.display = 'none';
+                    return;
+                }
+
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Issuance Count',
+                            data: data,
+                            backgroundColor: '#ffcc34',
+                            borderColor: '#00553d',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Number of Issuances',
+                                    font: { size: 10 },
+                                    color: '#00553d'
+                                },
+                                ticks: { color: '#00553d', font: { size: 10 } }
+                            },
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Equipment Type',
+                                    font: { size: 10 },
+                                    color: '#00553d'
+                                },
+                                ticks: { color: '#00553d', font: { size: 10 } }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                labels: { font: { size: 10 }, color: '#00553d' }
+                            }
+                        }
+                    }
                 });
+            } catch (error) {
+                console.error('Error initializing chart:', error);
+                ctx.style.display = 'none';
+            }
+        }
+    });
+</script>
 
-                // Search and Filter functionality
-                const searchInput = document.getElementById('searchInput');
-                const departmentFilter = document.getElementById('departmentFilter');
-                const statusFilter = document.getElementById('statusFilter');
+<x-auth-footer />
+<!--        
+       <script>
+            fetch('http://127.0.0.1:8000/inventory/inventory/check-duplicates', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify({
+                    // your data here
+                })
+            })
 
-                function filterTable() {
-                    const searchTerm = searchInput.value.toLowerCase();
-                    const department = departmentFilter.value;
-                    const status = statusFilter.value;
+            const checkDuplicatesUrl = "{{ route('inventory.check-duplicates') }}";
 
-                    document.querySelectorAll('#inventoryTableBody tr').forEach(row => {
-                        if (row.cells.length < 8) return; // Skip header/empty rows
+            // Move checkForDuplicates function to global scope
+            async function checkForDuplicates(serialNumber, prNumber) {
+                try {
+                    const response = await fetch(checkDuplicatesUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                        },
+                        body: JSON.stringify({
+                            serial_number: serialNumber,
+                            pr_number: prNumber
+                        })
+                    });
 
-                        const text = row.textContent.toLowerCase();
-                        const departmentText = row.cells[1].textContent;
-                        const statusText = row.cells[7].textContent.toLowerCase();
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
 
-                        const matchesSearch = text.includes(searchTerm);
-                        const matchesDepartment = !department || departmentText === department;
-                        const matchesStatus = !status || statusText.includes(status.toLowerCase());
+                    const data = await response.json();
+                    console.log('Duplicate check results:', data);
 
-                        row.style.display = matchesSearch && matchesDepartment && matchesStatus ? '' : 'none';
+                    // Handle the response (show alerts, mark fields, etc.)
+                    if (data.serial_exists || data.pr_exists) {
+                        Swal.fire({
+                            title: 'Duplicate Found!',
+                            text: data.message,
+                            icon: 'warning'
+                        });
+                    }
+
+                    return data;
+                } catch (error) {
+                    console.error('Error checking duplicates:', error);
+                    Swal.fire({
+                        title: 'Error',
+                        text: 'Failed to check for duplicates',
+                        icon: 'error'
+                    });
+                    return {
+                        error: true
+                    };
+                }
+            }
+
+            document.addEventListener('DOMContentLoaded', function() {
+                console.log('Inventory system initializing...');
+
+                // Initialize all components
+                initializeStaffCount();
+                initializeEquipmentToggles();
+                initializeSearchAndFilters();
+                initializePagination();
+                initializeAccordions();
+                initializeDeleteFunctionality();
+                initializeFormSubmission();
+                initializeExport();
+                initializeChart();
+
+                // Update staff count periodically
+                setInterval(updateStaffCount, 30000);
+            });
+
+            // Form submission with duplicate check
+            function initializeFormSubmission() {
+                // Fix: Check for both possible form IDs
+                const inventoryForm = document.querySelector('#inventoryForm');
+                const issueForm = document.getElementById('issueForm');
+
+                // Handle inventory form if it exists
+                if (inventoryForm) {
+                    inventoryForm.addEventListener('submit', async function(e) {
+                        e.preventDefault();
+
+                        const serial = document.querySelector('#serial_number').value;
+                        const pr = document.querySelector('#pr_number').value;
+
+                        const duplicates = await checkForDuplicates(serial, pr);
+
+                        if (!duplicates.error && !duplicates.serial_exists && !duplicates.pr_exists) {
+                            this.submit(); // Only submit if no duplicates
+                        }
                     });
                 }
 
-                searchInput.addEventListener('input', filterTable);
-                departmentFilter.addEventListener('change', filterTable);
-                statusFilter.addEventListener('change', filterTable);
-
-                // CSV Export
-                document.getElementById('exportBtn').addEventListener('click', function() {
-                    const rows = [];
-                    const headers = [];
-
-                    document.querySelectorAll('#inventoryTableBody thead th').forEach(header => {
-                        headers.push(header.textContent.trim());
-                    });
-                    rows.push(headers.join(','));
-
-                    document.querySelectorAll('#inventoryTableBody tr:not([style*="none"])').forEach(row => {
-                        if (row.cells.length < 8) return; // Skip header/empty rows
-
-                        const rowData = [];
-                        row.querySelectorAll('td').forEach(cell => {
-                            rowData.push(`"${cell.textContent.replace(/"/g, '""')}"`);
-                        });
-                        rows.push(rowData.join(','));
-                    });
-
-                    const csvContent = rows.join('\n');
-                    const blob = new Blob([csvContent], {
-                        type: 'text/csv'
-                    });
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = 'inventory_export_' + new Date().toISOString().slice(0, 10) + '.csv';
-                    a.click();
-                    URL.revokeObjectURL(url);
-                });
-
-                // Form submission with duplicate check
-                const issueForm = document.getElementById('issueForm');
+                // Handle issue form
                 if (issueForm) {
                     issueForm.addEventListener('submit', async function(e) {
                         e.preventDefault();
@@ -596,27 +648,25 @@
                         const formData = new FormData(this);
                         const payload = Object.fromEntries(formData.entries());
                         const submitButton = this.querySelector('button[type="submit"]');
+
+                        if (!submitButton) {
+                            console.error('Submit button not found');
+                            return;
+                        }
+
                         const originalButtonText = submitButton.innerHTML;
 
                         try {
                             submitButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Checking...';
                             submitButton.disabled = true;
 
-                            const checkResponse = await fetch('{{ route("inventory.check-duplicates") }}', {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                                },
-                                body: JSON.stringify({
-                                    serial_number: payload.serial_number,
-                                    pr_number: payload.pr_number
-                                })
-                            });
+                            // Use the global function
+                            const checkData = await checkForDuplicates(payload.serial_number, payload.pr_number);
 
-                            if (!checkResponse.ok) throw new Error(`HTTP error! Status: ${checkResponse.status}`);
+                            if (checkData.error) {
+                                throw new Error('Duplicate check failed');
+                            }
 
-                            const checkData = await checkResponse.json();
                             if (checkData.serial_exists || checkData.pr_exists) {
                                 let message = 'Potential duplicates found:\n';
                                 if (checkData.serial_exists) message += `• Serial Number "${payload.serial_number}" exists\n`;
@@ -647,8 +697,10 @@
                                 this.submit();
                             }
                         } catch (error) {
+                            console.error('Form submission error:', error);
                             submitButton.innerHTML = originalButtonText;
                             submitButton.disabled = false;
+
                             Swal.fire({
                                 title: 'Error',
                                 text: 'Failed to validate data. Please try again.',
@@ -662,80 +714,6 @@
                         }
                     });
                 }
+            } -->
 
-                // Line Graph for Equipment Issuance
-                const ctx = document.getElementById('equipmentChart');
-                if (ctx) {
-                    const equipmentData = JSON.parse(ctx.dataset.equipment);
-                    const labels = equipmentData.map(item => item.equipment_name);
-                    const data = equipmentData.map(item => item.issuance_count);
-
-                    ```chartjs
-                    {
-                        type: "bar",
-                        data: {
-                            labels: labels,
-                            datasets: [{
-                                label: "Issuance Count",
-                                data: data,
-                                backgroundColor: "#ffcc34",
-                                borderColor: "#00553d",
-                                borderWidth: 1
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            scales: {
-                                y: {
-                                    beginAtZero: true,
-                                    title: {
-                                        display: true,
-                                        text: "Number of Issuances",
-                                        font: {
-                                            size: 10
-                                        },
-                                        color: "#00553d"
-                                    },
-                                    ticks: {
-                                        color: "#00553d",
-                                        font: {
-                                            size: 10
-                                        }
-                                    }
-                                },
-                                x: {
-                                    title: {
-                                        display: true,
-                                        text: "Equipment Type",
-                                        font: {
-                                            size: 10
-                                        },
-                                        color: "#00553d"
-                                    },
-                                    ticks: {
-                                        color: "#00553d",
-                                        font: {
-                                            size: 10
-                                        }
-                                    }
-                                }
-                            },
-                            plugins: {
-                                legend: {
-                                    labels: {
-                                        font: {
-                                            size: 10
-                                        },
-                                        color: "#00553d"
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    ```
-                }
-            });
-        </script>
-
-        <x-auth-footer />
 </x-app-layout>

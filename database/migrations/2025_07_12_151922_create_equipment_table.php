@@ -10,14 +10,15 @@ return new class extends Migration
     {
         Schema::create('equipment', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->text('description')->nullable();
+            $table->string('staff_name');
+            $table->foreignId('department_id')->constrained()->onDelete('cascade');
+            $table->string('equipment_name');
+            $table->string('model_brand')->nullable();
             $table->string('serial_number')->unique();
-            $table->string('brand')->nullable();
-            $table->string('model')->nullable();
+            $table->string('pr_number')->unique();
+            $table->date('date_issued')->nullable();
             $table->enum('status', ['available', 'in_use', 'maintenance', 'damaged'])->default('available');
-            $table->date('purchase_date')->nullable();
-            $table->decimal('purchase_price', 10, 2)->nullable();
+            $table->string('remarks');
             $table->string('location')->nullable();
             $table->timestamps();
         });
