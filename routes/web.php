@@ -33,6 +33,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::delete('/{id}', [InventoryController::class, 'destroy'])->name('inventory.destroy');
         Route::get('/export/csv', [InventoryController::class, 'exportCsv'])->name('inventory.export.csv');
         Route::get('/chart-data', [InventoryController::class, 'chartData'])->name('inventory.chart-data');
+        Route::delete('/{equipment}', [InventoryController::class, 'delete'])->name('inventory.delete');
+        Route::get('inventory/{equipment}', [InventoryController::class, 'show'])->name('inventory.show');
     });
 
     // Staff Routes
@@ -80,5 +82,3 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 require __DIR__ . '/auth.php';
     // Route::get('/history', [HistoryController::class, 'index'])->name('history');
-    Route::delete('/{equipment}', [InventoryController::class, 'delete'])->name('inventory.delete');
-    Route::get('inventory/{equipment}', [InventoryController::class, 'show'])->name('inventory.show');

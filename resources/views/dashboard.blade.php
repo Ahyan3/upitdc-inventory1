@@ -158,12 +158,12 @@
                 </div>
                 <h1
                     class="text-2xl font-bold bg-gradient-to-r from-[#90143c] to-[#00553d] bg-clip-text text-transparent">
-                    UPITDC - Inventory System</h1>
+                    Dashboard</h1>
                 <p class="text-xs text-[#00553d] opacity-80 max-w-sm mx-auto">Welcome, {{ auth()->user()->name }}</p>
-                <a href="{{ route('dashboard.export.csv') }}"
+                {{--  <a href="{{ route('dashboard.export.csv') }}"
                     class="gradient-btn text-white font-semibold py-2 px-4 rounded-lg text-xs border border-[#ffcc34] shadow-md hover:shadow-lg inline-flex items-center mt-4 transition-all duration-300">
                     <i class="fas fa-file-export mr-2"></i>Export CSV
-                </a>
+                </a>  --}}
             </div>
 
             <div id="alert-container" class="mb-4"></div>

@@ -17,7 +17,7 @@
                     <p class="text-base text-gray-600 mb-6">Manage your equipment and issuances</p>
                     <a href="{{ route('dashboard') }}"
                        class="bg-green-600 hover:bg-green-700 text-white text-sm py-2 px-6 rounded-lg transition duration-200">
-                        Get Started
+                        Continue to Dashboard
                     </a>
                 @else
                     <h2 class="text-lg font-bold text-gray-900 mb-4">Welcome to UPITDC - Inventory System</h2>
