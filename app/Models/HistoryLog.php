@@ -18,7 +18,7 @@ class HistoryLog extends Model
     protected $fillable = [
         'action',
         'action_date',
-        'model',
+        'model_brand',
         'model_id',
         'old_values',
         'new_values',
@@ -37,5 +37,19 @@ class HistoryLog extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function scopeSearch($query, $search)
+    {
+        if ($search) {
+            return $query->where('description', 'like', "%{$search}%")
+                ->orWhere('model_brand', 'like', "%{$search}%");
+        }
+        return $query;
+    }
+
+    public function scopeAction($query, $action)
+    {
+        return $action !== 'all' ? $query->where('action', $action) : $query;
     }
 }

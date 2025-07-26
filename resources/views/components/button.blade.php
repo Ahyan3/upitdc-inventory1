@@ -1,0 +1,1 @@
+<button type="{{ $type ?? 'button' }}" class="{{ $bg }} text-white px-3 py-1 rounded-md text-xs {{ $hover }} border border-[#ffcc34] transition duration-200" {{ $attributes }}>{{ $slot }}</button>

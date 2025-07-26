@@ -11,8 +11,8 @@ return new class extends Migration
         Schema::create('history_logs', function (Blueprint $table) {
             $table->id();
             $table->string('action');
-            $table->timestamps('action_date');
-            $table->string('model'); 
+            $table->timestamp('action_date');
+            $table->string('model_brand'); 
             $table->unsignedBigInteger('model_id');
             $table->json('old_values')->nullable();
             $table->json('new_values')->nullable();
@@ -23,7 +23,9 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->timestamps();
             
-            $table->index(['model', 'model_id']);
+            $table->index(['model_brand', 'model_id']);
+            
+            $table->foreign('staff_id')->references('id')->on('staff')->onDelete('set null');
         });
     }
 
@@ -32,4 +34,3 @@ return new class extends Migration
         Schema::dropIfExists('history_logs');
     }
 };
-?>

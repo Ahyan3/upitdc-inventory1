@@ -1,756 +1,815 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-lg text-[#00553d] leading-tight">
+        <h2 class="font-semibold text-base text-[#00553d] leading-tight">
             {{ __('Staff Management') }}
         </h2>
     </x-slot>
 
+    <style>
+        .accordion-content {
+            transition: max-height 0.3s ease-in-out, padding 0.3s ease-in-out;
+            max-height: 0;
+            overflow: hidden;
+            padding: 0 1rem;
+        }
+        .accordion-content.open {
+            max-height: 1000px;
+            padding: 1rem;
+        }
+        .staff-card {
+            transition: all 0.2s ease-in-out;
+        }
+        .staff-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 85, 61, 0.12);
+        }
+        .btn-loading .spinner {
+            display: inline-block;
+        }
+        .btn-loading .btn-text {
+            display: none;
+        }
+        .spinner {
+            display: none;
+        }
+        .fade-in {
+            animation: fadeIn 0.4s ease-in;
+        }
+        .slide-up {
+            animation: slideUp 0.3s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(16px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .status-indicator {
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            margin-right: 6px;
+            animation: pulse 2s infinite;
+        }
+        .status-active { background-color: #10b981; }
+        .status-resigned { background-color: #ef4444; }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .gradient-btn {
+            background: linear-gradient(90deg, #90143c, #b01a47);
+        }
+        .gradient-btn:hover {
+            background: linear-gradient(90deg, #6b102d, #8e1539);
+        }
+        .pagination-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+        .pagination-container a, .pagination-container span {
+            padding: 0.5rem 1rem;
+            border: 1px solid #ffcc34;
+            border-radius: 0.375rem;
+            font-size: 0.75rem;
+            color: #00553d;
+            transition: all 0.2s ease-in-out;
+        }
+        .pagination-container a:hover {
+            background-color: #00553d;
+            color: white;
+            border-color: #00553d;
+        }
+        .pagination-container .current {
+            background-color: #90143c;
+            color: white;
+            border-color: #90143c;
+        }
+        table tr:hover {
+            background-color: #f9fafb;
+        }
+        .view-btn {
+            position: relative;
+            z-index: 10;
+        }
+    </style>
+
     <div class="flex min-h-screen bg-gray-50">
-        <button id="toggleSidebar" class="md:hidden fixed top-4 left-4 z-50 bg-[#90143c] text-white p-2 rounded-lg border border-[#ffcc34]">
-            <i class="fas fa-bars text-sm"></i>
+        <button id="toggleSidebar" class="md:hidden fixed top-3 left-3 z-50 bg-[#90143c] text-white p-1.5 rounded-md border border-[#ffcc34] shadow-md hover:shadow-lg transition-all duration-200">
+            <i class="fas fa-bars text-xs"></i>
         </button>
 
-        <!-- Main Content -->
-        <div class="flex-1 container mx-auto px-4 py-8">
-            <div class="text-center mb-10 animate-fade-in">
-                <h2 class="text-lg font-bold text-[#90143c]">Staff Management</h2>
-                <p class="text-[0.65rem] text-[#00553d]">Manage staff members</p>
-            </div>
+        <div class="flex-1 container mx-auto px-3 py-6 max-w-3xl">
+            <div class="text-center mb-8 fade-in">
+                <div class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-[#90143c] to-[#b01a47] rounded-full mb-4 shadow-lg relative">
+                    <i class="fas fa-users text-white text-xl"></i>
+                    <div class="absolute inset-0 rounded-full bg-gradient-to-br from-[#90143c] to-[#b01a47] opacity-20 animate-ping"></div>
+                </div>
+                <h1 class="text-2xl font-bold bg-gradient-to-r from-[#90143c] to-[#00553d] bg-clip-text text-transparent">Staff Management</h1>
+                <p class="text-xs text-[#00553d] opacity-80 max-w-sm mx-auto">Manage your organization's staff members</p>
 
-            <!-- Buttons for Add Staff and Filter -->
-            <div class="flex justify-between mb-8">
-                <button id="openAddStaffModal" class="bg-[#00553d] hover:bg-[#003d2b] text-white font-medium py-1.5 px-3 rounded-lg transition duration-200 flex items-center border border-[#ffcc34] text-sm" aria-label="Add New Staff">
-                    <i class="fas fa-plus mr-1 text-xs"></i> Add Staff
-                </button>
-                <button id="openFilterModal" class="bg-[#90143c] hover:bg-[#6b102d] text-white font-medium py-1.5 px-3 rounded-lg transition duration-200 flex items-center border border-[#ffcc34] text-sm" aria-label="Filter Staff">
-                    <i class="fas fa-filter mr-1 text-xs"></i> Filter
-                </button>
-            </div>
-
-            <!-- Add Staff Modal -->
-            <div id="addStaffModal" class="fixed inset-0 bg-[#00553d] bg-opacity-50 hidden flex items-center justify-center z-50">
-                <div class="bg-white rounded-xl shadow-lg max-w-md w-full mx-4 border border-[#ffcc34]">
-                    <div class="bg-[#90143c] px-5 py-3 rounded-t-xl">
-                        <h2 class="text-xs font-semibold text-white">Add Staff</h2>
+                <div class="grid grid-cols-3 gap-3 mt-6 max-w-sm mx-auto">
+                    <div class="bg-white p-2 rounded-md shadow-sm border border-[#ffcc34]/30">
+                        <div class="text-base font-bold text-[#90143c]" data-name="Total Staff"><span data-counter>{{ $total_staff ?? '0' }}</span></div>
+                        <div class="text-xs text-gray-600">Total Staff</div>
                     </div>
-                    <div class="p-5">
-                        <form id="addStaffForm" action="{{ route('staff.store') }}" method="POST" class="space-y-3" aria-label="Add Staff Form">
+                    <div class="bg-white p-2 rounded-md shadow-sm border border-[#ffcc34]/30">
+                        <div class="text-base font-bold text-[#00553d]">{{ $active_staff ?? '0' }}</div>
+                        <div class="text-xs text-gray-600">Active Staff</div>
+                    </div>
+                    <div class="bg-white p-2 rounded-md shadow-sm border border-[#ffcc34]/30">
+                        <div class="text-base font-bold text-[#b01a47]">{{ $resigned_staff ?? '0' }}</div>
+                        <div class="text-xs text-gray-600">Resigned Staff</div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="alert-container" class="mb-4"></div>
+
+            <div class="space-y-4">
+                <!-- Add Staff Accordion -->
+                <div class="bg-white rounded-lg shadow-md overflow-hidden staff-card border border-[#ffcc34] slide-up">
+                    <button class="accordion-toggle w-full flex justify-between items-center p-4 gradient-btn text-white transition-all duration-500" data-target="add-staff" aria-expanded="false" aria-controls="add-staff">
+                        <div class="flex items-center space-x-3">
+                            <div class="p-1.5 bg-white/20 rounded-md">
+                                <i class="fas fa-user-plus text-base"></i>
+                            </div>
+                            <div class="text-left">
+                                <span class="text-xs font-semibold block">Add New Staff</span>
+                                <span class="text-xs opacity-80">Create a new staff member record</span>
+                            </div>
+                        </div>
+                        <svg class="accordion-icon w-4 h-4 transform transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
+                    <div id="add-staff" class="accordion-content" role="region" aria-labelledby="add-staff-toggle">
+                        <form id="add-staff-form" action="{{ route('staff.store') }}" method="POST" class="space-y-3 p-4" aria-label="Add Staff Form">
                             @csrf
                             <div>
-                                <label for="name" class="block text-[0.65rem] font-medium text-[#00553d] mb-1">Name *</label>
-                                <input type="text" name="name" id="name" required class="w-full px-3 py-1.5 border border-[#ffcc34] rounded-lg focus:ring-[#00553d] focus:border-[#00553d] text-sm" aria-label="Staff Name">
+                                <label for="name" class="flex items-center space-x-2 text-xs font-semibold text-[#00553d] mb-2">
+                                    <div class="p-1.5 bg-gradient-to-br from-[#90143c] to-[#b01a47] rounded-md">
+                                        <i class="fas fa-user text-white text-xs"></i>
+                                    </div>
+                                    <div>
+                                        <span>Name</span>
+                                        <span class="text-red-500">*</span>
+                                        <div class="text-[0.6rem] font-normal text-gray-500 mt-1">Full name of the staff member</div>
+                                    </div>
+                                </label>
+                                <input type="text" name="name" id="name" required class="w-full px-3 py-3 border border-[#ffcc34] rounded-lg text-xs focus:ring-2 focus:ring-[#00553d] focus:border-transparent transition-all duration-300 hover:shadow-md @error('name') border-red-500 @enderror" placeholder="Enter full name" aria-label="Staff Name">
+                                @error('name')
+                                    <p class="text-[0.6rem] text-red-500 mt-2 flex items-center"><i class="fas fa-exclamation-triangle mr-1 text-xs"></i>{{ $message }}</p>
+                                @enderror
                             </div>
                             <div>
-                                <label for="department" class="block text-[0.65rem] font-medium text-[#00553d] mb-1">Department *</label>
-                                <select name="department" id="department" required class="w-full px-3 py-1.5 border border-[#ffcc34] rounded-lg focus:ring-[#00553d] focus:border-[#00553d] text-sm" aria-label="Department">
+                                <label for="department" class="flex items-center space-x-2 text-xs font-semibold text-[#00553d] mb-2">
+                                    <div class="p-1.5 bg-gradient-to-br from-[#90143c] to-[#b01a47] rounded-md">
+                                        <i class="fas fa-building text-white text-xs"></i>
+                                    </div>
+                                    <div>
+                                        <span>Department</span>
+                                        <span class="text-red-500">*</span>
+                                        <div class="text-[0.6rem] font-normal text-gray-500 mt-1">Select staff's department</div>
+                                    </div>
+                                </label>
+                                <select name="department" id="department" required class="w-full px-3 py-3 border border-[#ffcc34] rounded-lg text-xs focus:ring-2 focus:ring-[#00553d] focus:border-transparent transition-all duration-300 hover:shadow-md @error('department') border-red-500 @enderror" aria-label="Department">
                                     <option value="">Select Department</option>
-                                    @if(isset($departments) && $departments->count() > 0)
-                                    @foreach($departments as $department)
-                                    <option value="{{ $department->name }}">{{ $department->name }}</option>
+                                    @foreach ($departments as $dept)
+                                        <option value="{{ $dept->name }}" {{ old('department') == $dept->name ? 'selected' : '' }}>{{ $dept->name }}</option>
                                     @endforeach
-                                    @else
-                                    <option value="ITSG">ITSG</option>
-                                    <option value="Admin">Admin</option>
-                                    <option value="Content Development">Content Development</option>
-                                    <option value="Software Development">Software Development</option>
-                                    <option value="Helpdesk">Helpdesk</option>
-                                    <option value="Other">Other</option>
-                                    @endif
                                 </select>
+                                @error('department')
+                                    <p class="text-[0.6rem] text-red-500 mt-2 flex items-center"><i class="fas fa-exclamation-triangle mr-1 text-xs"></i>{{ $message }}</p>
+                                @enderror
                             </div>
                             <div>
-                                <label for="email" class="block text-[0.65rem] font-medium text-[#00553d] mb-1">Email *</label>
-                                <input type="email" name="email" id="email" required class="w-full px-3 py-1.5 border border-[#ffcc34] rounded-lg focus:ring-[#00553d] focus:border-[#00553d] text-sm" aria-label="Email">
+                                <label for="email" class="flex items-center space-x-2 text-xs font-semibold text-[#00553d] mb-2">
+                                    <div class="p-1.5 bg-gradient-to-br from-[#90143c] to-[#b01a47] rounded-md">
+                                        <i class="fas fa-envelope text-white text-xs"></i>
+                                    </div>
+                                    <div>
+                                        <span>Email</span>
+                                        <span class="text-red-500">*</span>
+                                        <div class="text-[0.6rem] font-normal text-gray-500 mt-1">Staff's email address</div>
+                                    </div>
+                                </label>
+                                <input type="email" name="email" id="email" required class="w-full px-3 py-3 border border-[#ffcc34] rounded-lg text-xs focus:ring-2 focus:ring-[#00553d] focus:border-transparent transition-all duration-300 hover:shadow-md @error('email') border-red-500 @enderror" placeholder="Enter email" aria-label="Email">
+                                @error('email')
+                                    <p class="text-[0.6rem] text-red-500 mt-2 flex items-center"><i class="fas fa-exclamation-triangle mr-1 text-xs"></i>{{ $message }}</p>
+                                @enderror
                             </div>
                             <div>
-                                <label for="status" class="block text-[0.65rem] font-medium text-[#00553d] mb-1">Status *</label>
-                                <select name="status" id="status" required class="w-full px-3 py-1.5 border border-[#ffcc34] rounded-lg focus:ring-[#00553d] focus:border-[#00553d] text-sm" aria-label="Status">
+                                <label for="status" class="flex items-center space-x-2 text-xs font-semibold text-[#00553d] mb-2">
+                                    <div class="p-1.5 bg-gradient-to-br from-[#90143c] to-[#b01a47] rounded-md">
+                                        <i class="fas fa-toggle-on text-white text-xs"></i>
+                                    </div>
+                                    <div>
+                                        <span>Status</span>
+                                        <span class="text-red-500">*</span>
+                                        <div class="text-[0.6rem] font-normal text-gray-500 mt-1">Current employment status</div>
+                                    </div>
+                                </label>
+                                <select name="status" id="status" required class="w-full px-3 py-3 border border-[#ffcc34] rounded-lg text-xs focus:ring-2 focus:ring-[#00553d] focus:border-transparent transition-all duration-300 hover:shadow-md @error('status') border-red-500 @enderror" aria-label="Status">
                                     <option value="">Select Status</option>
                                     <option value="Active">Active</option>
                                     <option value="Resigned">Resigned</option>
                                 </select>
+                                @error('status')
+                                    <p class="text-[0.6rem] text-red-500 mt-2 flex items-center"><i class="fas fa-exclamation-triangle mr-1 text-xs"></i>{{ $message }}</p>
+                                @enderror
                             </div>
-                            <div class="flex gap-2">
-                                <button type="submit" class="flex-1 bg-[#00553d] hover:bg-[#003d2b] text-white font-medium py-1.5 px-3 rounded-lg transition duration-200 border border-[#ffcc34] text-sm" aria-label="Add Staff">
+                            <button type="submit" id="add-staff-btn" class="gradient-btn w-full text-white font-semibold py-3 px-6 rounded-lg text-xs border border-[#ffcc34] shadow-md hover:shadow-lg flex items-center justify-center transition-all duration-300">
+                                <i class="spinner fas fa-spinner fa-spin mr-2"></i>
+                                <span class="btn-text flex items-center">
+                                    <i class="fas fa-user-plus mr-2"></i>
                                     Add Staff
-                                </button>
-                                <button type="button" onclick="closeAddStaffModal()" class="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-medium py-1.5 px-3 rounded-lg transition duration-200 border border-[#ffcc34] text-sm">
-                                    Cancel
-                                </button>
-                            </div>
+                                </span>
+                            </button>
                         </form>
                     </div>
                 </div>
-            </div>
 
-            <!-- Filter Modal -->
-            <div id="filterModal" class="fixed inset-0 bg-[#00553d] bg-opacity-50 hidden flex items-center justify-center z-50">
-                <div class="bg-white rounded-xl shadow-lg max-w-md w-full mx-4 border border-[#ffcc34]">
-                    <div class="bg-[#90143c] px-5 py-3 rounded-t-xl">
-                        <h2 class="text-xs font-semibold text-white">Filter Staff</h2>
-                    </div>
-                    <div class="p-5">
-                        <form id="filterForm" class="space-y-3" aria-label="Filter Staff Form">
-                            <div>
-                                <label for="filterDepartment" class="block text-[0.65rem] font-medium text-[#00553d] mb-1">Department</label>
-                                <select name="filterDepartment" id="filterDepartment" class="w-full px-3 py-1.5 border border-[#ffcc34] rounded-lg focus:ring-[#00553d] focus:border-[#00553d] text-sm" aria-label="Filter Department">
-                                    <option value="">All Departments</option>
-                                    @if(isset($departments) && $departments->count() > 0)
-                                    @foreach($departments as $department)
-                                    <option value="{{ $department->name }}">{{ $department->name }}</option>
-                                    @endforeach
-                                    @else
-                                    <option value="Other">Other</option>
-                                    @endif
-                                </select>
-                            </div>
-                            <div>
-                                <label for="filterStatus" class="block text-[0.65rem] font-medium text-[#00553d] mb-1">Status</label>
-                                <select name="filterStatus" id="filterStatus" class="w-full px-3 py-1.5 border border-[#ffcc34] rounded-lg focus:ring-[#00553d] focus:border-[#00553d] text-sm" aria-label="Filter Status">
-                                    <option value="">All Statuses</option>
-                                    <option value="Active">Active</option>
-                                    <option value="Resigned">Resigned</option>
-                                </select>
-                            </div>
-                            <div class="flex gap-2">
-                                <button type="button" onclick="applyFilter()" class="flex-1 bg-[#00553d] hover:bg-[#003d2b] text-white font-medium py-1.5 px-3 rounded-lg transition duration-200 border border-[#ffcc34] text-sm">
-                                    Apply Filter
-                                </button>
-                                <button type="button" onclick="closeFilterModal()" class="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-medium py-1.5 px-3 rounded-lg transition duration-200 border border-[#ffcc34] text-sm">
-                                    Cancel
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Staff Listing -->
-            <div class="bg-white rounded-xl shadow-md overflow-hidden animate-fade-in border border-[#ffcc34]">
-                <div class="bg-[#90143c] px-5 py-3">
-                    <h2 class="text-xs font-semibold text-white">Staff List</h2>
-                </div>
-                <div class="p-5">
-                    <div class="flex justify-between items-center mb-4">
-                        <div class="relative w-64">
-                            <input type="text" id="searchInput" placeholder="Search staff..." class="w-full text-xs pl-8 pr-3 py-1.5 border border-[#ffcc34] rounded-lg focus:ring-[#00553d] focus:border-[#00553d]" aria-label="Search staff">
-                            <div class="absolute left-2 top-2 text-[#00553d]">
-                                <i class="fas fa-search text-xs"></i>
-                            </div>
-                        </div>
-                        <button id="exportBtn" class="bg-[#ffcc34] text-xs hover:bg-[#e6b82f] text-[#00553d] font-medium py-1.5 px-3 rounded-lg transition duration-200 flex items-center border border-[#90143c]" aria-label="Export to CSV">
-                            <i class="fas fa-class-file-export mr-1 text-xs"></i> Export CSV
-                        </button>
-                    </div>
-
-                    @if ($staff->isEmpty())
-                    <div class="text-center py-6">
-                        <p class="text-base text-[#00553d]">No Current Record</p>
-                    </div>
-                    @else
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-[#ffcc34]" aria-label="Staff Records">
-                            <thead class="bg-[#ffcc34]">
-                                <tr>
-                                    <th scope="col" class="px-5 py-2 text-left text-[0.65rem] font-medium text-[#00553d] uppercase tracking-wider">Name</th>
-                                    <th scope="col" class="px-5 py-2 text-left text-[0.65rem] font-medium text-[#00553d] uppercase tracking-wider">Department</th>
-                                    <th scope="col" class="px-5 py-2 text-left text-[0.65rem] font-medium text-[#00553d] uppercase tracking-wider">Email</th>
-                                    <th scope="col" class="px-5 py-2 text-left text-[0.65rem] font-medium text-[#00553d] uppercase tracking-wider">Status</th>
-                                    <th scope="col" class="px-5 py-2 text-left text-[0.65rem] font-medium text-[#00553d] uppercase tracking-wider">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="staffTableBody" class="bg-white divide-y divide-[#ffcc34]">
-                                @foreach ($staff as $member)
-                                <tr>
-                                    <td class="px-5 py-3 whitespace-nowrap text-sm">{{ $member->name }}</td>
-                                    <td class="px-5 py-3 whitespace-nowrap text-sm">{{ $member->department }}</td>
-                                    <td class="px-5 py-3 whitespace-nowrap text-sm">{{ $member->email }}</td>
-                                    <td class="px-5 py-3 whitespace-nowrap">
-                                        <span class="{{ $member->status === 'Active' ? 'text-[#00553d]' : 'text-[#90143c]' }} text-sm">
-                                            {{ $member->status }}
-                                        </span>
-                                    </td>
-                                    <td class="px-5 py-3 whitespace-nowrap">
-                                        <button class="text-[#00553d] hover:text-[#003d2b] mr-2 text-sm" data-id="{{ $member->id }}" data-name="{{ $member->name }}" onclick="viewHistoryLogs(this)" aria-label="View logs for {{ $member->name }}">View</button>
-                                        <button class="text-[#90143c] hover:text-[#6b102d] mr-2 text-sm" data-id="{{ $member->id }}" onclick="editStaff(this)" aria-label="Edit staff {{ $member->name }}">Edit</button>
-                                        <form action="{{ route('staff.destroy', $member->id) }}" method="POST" class="inline delete-staff-form" data-name="{{ $member->name }}">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="text-[#90143c] hover:text-[#6b102d] text-sm" aria-label="Delete staff {{ $member->name }}">Delete</button>
-                                        </form>
-                                    </td>
-                                </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                    @endif
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Edit Staff Modal -->
-    <div id="editModal" class="fixed inset-0 bg-[#00553d] bg-opacity-50 hidden flex items-center justify-center z-50">
-        <div class="bg-white rounded-xl shadow-lg max-w-md w-full mx-4 border border-[#ffcc34]">
-            <div class="bg-[#90143c] px-5 py-3 rounded-t-xl">
-                <h2 class="text-base font-semibold text-white">Edit Staff</h2>
-            </div>
-            <div class="p-5">
-                <form id="editStaffForm" method="POST" action="" class="space-y-3">
-                    @csrf
-                    @method('PUT')
-                    <input type="hidden" name="id" id="editId">
-                    <div>
-                        <label for="editName" class="block text-xs font-medium text-[#00553d] mb-1">Name *</label>
-                        <input type="text" name="name" id="editName" required class="w-full px-3 py-1.5 border border-[#ffcc34] rounded-lg focus:ring-[#00553d] focus:border-[#00553d] text-sm">
-                    </div>
-                    <div>
-                        <label for="editDepartment" class="block text-xs font-medium text-[#00553d] mb-1">Department *</label>
-                        <select name="department" id="editDepartment" required class="w-full px-3 py-1.5 border border-[#ffcc34] rounded-lg focus:ring-[#00553d] focus:border-[#00553d] text-sm">
-                            <option value="">Select Department</option>
-                            @if(isset($departments) && $departments->count() > 0)
-                            @foreach($departments as $department)
-                            <option value="{{ $department->name }}">{{ $department->name }}</option>
-                            @endforeach
-                            @else
-                            <option value="Other">Other</option>
-                            @endif
-                        </select>
-                    </div>
-                    <div>
-                        <label for="editEmail" class="block text-xs font-medium text-[#00553d] mb-1">Email *</label>
-                        <input type="email" name="email" id="editEmail" required class="w-full px-3 py-1.5 border border-[#ffcc34] rounded-lg focus:ring-[#00553d] focus:border-[#00553d] text-sm">
-                    </div>
-                    <div>
-                        <label for="editStatus" class="block text-xs font-medium text-[#00553d] mb-1">Status *</label>
-                        <div class="flex gap-2 items-center">
-                            <select name="status" id="editStatus" required class="w-full px-3 py-1.5 border border-[#ffcc34] rounded-lg focus:ring-[#00553d] focus:border-[#00553d] text-sm">
-                                <option value="">Select Status</option>
-                                <option value="Active">Active</option>
-                                <option value="Resigned">Resigned</option>
-                            </select>
-                            <button type="button" id="toggleStatusBtn" onclick="toggleStatus()" class="bg-[#ffcc34] hover:bg-[#e6b82f] text-[#00553d] font-medium py-1.5 px-3 rounded-lg transition duration-200 border border-[#90143c] text-sm" aria-label="Toggle Staff Status">
-                                Toggle Status
+                <!-- Staff List -->
+                <div class="bg-white rounded-lg shadow-md overflow-hidden staff-card border border-[#ffcc34] slide-up">
+                    <div class="p-4">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-xs font-bold text-[#00553d] flex items-center">
+                                <div class="p-1.5 bg-gradient-to-br from-[#00553d] to-[#007a52] rounded-md mr-2">
+                                    <i class="fas fa-list text-white text-xs"></i>
+                                </div>
+                                Staff List
+                            </h3>
+                            <button id="export-btn" class="gradient-btn px-4 py-2 text-white font-semibold rounded-lg text-xs border border-[#ffcc34] shadow-md hover:shadow-lg flex items-center transition-all duration-300">
+                                <i class="fas fa-file-export mr-2"></i>Export CSV
                             </button>
                         </div>
-                    </div>
-                    <div class="flex gap-2">
-                        <button type="submit" class="flex-1 bg-[#00553d] hover:bg-[#003d2b] text-white font-medium py-1.5 px-3 rounded-lg transition duration-200 border border-[#ffcc34] text-sm">
-                            Update Staff
-                        </button>
-                        <button type="button" onclick="closeEditModal()" class="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-medium py-1.5 px-3 rounded-lg transition duration-200 border border-[#ffcc34] text-sm">
-                            Cancel
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
 
-    <!-- History Logs Modal -->
-    <div id="historyLogsModal" class="fixed inset-0 bg-[#00553d] bg-opacity-50 hidden flex items-center justify-center z-50">
-        <div class="bg-white rounded-xl shadow-lg max-w-6xl w-full mx-4 max-h-[80vh] flex flex-col border border-[#ffcc34]">
-            <div class="bg-[#00553d] px-5 py-3 rounded-t-xl">
-                <h2 class="text-base font-semibold text-white">History Logs</h2>
-                <button onclick="closeHistoryLogsModal()" class="absolute top-3 right-3 text-white hover:text-gray-200">
-                    <i class="fas fa-times text-sm"></i>
-                </button>
-            </div>
-            <div class="p-5 overflow-y-auto flex-1">
-                <div id="historyLogsContent">
-                    <!-- History logs will be loaded here -->
+                        <!-- Filter Form -->
+                        <form id="filter-form" action="{{ route('staff.index') }}" method="GET" class="space-y-3 mb-4" aria-label="Filter Staff Form">
+                            <div class="flex flex-col sm:flex-row gap-3">
+                                <div class="flex-1">
+                                    <input type="text" name="search" id="search" placeholder="Search by name or email..." value="{{ request('search') }}" class="w-full px-3 py-3 border border-[#ffcc34] rounded-lg text-xs focus:ring-2 focus:ring-[#00553d] focus:border-transparent transition-all duration-300 hover:shadow-md" aria-label="Search staff">
+                                </div>
+                                <div class="flex-1">
+                                    <select name="department" id="filter-department" class="w-full px-3 py-3 border border-[#ffcc34] rounded-lg text-xs focus:ring-2 focus:ring-[#00553d] focus:border-transparent transition-all duration-300 hover:shadow-md" aria-label="Filter Department">
+                                        <option value="">All Departments</option>
+                                        @foreach ($departments as $dept)
+                                            <option value="{{ $dept->name }}" {{ request('department') == $dept->name ? 'selected' : '' }}>{{ $dept->name }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div class="flex-1">
+                                    <select name="status" id="filter-status" class="w-full px-3 py-3 border border-[#ffcc34] rounded-lg text-xs focus:ring-2 focus:ring-[#00553d] focus:border-transparent transition-all duration-300 hover:shadow-md" aria-label="Filter Status">
+                                        <option value="">All Statuses</option>
+                                        <option value="Active" {{ request('status') == 'Active' ? 'selected' : '' }}>Active</option>
+                                        <option value="Resigned" {{ request('status') == 'Resigned' ? 'selected' : '' }}>Resigned</option>
+                                    </select>
+                                </div>
+                                <button type="submit" class="gradient-btn px-6 py-3 text-white font-semibold rounded-lg text-xs border border-[#ffcc34] shadow-md hover:shadow-lg flex items-center transition-all duration-300">
+                                    <i class="spinner fas fa-spinner fa-spin mr-2"></i>
+                                    <span class="btn-text"><i class="fas fa-filter mr-2"></i>Apply Filter</span>
+                                </button>
+                            </div>
+                        </form>
+
+                        @if ($staff->isEmpty())
+                            <div class="text-center py-12 bg-gradient-to-br from-gray-50 to-white rounded-lg border-2 border-dashed border-gray-300 relative overflow-hidden">
+                                <div class="absolute inset-0 bg-gradient-to-br from-blue-50/30 to-purple-50/30"></div>
+                                <div class="relative z-10">
+                                    <div class="w-16 h-16 bg-gradient-to-br from-gray-200 to-gray-300 rounded-full flex items-center justify-center mx-auto mb-3">
+                                        <i class="fas fa-users text-2xl text-gray-400"></i>
+                                    </div>
+                                    <p class="text-xs text-gray-500 mb-2 font-medium">No staff found</p>
+                                    <p class="text-[0.6rem] text-gray-400">Add your first staff member using the form above</p>
+                                </div>
+                            </div>
+                        @else
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full divide-y divide-[#ffcc34]" aria-label="Staff Records">
+                                    <thead class="bg-gradient-to-r from-[#90143c] to-[#b01a47] text-white">
+                                        <tr>
+                                            <th scope="col" class="px-5 py-3 text-left text-[0.65rem] font-medium uppercase tracking-wider">Name</th>
+                                            <th scope="col" class="px-5 py-3 text-left text-[0.65rem] font-medium uppercase tracking-wider">Department</th>
+                                            <th scope="col" class="px-5 py-3 text-left text-[0.65rem] font-medium uppercase tracking-wider">Email</th>
+                                            <th scope="col" class="px-5 py-3 text-left text-[0.65rem] font-medium uppercase tracking-wider">Status</th>
+                                            <th scope="col" class="px-5 py-3 text-left text-[0.65rem] font-medium uppercase tracking-wider">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="staff-table-body" class="bg-white divide-y divide-[#ffcc34]">
+                                        @foreach ($staff as $member)
+                                            <tr class="slide-up">
+                                                <td class="px-5 py-3 whitespace-nowrap text-xs text-[#00553d]">{{ $member->name }}</td>
+                                                <td class="px-5 py-3 whitespace-nowrap text-xs text-[#00553d]">{{ $member->department }}</td>
+                                                <td class="px-5 py-3 whitespace-nowrap text-xs text-[#00553d]">{{ $member->email }}</td>
+                                                <td class="px-5 py-3 whitespace-nowrap">
+                                                    <span class="flex items-center space-x-1 text-xs">
+                                                        <span class="status-indicator {{ $member->status === 'Active' ? 'status-active' : 'status-resigned' }}"></span>
+                                                        <span>{{ $member->status }}</span>
+                                                    </span>
+                                                </td>
+                                                <td class="px-5 py-3 whitespace-nowrap text-xs">
+                                                    <button class="view-btn text-[#007a52] hover:bg-blue-50 px-3 py-1.5 rounded-md font-semibold transition-all duration-200 border border-blue-200 hover:border-blue-300" data-id="{{ $member->id }}" data-name="{{ $member->name }}" aria-label="View logs for {{ $member->name }}">
+                                                        <i class="fas fa-info-circle mr-1"></i>View
+                                                    </button>
+                                                    <button class="edit-btn text-[#00553d] hover:bg-blue-50 px-3 py-1.5 rounded-md font-semibold transition-all duration-200 border border-blue-200 hover:border-blue-300" data-id="{{ $member->id }}" data-name="{{ $member->name }}" data-department="{{ $member->department }}" data-email="{{ $member->email }}" data-status="{{ $member->status }}" aria-label="Edit staff {{ $member->name }}">
+                                                        <i class="fas fa-edit mr-1"></i>Edit
+                                                    </button>
+                                                    <form action="{{ route('staff.destroy', $member->id) }}" method="POST" class="inline delete-staff-form" data-name="{{ $member->name }}">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit" class="delete-btn text-[#90143c] hover:bg-red-50 px-3 py-1.5 rounded-md font-semibold transition-all duration-200 border border-red-200 hover:border-red-300" aria-label="Delete staff {{ $member->name }}">
+                                                            <i class="fas fa-trash mr-1"></i>Delete
+                                                        </button>
+                                                    </form>
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="mt-4">
+                                <div class="text-xs text-[#00553d] mb-2">
+                                    Showing {{ $staff->firstItem() }} to {{ $staff->lastItem() }} of {{ $staff->total() }} results
+                                </div>
+                                <div class="pagination-container">
+                                    {{ $staff->appends(request()->query())->links() }}
+                                </div>
+                            </div>
+                        @endif
+                    </div>
                 </div>
             </div>
-            <div class="px-5 py-3 bg-gray-50 rounded-b-xl border-t border-[#ffcc34]">
-                <button onclick="closeHistoryLogsModal()" class="bg-gray-600 hover:bg-gray-700 text-white font-medium py-1.5 px-3 rounded-lg transition duration-200 border border-[#ffcc34] text-sm">
-                    Close
-                </button>
+        </div>
+
+        <!-- Hidden Edit Form -->
+        <form id="edit-staff-form" method="POST" style="display: none;">
+            @csrf
+            @method('PUT')
+            <input type="hidden" name="id" id="edit-id">
+            <input type="hidden" name="name" id="edit-name">
+            <input type="hidden" name="email" id="edit-email">
+            <input type="hidden" name="department" id="edit-department">
+            <input type="hidden" name="status" id="edit-status">
+        </form>
+
+        <!-- History Logs Modal -->
+        <div id="history-logs-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden flex items-center justify-center z-50" role="dialog" aria-labelledby="history-logs-title" aria-modal="true">
+            <div class="bg-white rounded-xl shadow-lg max-w-4xl w-full mx-4 max-h-[80vh] flex flex-col border border-[#ffcc34]">
+                <div class="bg-gradient-to-r from-[#90143c] to-[#b01a47] px-5 py-3 rounded-t-xl flex justify-between items-center">
+                    <h2 id="history-logs-title" class="text-xs font-semibold text-white">History Logs</h2>
+                    <button type="button" class="close-logs-btn text-white hover:text-gray-200" aria-label="Close history logs modal">
+                        <i class="fas fa-times text-sm"></i>
+                    </button>
+                </div>
+                <div class="p-5 overflow-y-auto flex-1">
+                    <div id="history-logs-content"></div>
+                </div>
+                <div class="px-5 py-3 bg-gray-50 rounded-b-xl border-t border-[#ffcc34]">
+                    <button type="button" class="close-logs-btn bg-gray-600 hover:bg-gray-700 text-white font-medium py-1.5 px-3 rounded-lg text-xs transition-all duration-200 border border-[#ffcc34] shadow-sm">
+                        Close
+                    </button>
+                </div>
             </div>
         </div>
-    </div>
 
-    <!-- SweetAlert2 CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-    <script>
-        // Search functionality
-        const searchInput = document.getElementById('searchInput');
-        const tableBody = document.getElementById('staffTableBody');
-        if (searchInput && tableBody) {
-            searchInput.addEventListener('input', function() {
-                const searchTerm = this.value.toLowerCase();
-                const rows = tableBody.querySelectorAll('tr');
-                rows.forEach(row => {
-                    const text = row.textContent.toLowerCase();
-                    row.style.display = text.includes(searchTerm) ? '' : 'none';
-                });
-            });
-        }
-
-        // Add Staff Modal
-        function openAddStaffModal() {
-            document.getElementById('addStaffModal').classList.remove('hidden');
-            document.getElementById('addStaffModal').classList.add('flex');
-            document.getElementById('addStaffForm').reset(); // Reset form fields
-        }
-
-        function closeAddStaffModal() {
-            document.getElementById('addStaffModal').classList.add('hidden');
-            document.getElementById('addStaffModal').classList.remove('flex');
-        }
-
-        document.getElementById('openAddStaffModal').addEventListener('click', openAddStaffModal);
-        document.getElementById('addStaffModal').addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeAddStaffModal();
-            }
-        });
-
-        // Handle Add Staff Form Submission
-        document.getElementById('addStaffForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const form = this;
-            const formData = new FormData(form);
-
-            fetch(form.action, {
-                    method: form.method,
-                    body: formData,
-                    headers: {
-                        'X-CSRF-TOKEN': form.querySelector('input[name="_token"]').value,
-                        'Accept': 'application/json',
-                    },
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        throw response; // Throw response to handle non-2xx status codes
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    if (data.status === 'success') {
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Success',
-                            text: data.message || 'Staff member added successfully!',
-                            timer: 1500,
-                            showConfirmButton: false,
-                        }).then(() => {
-                            closeAddStaffModal();
-                            window.location.reload();
-                        });
-                    }
-                })
-                .catch(async error => {
-                    let errorMessage = 'An error occurred while adding the staff member.';
-                    if (error.json) {
-                        const errorData = await error.json();
-                        if (errorData.status === 'error') {
-                            if (errorData.errors) {
-                                errorMessage = Object.values(errorData.errors).flat().join(' ');
-                            } else {
-                                errorMessage = errorData.message || errorMessage;
-                            }
-                        }
-                    }
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: errorMessage,
-                    });
-                });
-        });
-
-        // Filter Modal
-        function openFilterModal() {
-            document.getElementById('filterModal').classList.remove('hidden');
-            document.getElementById('filterModal').classList.add('flex');
-        }
-
-        function closeFilterModal() {
-            document.getElementById('filterModal').classList.add('hidden');
-            document.getElementById('filterModal').classList.remove('flex');
-        }
-
-        function applyFilter() {
-            const department = document.getElementById('filterDepartment').value.toLowerCase();
-            const status = document.getElementById('filterStatus').value.toLowerCase();
-            const rows = tableBody.querySelectorAll('tr');
-
-            rows.forEach(row => {
-                const rowDepartment = row.cells[1].textContent.toLowerCase();
-                const rowStatus = row.cells[3].textContent.toLowerCase();
-                const departmentMatch = !department || rowDepartment === department;
-                const statusMatch = !status || rowStatus === status;
-                row.style.display = departmentMatch && statusMatch ? '' : 'none';
-            });
-
-            closeFilterModal();
-        }
-
-        document.getElementById('openFilterModal').addEventListener('click', openFilterModal);
-        document.getElementById('filterModal').addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeFilterModal();
-            }
-        });
-
-        // Update the editStaff function
-        function editStaff(button) {
-            const staffId = button.getAttribute('data-id');
-            const row = button.closest('tr');
-            const name = row.cells[0].textContent.trim();
-            const department = row.cells[1].textContent.trim();
-            const email = row.cells[2].textContent.trim();
-            const status = row.cells[3].textContent.trim();
-
-            // Set form values
-            const form = document.getElementById('editStaffForm');
-            form.action = `/staff/${staffId}`;
-            document.getElementById('editId').value = staffId;
-            document.getElementById('editName').value = name;
-            document.getElementById('editEmail').value = email;
-            document.getElementById('editStatus').value = status;
-
-            // Handle department select
-            const editDepartmentSelect = document.getElementById('editDepartment');
-            editDepartmentSelect.value = department;
-
-            // Update toggle button text
-            updateToggleButtonText(status);
-
-            // Show modal
-            document.getElementById('editModal').classList.remove('hidden');
-            document.getElementById('editModal').classList.add('flex');
-        }
-
-        // Update the form submission handler
-        document.getElementById('editStaffForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const form = this;
-            const formData = new FormData(form);
-            const staffId = form.querySelector('input[name="id"]').value;
-
-            fetch(`/staff/${staffId}`, {
-                    method: 'PUT',
-                    headers: {
-                        'X-CSRF-TOKEN': form.querySelector('input[name="_token"]').value,
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(Object.fromEntries(formData)),
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        return response.json().then(err => {
-                            throw err;
-                        });
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Success',
-                        text: 'Staff updated successfully!',
-                    }).then(() => {
-                        window.location.reload();
-                    });
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    let errorMessage = 'An error occurred while updating staff.';
-
-                    if (error.errors) {
-                        errorMessage = Object.values(error.errors).flat().join('\n');
-                    } else if (error.message) {
-                        errorMessage = error.message;
-                    }
-
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: errorMessage,
-                    });
-                });
-        });
-
-        function updateToggleButtonText(status) {
-            const toggleBtn = document.getElementById('toggleStatusBtn');
-            if (status === 'Active') {
-                toggleBtn.textContent = 'Mark as Resigned';
-                toggleBtn.classList.remove('bg-[#00553d]', 'hover:bg-[#003d2b]');
-                toggleBtn.classList.add('bg-[#90143c]', 'hover:bg-[#6b102d]');
-            } else {
-                toggleBtn.textContent = 'Mark as Active';
-                toggleBtn.classList.remove('bg-[#90143c]', 'hover:bg-[#6b102d]');
-                toggleBtn.classList.add('bg-[#00553d]', 'hover:bg-[#003d2b]');
-            }
-        }
-
-        function toggleStatus() {
-            const statusSelect = document.getElementById('editStatus');
-            const currentStatus = statusSelect.value;
-            const newStatus = currentStatus === 'Active' ? 'Resigned' : 'Active';
-            statusSelect.value = newStatus;
-            updateToggleButtonText(newStatus);
-        }
-
-        function closeEditModal() {
-            document.getElementById('editModal').classList.add('hidden');
-            document.getElementById('editModal').classList.remove('flex');
-        }
-
-        document.getElementById('editModal').addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeEditModal();
-            }
-        });
-
-        // Handle Delete Staff Form Submission
-        document.querySelectorAll('.delete-staff-form').forEach(form => {
-            form.addEventListener('submit', function(e) {
-                e.preventDefault();
-                const staffName = this.getAttribute('data-name');
-
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        @if (session('success'))
+            <script>
                 Swal.fire({
-                    title: `Are you sure you want to delete ${staffName}?`,
-                    text: "This action cannot be undone.",
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#901c',
-                    cancelButtonColor: '#3085d6',
-                    confirmButtonText: 'Yes, delete it!'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        const formData = new FormData(this);
-
-                        fetch(this.action, {
-                                method: 'POST',
-                                body: formData,
-                                headers: {
-                                    'X-CSRF-TOKEN': this.querySelector('input[name="_token"]').value,
-                                    'Accept': 'application/json',
-                                },
-                            })
-                            .then(response => {
-                                if (!response.ok) {
-                                    throw response;
-                                }
-                                return response.json();
-                            })
-                            .then(data => {
-                                if (data.status === 'success') {
-                                    Swal.fire({
-                                        icon: 'success',
-                                        title: 'Deleted',
-                                        text: data.message || `${staffName} has been deleted successfully!`,
-                                        timer: 1500,
-                                        showConfirmButton: false,
-                                    }).then(() => {
-                                        window.location.reload();
-                                    });
-                                }
-                            })
-                            .catch(async error => {
-                                let errorMessage = 'An error occurred while deleting the staff member.';
-                                if (error.json) {
-                                    const errorData = await error.json();
-                                    if (errorData.status === 'error') {
-                                        errorMessage = errorData.message || errorMessage;
-                                    }
-                                }
-                                Swal.fire({
-                                    icon: 'error',
-                                    title: 'Error',
-                                    text: errorMessage,
-                                });
-                            });
-                    }
+                    title: 'Success!',
+                    html: `
+                        <div class="text-left">
+                            <div class="flex items-center space-x-2 mb-3">
+                                <i class="fas fa-check-circle text-green-500"></i>
+                                <span>{!! session('success') !!}</span>
+                            </div>
+                            <div class="bg-green-50 p-3 rounded-lg border border-green-200">
+                                <div class="text-xs text-green-700">
+                                    <strong>Next Steps:</strong>
+                                    <ul class="mt-2 space-y-1 text-[0.6rem]">
+                                        <li>• Changes are now active</li>
+                                        <li>• Notify staff of updates if needed</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    `,
+                    icon: 'success',
+                    confirmButtonColor: '#00553d',
+                    timer: 5000
                 });
-            });
-        });
+            </script>
+        @endif
+        @if (session('error'))
+            <script>
+                Swal.fire({
+                    title: 'Error',
+                    html: `
+                        <div class="text-left">
+                            <div class="flex items-center space-x-2 mb-3">
+                                <i class="fas fa-exclamation-triangle text-red-500"></i>
+                                <span>{!! session('error') !!}</span>
+                            </div>
+                            <div class="bg-red-100 p-3 rounded-lg border border-red-200">
+                                <div class="text-xs text-red-700">
+                                    <strong>Troubleshooting Tips:</strong>
+                                    <ul class="mt-2 space-y-1 text-[0.6rem]">
+                                        <li>• Check input values</li>
+                                        <li>• Try again or contact support</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    `,
+                    icon: 'error',
+                    confirmButtonColor: '#90143c'
+                });
+            </script>
+        @endif
 
-        // Export CSV functionality
-        document.getElementById('exportBtn').addEventListener('click', function() {
-            const table = document.querySelector('table');
-            if (!table) return;
-
-            let csv = '';
-            const rows = table.querySelectorAll('tr');
-
-            rows.forEach(row => {
-                const cols = row.querySelectorAll('td, th');
-                const rowData = [];
-
-                cols.forEach((col, index) => {
-                    if (index < cols.length - 1) {
-                        rowData.push('"' + col.textContent.trim().replace(/"/g, '""') + '"');
-                    }
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                // Accordion Handling
+                document.querySelectorAll('.accordion-toggle').forEach(toggle => {
+                    toggle.addEventListener('click', () => {
+                        const target = document.getElementById(toggle.dataset.target);
+                        const icon = toggle.querySelector('.accordion-icon');
+                        const isOpen = target.classList.contains('open');
+                        target.classList.toggle('open');
+                        icon.classList.toggle('rotate-180');
+                        toggle.setAttribute('aria-expanded', !isOpen);
+                        if (target.classList.contains('open')) {
+                            target.style.animation = 'fadeIn 0.3s ease-out';
+                        }
+                    });
                 });
 
-                if (rowData.length > 0) {
-                    csv += rowData.join(',') + '\n';
-                }
-            });
-
-            const blob = new Blob([csv], {
-                type: 'text/csv'
-            });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'staff_members.csv';
-            a.click();
-            window.URL.revokeObjectURL(url);
-        });
-
-        // History Logs
-        function viewHistoryLogs(button) {
-            const staffId = button.getAttribute('data-id');
-            const modal = document.getElementById('historyLogsModal');
-
-            document.getElementById('historyLogsContent').innerHTML = `
-                <div class="text-center py-8">
-                    <i class="fas fa-spinner fa-spin text-xl text-[#00553d]"></i>
-                    <p class="mt-2 text-[#00553d] text-sm">Loading history logs...</p>
-                </div>
-            `;
-
-            fetch(`/staff/${staffId}/history-logs`, {
-                    headers: {
-                        'Accept': 'application+json',
-                    },
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
+                // Utility Functions
+                const setLoadingState = (button, isLoading) => {
+                    if (button) {
+                        button.disabled = isLoading;
+                        button.classList.toggle('btn-loading', isLoading);
                     }
-                    return response.json();
-                })
-                .then(data => {
-                    if (data.status === 'error') {
-                        throw new Error(data.message);
-                    }
+                };
 
-                    if (data.logs && data.logs.length > 0) {
-                        renderHistoryLogs(data);
-                    } else {
-                        document.getElementById('historyLogsContent').innerHTML = `
-                        <div class="text-center py-8">
-                            <p class="text-sm text-[#00553d]">No history logs found for this staff member.</p>
+                const showAlert = (message, type = 'info') => {
+                    const bgColor = type === 'success' ? '#d1fae5' : type === 'error' ? '#fee2e2' : '#e0f2fe';
+                    const textColor = type === 'success' ? '#065f46' : type === 'error' ? '#b91c1c' : '#1e40af';
+                    const alertDiv = document.createElement('div');
+                    alertDiv.className = `p-3 rounded-lg mb-3 border text-xs ${type === 'error' ? 'border-red-200' : 'border-gray-200'}`;
+                    alertDiv.style.backgroundColor = bgColor;
+                    alertDiv.style.color = textColor;
+                    alertDiv.innerHTML = `
+                        <div class="flex items-center space-x-2">
+                            <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-triangle'}"></i>
+                            <span>${message}</span>
                         </div>
                     `;
+                    const container = document.getElementById('alert-container');
+                    if (container) {
+                        container.appendChild(alertDiv);
+                        setTimeout(() => alertDiv.remove(), 5000);
                     }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    document.getElementById('historyLogsContent').innerHTML = `
-                    <div class="text-center py-8 text-[#90143c]">
-                        <p class="text-sm">Error loading history logs: ${error.message}</p>
-                        <p class="text-xs mt-2">Please check the console for more details.</p>
-                    </div>
-                `;
-                });
+                };
 
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-        }
+                // Form Submission Handling
+                const handleFormSubmit = async (form, button, successMsg, errorMsg = 'An error occurred.') => {
+                    const formData = new FormData(form);
+                    setLoadingState(button, true);
+                    Swal.fire({
+                        title: 'Processing...',
+                        html: 'Please wait...',
+                        allowOutsideClick: false,
+                        showConfirmButton: false,
+                        didOpen: () => { Swal.showLoading(); }
+                    });
 
-        function renderHistoryLogs(data) {
-            let html = `
-                <div class="mb-4">
-                    <h3 class="font-semibold text-base text-[#00553d]">Staff: ${data.staff_name}</h3>
-                    <p class="text-xs text-[#00553d]">Total Logs: ${data.logs.length}</p>
-                </div>
-                <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-[#ffcc34]">
-                        <thead class="bg-[#ffcc34]">
-                            <tr>
-                                <th class="px-5 py-2 text-left text-[0.65rem] font-medium text-[#00553d] uppercase tracking-wider">Date</th>
-                                <th class="px-5 py-2 text-left text-[0.65rem] font-medium text-[#00553d] uppercase tracking-wider">Action</th>
-                                <th class="px-5 py-2 text-left text-[0.65rem] font-medium text-[#00553d] uppercase tracking-wider">Model</th>
-                                <th class="px-5 py-2 text-left text-[0.5rem] font-medium text-[#00553d] uppercase tracking-wider">Changes</th>
-                                <th class="px-5 py-2 text-left text-[0.65rem] font-medium text-[#00553d] uppercase tracking-wider">Description</th>
-                            </tr>
-                        </thead>
-                        <tbody class="bg-white divide-y divide-[#ffcc34]">
-            `;
-
-            data.logs.forEach(log => {
-                let changes = '-';
-                try {
-                    if (log.old_values || log.new_values) {
-                        const oldValues = typeof log.old_values === 'string' ? JSON.parse(log.old_values) : log.old_values;
-                        const newValues = typeof log.new_values === 'string' ? JSON.parse(log.new_values) : log.new_values;
-
-                        if (oldValues && newValues) {
-                            changes = Object.keys(newValues).map(key => {
-                                const oldVal = oldValues[key] !== undefined ? oldValues[key] : 'null';
-                                const newVal = newValues[key] !== undefined ? newValues[key] : 'null';
-                                return `${key}: ${oldVal} → ${newVal}`;
-                            }).join('<br>');
+                    try {
+                        const response = await fetch(form.action, {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRF-TOKEN': form.querySelector('input[name="_token"]').value,
+                                'Accept': 'application/json'
+                            },
+                            body: formData
+                        });
+                        const data = await response.json();
+                        if (!response.ok || data.status === 'error') {
+                            throw new Error(data.message || JSON.stringify(data.errors) || 'Request failed');
                         }
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success!',
+                            html: data.message || successMsg,
+                            confirmButtonColor: '#00553d',
+                            timer: 3000
+                        }).then(() => {
+                            window.location.reload(true);
+                        });
+                    } catch (error) {
+                        console.error('Form submission error:', error);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            html: error.message || errorMsg,
+                            confirmButtonColor: '#90143c'
+                        });
+                    } finally {
+                        setLoadingState(button, false);
                     }
-                } catch (e) {
-                    changes = 'Changed (details unavailable)';
-                    console.error('Error parsing changes:', e);
+                };
+
+                // Add Staff Form
+                const addStaffForm = document.getElementById('add-staff-form');
+                if (addStaffForm) {
+                    addStaffForm.addEventListener('submit', async (e) => {
+                        e.preventDefault();
+                        const name = addStaffForm.querySelector('#name').value.trim();
+                        const email = addStaffForm.querySelector('#email').value.trim();
+                        const department = addStaffForm.querySelector('#department').value;
+                        const status = addStaffForm.querySelector('#status').value;
+                        if (!name || !email || !department || !status || !email.includes('@')) {
+                            showAlert('Please fill out all required fields correctly.', 'error');
+                            return;
+                        }
+                        Swal.fire({
+                            title: 'Add Staff Member?',
+                            html: `
+                                <div class="text-left space-y-3">
+                                    <div class="bg-blue-50 p-3 rounded-lg border border-blue-200">
+                                        <div class="text-xs text-blue-600">
+                                            <strong>Name:</strong> ${name}<br>
+                                            <strong>Email:</strong> ${email}<br>
+                                            <strong>Department:</strong> ${department}<br>
+                                            <strong>Status:</strong> ${status}
+                                        </div>
+                                    </div>
+                                </div>
+                            `,
+                            icon: 'question',
+                            showCancelButton: true,
+                            confirmButtonColor: '#00553d',
+                            cancelButtonColor: '#90143c',
+                            confirmButtonText: '<i class="fas fa-user-plus mr-1"></i>Confirm',
+                            cancelButtonText: 'Cancel'
+                        }).then(result => {
+                            if (result.isConfirmed) {
+                                handleFormSubmit(addStaffForm, addStaffForm.querySelector('#add-staff-btn'), 'Staff added successfully!');
+                            }
+                        });
+                    });
                 }
 
-                html += `
-                    <tr>
-                        <td class="px-5 py-3 whitespace-nowrap text-xs text-[#00553d]">${log.action_date}</td>
-                        <td class="px-5 py-3 whitespace-nowrap text-xs text-[#00553d]">${log.action}</td>
-                        <td class="px-5 py-3 whitespace-nowrap text-xs text-[#00553d]">${log.model} (ID: ${log.model_id})</td>
-                        <td class="px-5 py-3 text-xs text-[#00553d] changes-cell">${changes}</td>
-                        <td class="px-5 py-3 text-xs text-[#00553d]">${log.description || '-'}</td>
-                    </tr>
-                `;
-            });
-
-            html += `</tbody></table></div>`;
-            document.getElementById('historyLogsContent').innerHTML = html;
-        }
-
-        function closeHistoryLogsModal() {
-            const modal = document.getElementById('historyLogsModal');
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
-        }
-
-        document.getElementById('historyLogsModal').addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeHistoryLogsModal();
-            }
-        });
-
-        document.addEventListener('DOMContentLoaded', function() {
-            // Function to update staff count
-            function updateStaffCount() {
-                fetch('/api/total-staff')
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error('Network response was not ok');
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        const staffCountElement = document.querySelector('[data-name="Total Staff"] .text-[#00553d]');
-                        if (staffCountElement) {
-                            staffCountElement.textContent = data.count;
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error fetching staff count:', error);
+                // Edit Staff
+                document.querySelectorAll('.edit-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        console.log('Edit button clicked:', btn.dataset.id);
+                        const form = document.getElementById('edit-staff-form');
+                        form.action = `/staff/${btn.dataset.id}`;
+                        document.getElementById('edit-id').value = btn.dataset.id;
+                        document.getElementById('edit-name').value = btn.dataset.name;
+                        document.getElementById('edit-email').value = btn.dataset.email;
+                        document.getElementById('edit-department').value = btn.dataset.department;
+                        document.getElementById('edit-status').value = btn.dataset.status;
+                        Swal.fire({
+                            title: 'Edit Staff Member',
+                            html: `
+                                <div class="space-y-3">
+                                    <div class="bg-blue-50 p-3 rounded-md border border-blue-200">
+                                        <div class="text-xs text-blue-600">
+                                            <strong>Current Name:</strong> ${btn.dataset.name}<br>
+                                            <strong>Email:</strong> ${btn.dataset.email}<br>
+                                            <strong>Department:</strong> ${btn.dataset.department}<br>
+                                            <strong>Status:</strong> ${btn.dataset.status}
+                                        </div>
+                                    </div>
+                                    <input id="swal-name" class="w-full px-3 py-2 text-xs border border-[#ffcc34] rounded-md" value="${btn.dataset.name}" placeholder="Name">
+                                    <input id="swal-email" class="w-full px-3 py-2 text-xs border border-[#ffcc34] rounded-md" value="${btn.dataset.email}" placeholder="Email">
+                                    <select id="swal-department" class="w-full px-3 py-3 text-xs border border-[#ffcc34] rounded-md">
+                                        <option value="">Select Department</option>
+                                        @foreach ($departments as $dept)
+                                            <option value="{{ $dept->name }}" {{ $dept->name == $member->department ? 'selected' : '' }}>{{ $dept->name }}</option>
+                                        @endforeach
+                                    </select>
+                                    <select id="swal-status" class="w-full px-3 py-3 text-xs border border-[#ffcc34] rounded-md">
+                                        <option value="Active" ${btn.dataset.status === 'Active' ? 'selected' : ''}>Active</option>
+                                        <option value="Resigned" ${btn.dataset.status === 'Resigned' ? 'selected' : ''}>Resigned</option>
+                                    </select>
+                                </div>
+                            `,
+                            showCancelButton: true,
+                            confirmButtonColor: '#00553d',
+                            cancelButtonColor: '#90143c',
+                            confirmButtonText: '<i class="fas fa-save mr-1"></i>Confirm',
+                            cancelButtonText: 'Cancel',
+                            preConfirm: () => {
+                                const name = document.getElementById('swal-name').value.trim();
+                                const email = document.getElementById('swal-email').value.trim();
+                                const department = document.getElementById('swal-department').value;
+                                const status = document.getElementById('swal-status').value;
+                                if (!name || !email || !department || !status || !email.includes('@')) {
+                                    Swal.showValidationMessage('Please fill out all fields correctly.');
+                                    return false;
+                                }
+                                document.getElementById('edit-id').value = btn.dataset.id;
+                                document.getElementById('edit-name').value = name;
+                                document.getElementById('edit-email').value = email;
+                                document.getElementById('edit-department').value = department;
+                                document.getElementById('edit-status').value = status;
+                                return true;
+                            }
+                        }).then(result => {
+                            if (result.isConfirmed) {
+                                handleFormSubmit(form, btn, 'Staff updated successfully!');
+                            }
+                        });
                     });
-            }
+                });
 
-            // Initial load
-            updateStaffCount();
+                // Delete Staff
+                document.querySelectorAll('.delete-staff-form').forEach(form => {
+                    form.addEventListener('submit', async (e) => {
+                        e.preventDefault();
+                        console.log('Delete form submitted:', form.dataset.name);
+                        Swal.fire({
+                            title: `Delete ${form.dataset.name}?`,
+                            html: `
+                                <div class="text-left">
+                                    <div class="bg-red-50 p-3 rounded-md border border-red-200">
+                                        <div class="text-xs text-red-600">
+                                            This will permanently delete staff member "<strong>${form.dataset.name}</strong>".
+                                        </div>
+                                    </div>
+                                    <div class="mt-3 text-gray-600">
+                                        <p class="text-xs">Type "<strong>DELETE</strong>" to confirm:</p>
+                                        <input type="text" id="confirmation" class="w-full px-3 py-2 text-xs border border-[#ffcc34] rounded-md mt-1">
+                                    </div>
+                                </div>
+                            `,
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonColor: '#dc2626',
+                            cancelButtonColor: '#6b7280',
+                            confirmButtonText: '<i class="fas fa-trash mr-1"></i>Confirm',
+                            cancelButtonText: 'Cancel',
+                            preConfirm: () => {
+                                if (document.getElementById('confirmation').value !== 'DELETE') {
+                                    Swal.showValidationMessage('You must type "DELETE" to confirm.');
+                                    return false;
+                                }
+                            }
+                        }).then(result => {
+                            if (result.isConfirmed) {
+                                handleFormSubmit(form, form.querySelector('.delete-btn'), `${form.dataset.name} deleted successfully!`);
+                            }
+                        });
+                    });
+                });
 
-            // Optionally: Refresh the count periodically (every 30 seconds)
-            setInterval(updateStaffCount, 30000);
-        });
-    </script>
-    <x-auth-footer />
+                // View History Logs
+                document.querySelectorAll('.view-btn').forEach(btn => {
+                    btn.addEventListener('click', async (e) => {
+                        e.preventDefault();
+                        console.log('View button clicked:', btn.dataset.id, btn.dataset.name);
+                        const modal = document.getElementById('history-logs-modal');
+                        const content = document.getElementById('history-logs-content');
+                        content.innerHTML = `
+                            <div class="text-center py-4">
+                                <i class="fas fa-spinner fa-spin text-xl text-[#00553d]"></i>
+                                <p class="mt-2 text-xs text-[#00553d]">Loading history...</p>
+                            </div>
+                        `;
+                        modal.classList.remove('hidden');
+                        modal.classList.add('flex');
+
+                        try {
+                            const response = await fetch(`/staff/${btn.dataset.id}/history-logs`, {
+                                headers: { 'Accept': 'application/json' }
+                            });
+                            const data = await response.json();
+                            console.log('History logs response:', data);
+                            if (!response.ok || data.status === 'error') {
+                                throw new Error(data.message || 'Failed to load history logs');
+                            }
+                            if (data.logs && data.logs.length > 0) {
+                                let html = `
+                                    <div class="mb-4">
+                                        <h3 class="text-xs font-semibold text-[#00553d]">Staff: ${data.staff_name || 'Unknown'}</h3>
+                                        <p class="text-[0.6rem] text-[#666]">Total logs: ${data.logs.length}</p>
+                                    </div>
+                                    <div class="overflow-x-auto">
+                                        <table class="min-w-full divide-y divide-[#ffcc34]">
+                                            <thead class="bg-gradient-to-br from-[#90143c] to-[#b01a47]">
+                                                <tr>
+                                                    <th class="px-5 py-2 text-left text-[0.65rem] font-medium uppercase tracking-wider text-white">Date</th>
+                                                    <th class="px-5 py-2 text-left text-[0.65rem] font-medium uppercase tracking-wider text-white">Action</th>
+                                                    <th class="px-5 py-2 text-left text-[0.65rem] font-medium uppercase tracking-wider text-white">Model</th>
+                                                    <th class="px-5 py-2 text-left text-[0.65rem] font-medium uppercase tracking-wider text-white">Changes</th>
+                                                    <th class="px-5 py-2 text-left text-[0.65rem] font-medium uppercase tracking-wider text-white">Description</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="bg-white divide-y divide-[#ffcc34]">
+                                `;
+                                data.logs.forEach(log => {
+                                    let changes = '-';
+                                    try {
+                                        const oldValues = typeof log.old_values === 'string' ? JSON.parse(log.old_values) : log.old_values || {};
+                                        const newValues = typeof log.new_values === 'string' ? JSON.parse(log.new_values) : log.new_values || {};
+                                        changes = Object.keys(newValues)
+                                            .map(key => `${key}: ${oldValues[key] || 'none'} -> ${newValues[key] || 'none'}`)
+                                            .join('<br>');
+                                    } catch (e) {
+                                        changes = 'Changed (details unavailable)';
+                                    }
+                                    html += `
+                                        <tr>
+                                            <td class="px-5 py-3 whitespace-nowrap text-xs text-[#00553d]">${log.action_date || '-'}</td>
+                                            <td class="px-5 py-3 whitespace-nowrap text-xs text-[#00553d]">${log.action || '-'}</td>
+                                            <td class="px-5 py-3 whitespace-nowrap text-xs text-[#00553d]">${log.model_brand || '-'} (ID: ${log.model_id || '-'})</td>
+                                            <td class="px-5 py-3 text-xs text-[#00553d]">${changes}</td>
+                                            <td class="px-5 py-3 whitespace-nowrap text-xs text-[#00553d]">${log.description || '-'}</td>
+                                        </tr>
+                                    `;
+                                });
+                                html += `
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                `;
+                                content.innerHTML = html;
+                            } else {
+                                content.innerHTML = `
+                                    <div class="text-center py-8">
+                                        <p class="text-xs text-gray-500">No history logs found for this staff member.</p>
+                                    </div>
+                                `;
+                            }
+                        } catch (error) {
+                            console.error('Error loading history logs:', error);
+                            showAlert(`Error loading logs: ${error.message}`, 'error');
+                            content.innerHTML = `
+                                <div class="text-center py-8">
+                                    <p class="text-xs text-red-600">Failed to load logs. Please try again.</p>
+                                </div>
+                            `;
+                        }
+                    });
+                });
+
+                // Close History Modal
+                document.querySelectorAll('.close-logs-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        console.log('Closing history logs modal');
+                        const modal = document.getElementById('history-logs-modal');
+                        modal.classList.add('hidden');
+                        modal.classList.remove('flex');
+                    });
+                });
+
+                // Export CSV
+                document.getElementById('export-btn').addEventListener('click', async () => {
+                    console.log('Export CSV clicked');
+                    Swal.fire({
+                        title: 'Export Staff List?',
+                        text: 'This will generate a CSV file of all staff records.',
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonColor: '#00553d',
+                        cancelButtonColor: '#90143c',
+                        confirmButtonText: '<i class="fas fa-file-export mr-1"></i>Confirm',
+                        cancelButtonText: 'Cancel'
+                    }).then(result => {
+                        if (result.isConfirmed) {
+                            window.location.href = '/staff/export-csv';
+                        }
+                    });
+                });
+
+                // Update Total Staff Count
+                const updateTotalStaff = async () => {
+                    try {
+                        const response = await fetch('/api/total-staff', {
+                            headers: { 'Accept': 'application/json' }
+                        });
+                        const data = await response.json();
+                        if (response.ok && data.count !== undefined) {
+                            const counter = document.querySelector('[data-counter]');
+                            if (counter) {
+                                counter.textContent = data.count;
+                            }
+                        }
+                    } catch (error) {
+                        console.error('Error updating total staff count:', error);
+                    }
+                };
+                updateTotalStaff();
+            });
+        </script>
 </x-app-layout>

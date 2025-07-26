@@ -1,6 +1,7 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+@import './settings.css';
 
 .form-card {
     transition: all 0.3s ease;
@@ -56,4 +57,45 @@
 }
 .animate-pulse {
     animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+
+/*Settings*/
+.status-indicator {
+    @apply inline-block w-2 h-2 rounded-full mr-1;
+    animation: pulse 2s infinite;
+}
+.status-active { @apply bg-green-500; }
+.status-warning { @apply bg-yellow-500; }
+.status-inactive { @apply bg-red-500; }
+
+/* Department card effects */
+.department-card {
+    @apply transition-all duration-300 relative overflow-hidden;
+}
+.department-card:hover {
+    @apply transform -translate-y-1 scale-[1.02];
+    box-shadow: 0 12px 40px rgba(0, 85, 61, 0.15);
+}
+
+/* Setting item hover effects */
+.setting-item {
+    @apply relative transition-all duration-300;
+}
+.setting-item:hover {
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    @apply rounded-lg p-4 -m-2;
+}
+.setting-item::before {
+    content: '';
+    @apply absolute left-0 top-1/2 w-0.5 -translate-y-1/2 bg-gradient-to-b from-[#00553d] to-[#007a52] rounded transition-all duration-300;
+    height: 0;
+}
+.setting-item:hover::before {
+    height: 60%;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
 }

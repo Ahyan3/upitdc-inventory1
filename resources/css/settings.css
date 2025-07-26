@@ -1,0 +1,6 @@
+/* settings.css */
+@layer components {
+    .status-indicator { /* ... */ }
+    .department-card { /* ... */ }
+    /* etc */
+}

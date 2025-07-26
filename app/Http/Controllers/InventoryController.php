@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\Equipment;
 use App\Models\Issuance;
 use App\Models\HistoryLog;
-use App\Models\Inventory;
 use App\Models\Staff;
 use App\Models\User;
 use App\Models\Settings;
@@ -20,17 +19,24 @@ class InventoryController extends Controller
     public function index()
     {
         try {
-            $equipment = Equipment::with('department')->get();
-            $issuances = Issuance::with('equipment')->get();
             $departments = Department::all();
-            $historyLogs = HistoryLog::with(['user', 'staff'])->orderBy('action_date', 'desc')->get();
-            $equipmentData = $equipment->groupBy('equipment_name')->map->count()->toArray();
+            $equipment = Equipment::with('department')->paginate(10);
+            $issuances = Issuance::with('equipment')->whereNull('date_returned')->paginate(10);
+            $historyLogs = HistoryLog::with(['user', 'staff'])->orderBy('action_date', 'desc')->paginate(10);
+            $equipmentData = Equipment::select('equipment_name')
+                ->groupBy('equipment_name')
+                ->pluck('equipment_name')
+                ->mapWithKeys(function ($name) {
+                    return [$name => Equipment::where('equipment_name', $name)->count()];
+                })->toArray();
+
             Log::info('Inventory index loaded', [
-                'equipment_count' => $equipment->count(),
-                'issuances_count' => $issuances->count(),
-                'history_logs_count' => $historyLogs->count(),
+                'equipment_count' => $equipment->total(),
+                'issuances_count' => $issuances->total(),
+                'history_logs_count' => $historyLogs->total(),
                 'user_id' => Auth::id() ?? 'none'
             ]);
+
             return view('inventory', compact('equipment', 'issuances', 'departments', 'historyLogs', 'equipmentData'));
         } catch (\Exception $e) {
             Log::error('Error in index: ' . $e->getMessage(), ['stack_trace' => $e->getTraceAsString()]);
@@ -66,7 +72,7 @@ class InventoryController extends Controller
             'serial_number' => 'required|string|max:255|unique:equipment,serial_number',
             'date_issued' => 'required|date',
             'pr_number' => 'required|string|max:255',
-            'status' => 'required|string|in:available,issued',
+            'status' => 'required|string|in:available,not_working,working,not_returned,returned',
             'remarks' => 'nullable|string|max:255',
         ]);
 
@@ -85,7 +91,6 @@ class InventoryController extends Controller
             );
             Log::info('Staff processed', ['staff_id' => $staff->id, 'name' => $staff->name]);
 
-            // Create or find user
             $user = User::firstOrCreate(
                 ['email' => $staff->email],
                 [
@@ -96,7 +101,6 @@ class InventoryController extends Controller
             );
             Log::info('User processed', ['user_id' => $user->id, 'email' => $user->email]);
 
-            // Create equipment
             $equipment = Equipment::create([
                 'staff_name' => $validated['staff_name'],
                 'department_id' => $validated['department_id'],
@@ -110,7 +114,6 @@ class InventoryController extends Controller
             ]);
             Log::info('Equipment created', ['equipment_id' => $equipment->id]);
 
-            // Create issuance
             $issuance = Issuance::create([
                 'user_id' => $user->id,
                 'staff_id' => $staff->id,
@@ -122,11 +125,10 @@ class InventoryController extends Controller
             ]);
             Log::info('Issuance created', ['issuance_id' => $issuance->id]);
 
-            // Create history log
             HistoryLog::create([
                 'action' => 'Issued',
                 'action_date' => $validated['date_issued'],
-                'model' => 'Equipment',
+                'model_brand' => $validated['model_brand'],
                 'model_id' => $equipment->id,
                 'old_values' => null,
                 'new_values' => json_encode($validated),
@@ -183,7 +185,7 @@ class InventoryController extends Controller
             HistoryLog::create([
                 'action' => 'Returned',
                 'action_date' => $validated['date_returned'],
-                'model' => 'Equipment',
+                'model_brand' => $equipment->model_brand,
                 'model_id' => $equipment->id,
                 'old_values' => json_encode($oldValues),
                 'new_values' => json_encode(['status' => 'returned', 'return_notes' => $validated['remarks']]),
@@ -205,21 +207,19 @@ class InventoryController extends Controller
         }
     }
 
-    public function delete(Request $request, Equipment $equipment)
+    public function destroy(Request $request, Equipment $equipment)
     {
         if (!Auth::check()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Please log in to delete equipment.'
-            ], 401);
+            return $request->expectsJson()
+                ? response()->json(['success' => false, 'message' => 'Please log in to delete equipment.'], 401)
+                : redirect()->route('login')->with('error', 'Please log in to delete equipment.');
         }
 
         try {
-            // Log the deletion
             HistoryLog::create([
                 'action' => 'Deleted',
                 'action_date' => now(),
-                'model' => 'Equipment',
+                'model_brand' => $equipment->model_brand,
                 'model_id' => $equipment->id,
                 'old_values' => json_encode($equipment->toArray()),
                 'new_values' => null,
@@ -232,15 +232,17 @@ class InventoryController extends Controller
 
             $equipment->delete();
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Equipment deleted successfully'
-            ]);
+            return $request->expectsJson()
+                ? response()->json(['success' => true, 'message' => 'Equipment deleted successfully'])
+                : redirect()->route('inventory')->with('success', 'Equipment deleted successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to delete equipment: ' . $e->getMessage()
-            ], 500);
+            Log::error('Error in destroy: ' . $e->getMessage(), [
+                'equipment_id' => $equipment->id,
+                'stack_trace' => $e->getTraceAsString()
+            ]);
+            return $request->expectsJson()
+                ? response()->json(['success' => false, 'message' => 'Failed to delete equipment: ' . $e->getMessage()], 500)
+                : redirect()->back()->with('error', 'Failed to delete equipment: ' . $e->getMessage());
         }
     }
 
@@ -307,7 +309,7 @@ class InventoryController extends Controller
             'serial_number' => 'required|string|max:255|unique:equipment,serial_number,' . $equipment->id,
             'date_issued' => 'required|date',
             'pr_number' => 'required|string|max:255',
-            'status' => 'required|string|in:available,issued',
+            'status' => 'required|string|in:available,not_working,working,not_returned,returned',
             'remarks' => 'nullable|string|max:255',
         ]);
 
@@ -321,7 +323,7 @@ class InventoryController extends Controller
             HistoryLog::create([
                 'action' => 'Updated',
                 'action_date' => now(),
-                'model' => 'Equipment',
+                'model_brand' => $validated['model_brand'],
                 'model_id' => $equipment->id,
                 'old_values' => json_encode($oldValues),
                 'new_values' => json_encode($validated),
@@ -342,6 +344,79 @@ class InventoryController extends Controller
                 'stack_trace' => $e->getTraceAsString()
             ]);
             return redirect()->back()->with('error', 'Failed to update equipment: ' . $e->getMessage())->withInput();
+        }
+    }
+
+    public function show($id)
+    {
+        try {
+            $equipment = Equipment::findOrFail($id);
+            return response()->json($equipment);
+        } catch (\Exception $e) {
+            Log::error('InventoryController: Failed to fetch equipment', ['error' => $e->getMessage()]);
+            return response()->json(['status' => 'error', 'message' => 'Failed to fetch equipment'], 500);
+        }
+    }
+
+    public function exportCsv()
+    {
+        try {
+            $equipment = Equipment::with('department')->get();
+            $headers = [
+                'Content-Type' => 'text/csv',
+                'Content-Disposition' => 'attachment; filename="inventory_export.csv"',
+            ];
+
+            $callback = function () use ($equipment) {
+                $file = fopen('php://output', 'w');
+                fputcsv($file, ['Staff Name', 'Department', 'Equipment Name', 'Model/Brand', 'Date Issued', 'Serial Number', 'PR Number', 'Status']);
+
+                foreach ($equipment as $item) {
+                    fputcsv($file, [
+                        $item->staff_name ?? 'N/A',
+                        $item->department->name ?? 'N/A',
+                        $item->equipment_name,
+                        $item->model_brand,
+                        $item->date_issued instanceof \Carbon\Carbon ? $item->date_issued->format('Y-m-d') : ($item->date_issued ?? 'N/A'),
+                        $item->serial_number,
+                        $item->pr_number,
+                        ucfirst(str_replace('_', ' ', $item->status)),
+                    ]);
+                }
+
+                fclose($file);
+            };
+
+            return response()->stream($callback, 200, $headers);
+        } catch (\Exception $e) {
+            Log::error('Error exporting CSV: ' . $e->getMessage(), ['stack_trace' => $e->getTraceAsString()]);
+            return redirect()->back()->with('error', 'Failed to export inventory: ' . $e->getMessage());
+        }
+    }
+
+    public function chartData(Request $request)
+    {
+        try {
+            $timeFilter = $request->query('chart_time', 'month');
+            $query = Equipment::select('equipment_name')
+                ->groupBy('equipment_name')
+                ->pluck('equipment_name')
+                ->mapWithKeys(function ($name) use ($timeFilter) {
+                    $query = Equipment::where('equipment_name', $name);
+                    if ($timeFilter === 'week') {
+                        $query->where('date_issued', '>=', now()->subWeek());
+                    } elseif ($timeFilter === 'year') {
+                        $query->where('date_issued', '>=', now()->subYear());
+                    } else {
+                        $query->where('date_issued', '>=', now()->subMonth());
+                    }
+                    return [$name => $query->count()];
+                })->toArray();
+
+            return response()->json($query);
+        } catch (\Exception $e) {
+            Log::error('Error fetching chart data: ' . $e->getMessage(), ['stack_trace' => $e->getTraceAsString()]);
+            return response()->json([], 500);
         }
     }
 }

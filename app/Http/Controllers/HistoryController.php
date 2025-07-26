@@ -3,55 +3,53 @@
 namespace App\Http\Controllers;
 
 use App\Models\HistoryLog;
-use App\Models\Department;
 use App\Models\Equipment;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class HistoryController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Equipment::query()->with('department');
-        if ($search = $request->input('inventory_search')) {
-            $query->where('staff_name', 'like', "%{$search}%")
-                  ->orWhere('equipment_name', 'like', "%{$search}%")
-                  ->orWhere('model_brand', 'like', "%{$search}%")
-                  ->orWhere('serial_number', 'like', "%{$search}%")
-                  ->orWhere('pr_number', 'like', "%{$search}%");
-        }
-        if ($status = $request->input('inventory_status')) {
-            if ($status !== 'all') {
-                $query->where('status', $status);
-            }
-        }
-        $inventory = $query->paginate(10); 
-        $history_logs = HistoryLog::latest()->paginate(10);
-        return view('history', compact('inventory', 'history_logs'));
-    }
+        // Validate input
+        $validated = $request->validate([
+            'log_search' => 'nullable|string|max:255',
+            'log_action' => 'nullable|string|in:all,created,updated,deleted',
+            'inventory_search' => 'nullable|string|max:255',
+            'inventory_status' => 'nullable|string|in:all,available,in_use,maintenance,damaged',
+        ]);
 
-    public function history()
-    {
-        $history_logs = HistoryLog::orderBy('action_date', 'desc')->get();
-        $inventory_query = Equipment::with('department');
-
-        if (request('inventory_search')) {
-            $search = request('inventory_search');
-            $inventory_query->where(function ($q) use ($search) {
-                $q->where('staff_name', 'like', "%{$search}%")
-                    ->orWhere('equipment_name', 'like', "%{$search}%")
-                    ->orWhere('model_brand', 'like', "%{$search}%")
-                    ->orWhere('serial_number', 'like', "%{$search}%")
-                    ->orWhere('pr_number', 'like', "%{$search}%");
+        try {
+            // Cache history logs for 10 minutes
+            $historyLogs = Cache::remember('history_logs_' . md5(json_encode($request->query())), now()->addMinutes(10), function () use ($request, $validated) {
+                return HistoryLog::search($validated['log_search'] ?? null)
+                                 ->action($validated['log_action'] ?? 'all')
+                                 ->latest('action_date')
+                                 ->paginate(10);
             });
+
+            // Cache inventory items for 10 minutes
+            $inventory = Cache::remember('inventory_' . md5(json_encode($request->query())), now()->addMinutes(10), function () use ($request, $validated) {
+                return Equipment::with('department')
+                                ->search($validated['inventory_search'] ?? null)
+                                ->status($validated['inventory_status'] ?? 'all')
+                                ->paginate(10);
+            });
+
+            return view('history', [
+                'history_logs' => $historyLogs,
+                'inventory' => $inventory,
+                'pageTitle' => 'History',
+                'headerIcon' => 'fa-history',
+                'pageDescription' => 'View all inventory actions and current inventory',
+                'overviewStats' => [
+                    ['label' => 'Total Logs', 'value' => $historyLogs->total()],
+                    ['label' => 'Inventory Items', 'value' => $inventory->total()],
+                    ['label' => 'System Status', 'value' => '<span class="status-indicator status-active"></span>Active'],
+                ],
+            ]);
+        } catch (\Exception $e) {
+            return back()->with('error', 'Failed to load history data. Please try again.');
         }
-
-        // Apply status filter if present
-        if (request('inventory_status') && request('inventory_status') !== 'all') {
-            $inventory_query->where('status', request('inventory_status'));
-        }
-
-        $inventory = $inventory_query->get();
-
-        return view('history', compact('history_logs', 'inventory'));
     }
 }
