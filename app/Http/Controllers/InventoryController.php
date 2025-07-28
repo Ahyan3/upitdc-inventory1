@@ -396,27 +396,54 @@ class InventoryController extends Controller
 
     public function chartData(Request $request)
     {
-        try {
-            $timeFilter = $request->query('chart_time', 'month');
-            $query = Equipment::select('equipment_name')
-                ->groupBy('equipment_name')
-                ->pluck('equipment_name')
-                ->mapWithKeys(function ($name) use ($timeFilter) {
-                    $query = Equipment::where('equipment_name', $name);
-                    if ($timeFilter === 'week') {
-                        $query->where('date_issued', '>=', now()->subWeek());
-                    } elseif ($timeFilter === 'year') {
-                        $query->where('date_issued', '>=', now()->subYear());
-                    } else {
-                        $query->where('date_issued', '>=', now()->subMonth());
-                    }
-                    return [$name => $query->count()];
-                })->toArray();
+        $timeRange = $request->query('time_range', 'month');
+        $startDate = now();
+        $groupByFormat = 'Y-m-d';
 
-            return response()->json($query);
-        } catch (\Exception $e) {
-            Log::error('Error fetching chart data: ' . $e->getMessage(), ['stack_trace' => $e->getTraceAsString()]);
-            return response()->json([], 500);
+        switch ($timeRange) {
+            case 'week':
+                $startDate = now()->subWeek();
+                $groupByFormat = 'Y-m-d';
+                break;
+            case 'year':
+                $startDate = now()->subYear();
+                $groupByFormat = 'Y-m';
+                break;
+            case 'past_year':
+                $startDate = now()->subYear();
+                $groupByFormat = 'Y-m';
+                break;
+            case 'month':
+            default:
+                $startDate = now()->subMonth();
+                $groupByFormat = 'Y-m-d';
+                break;
         }
+
+        $issuances = Issuance::where('created_at', '>=', $startDate)
+            ->with('equipment')
+            ->get()
+            ->groupBy(function ($issuance) use ($groupByFormat) {
+                return $issuance->created_at->format($groupByFormat);
+            })
+            ->map(function ($group) {
+                return $group->countBy(function ($issuance) {
+                    return $issuance->equipment->equipment_name ?? 'Unknown';
+                });
+            });
+
+        $equipmentData = [];
+        foreach ($issuances as $date => $counts) {
+            foreach ($counts as $equipment => $count) {
+                if (!isset($equipmentData[$equipment])) {
+                    $equipmentData[$equipment] = 0;
+                }
+                $equipmentData[$equipment] += $count;
+            }
+        }
+
+        return response()->json([
+            'equipmentData' => $equipmentData
+        ]);
     }
 }

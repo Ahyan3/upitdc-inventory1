@@ -62,6 +62,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::put('/issuances/{id}', [IssuanceController::class, 'update'])->name('issuances.update');
     Route::delete('/issuances/{id}', [IssuanceController::class, 'destroy'])->name('issuances.destroy');
     Route::patch('/issuances/{id}/status', [IssuanceController::class, 'updateStatus'])->name('issuances.status');
+    Route::get('/history', [HistoryController::class, 'index'])->name('history');
+    Route::get('/history/export/csv', [HistoryController::class, 'exportHistoryCsv'])->name('history.export.csv');
+    Route::get('/history/inventory/export/csv', [HistoryController::class, 'exportInventoryCsv'])->name('history.inventory.export.csv');
 
     // Settings Routes
     Route::prefix('settings')->group(function () {

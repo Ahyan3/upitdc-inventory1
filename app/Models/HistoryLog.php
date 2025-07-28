@@ -16,6 +16,8 @@ class HistoryLog extends Model
     ];
 
     protected $fillable = [
+        'staff_id',
+        'user_id',
         'action',
         'action_date',
         'model_brand',
@@ -36,7 +38,7 @@ class HistoryLog extends Model
 
     public function user()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'user_id');
     }
 
     public function scopeSearch($query, $search)

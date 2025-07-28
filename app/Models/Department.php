@@ -19,6 +19,14 @@ class Department extends Model
         return $query;
     }
     
+     /**
+     * Get the equipment for the department.
+     */
+    public function equipment()
+    {
+        return $this->hasMany(Equipment::class, 'department_id');
+    }
+
 }
 
      $departments = Department::orderBy('name')->get();

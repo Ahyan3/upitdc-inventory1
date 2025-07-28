@@ -111,8 +111,6 @@
                     <i class="fas fa-users text-white text-xl"></i>
                     <div class="absolute inset-0 rounded-full bg-gradient-to-br from-[#90143c] to-[#b01a47] opacity-20 animate-ping"></div>
                 </div>
-                <h1 class="text-2xl font-bold bg-gradient-to-r from-[#90143c] to-[#00553d] bg-clip-text text-transparent">Staff Management</h1>
-                <p class="text-xs text-[#00553d] opacity-80 max-w-sm mx-auto">Manage your organization's staff members</p>
 
                 <div class="grid grid-cols-3 gap-3 mt-6 max-w-sm mx-auto">
                     <div class="bg-white p-2 rounded-md shadow-sm border border-[#ffcc34]/30">
