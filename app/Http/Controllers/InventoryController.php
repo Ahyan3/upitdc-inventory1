@@ -13,31 +13,96 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 
 class InventoryController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         try {
+            // Fetch users (optimized to only fetch necessary fields)
+            $users = User::select('id', 'name')->get();
+
+            // Fetch departments
             $departments = Department::all();
-            $equipment = Equipment::with('department')->paginate(10);
-            $issuances = Issuance::with('equipment')->whereNull('date_returned')->paginate(10);
-            $historyLogs = HistoryLog::with(['user', 'staff'])->orderBy('action_date', 'desc')->paginate(10);
-            $equipmentData = Equipment::select('equipment_name')
-                ->groupBy('equipment_name')
-                ->pluck('equipment_name')
-                ->mapWithKeys(function ($name) {
-                    return [$name => Equipment::where('equipment_name', $name)->count()];
-                })->toArray();
+
+            // Fetch ACTIVE staff members for equipment assignment
+            $activeStaff = Cache::remember('active_staff_for_inventory', now()->addMinutes(10), function () {
+                return Staff::withoutTrashed()
+                    ->where('status', 'Active')
+                    ->orderBy('name')
+                    ->get(['id', 'name', 'department', 'email']);
+            });
+
+            // Fetch issuances
+            $issuances = Issuance::with(['equipment.department', 'staff'])
+                ->whereNull('date_returned')
+                ->paginate(20, ['*'], 'issuances_page');
+
+            // Build inventory query with filters
+            $query = Equipment::query();
+
+            // Apply filters from the request
+            if ($request->filled('inventory_search')) {
+                $search = $request->input('inventory_search');
+                $query->where(function ($q) use ($search) {
+                    $q->where('equipment_name', 'like', "%{$search}%")
+                        ->orWhere('serial_number', 'like', "%{$search}%")
+                        ->orWhere('pr_number', 'like', "%{$search}%")
+                        ->orWhereHas('issuances.staff', function ($q) use ($search) {
+                            $q->where('name', 'like', "%{$search}%");
+                        });
+                });
+            }
+
+            if ($request->filled('inventory_status') && $request->input('inventory_status') != 'all') {
+                $query->where('status', $request->input('inventory_status'));
+            }
+
+            if ($request->filled('inventory_department') && $request->input('inventory_department') != 'all') {
+                $query->where('department_id', $request->input('inventory_department'));
+            }
+
+            if ($request->filled('inventory_user') && $request->input('inventory_user') != 'all') {
+                $query->whereHas('issuances', function ($q) use ($request) {
+                    $q->where('staff_id', $request->input('inventory_user'));
+                });
+            }
+
+            if ($request->filled('inventory_date_from')) {
+                $query->whereDate('date_issued', '>=', $request->input('inventory_date_from'));
+            }
+
+            // Apply pagination for inventory 
+            $inventoryPerPage = $request->input('inventory_per_page', 20);
+            if (!in_array($inventoryPerPage, [20, 50, 100])) {
+                $inventoryPerPage = 20;
+            }
+            $inventory = $query->with('department')->paginate($inventoryPerPage, ['*'], 'inventory_page')->appends($request->except('inventory_page'));
+
+            // Equipment data for the chart
+            $equipmentData = Equipment::groupBy('equipment_name')
+                ->selectRaw('equipment_name, COUNT(*) as count')
+                ->pluck('count', 'equipment_name')
+                ->toArray();
 
             Log::info('Inventory index loaded', [
-                'equipment_count' => $equipment->total(),
+                'inventory_count' => $inventory->total(),
                 'issuances_count' => $issuances->total(),
-                'history_logs_count' => $historyLogs->total(),
+                'active_staff_count' => $activeStaff->count(),
                 'user_id' => Auth::id() ?? 'none'
             ]);
 
-            return view('inventory', compact('equipment', 'issuances', 'departments', 'historyLogs', 'equipmentData'));
+            return view('inventory', [
+                'inventory' => $inventory,
+                'departments' => $departments,
+                'issuances' => $issuances,
+                'equipmentData' => $equipmentData,
+                'users' => $users,
+                'activeStaff' => $activeStaff, 
+                'inventoryPerPage' => $inventoryPerPage,
+                'staffValidationMessage' => 'Only registered active staff members can be issued equipment. If the person is not listed below, please register them in the Staff tab first with their consent.',
+            ]);
         } catch (\Exception $e) {
             Log::error('Error in index: ' . $e->getMessage(), ['stack_trace' => $e->getTraceAsString()]);
             return redirect()->back()->with('error', 'Failed to load inventory: ' . $e->getMessage());
@@ -47,8 +112,26 @@ class InventoryController extends Controller
     public function create()
     {
         try {
-            Log::info('Inventory create accessed', ['user_id' => Auth::id() ?? 'none']);
-            return view('inventory.issue');
+            // Get active staff and departments for the form
+            $activeStaff = Cache::remember('active_staff_for_inventory', now()->addMinutes(10), function () {
+                return Staff::withoutTrashed()
+                    ->where('status', 'Active')
+                    ->orderBy('name')
+                    ->get(['id', 'name', 'department', 'email']);
+            });
+
+            $departments = Department::orderBy('name')->get();
+
+            Log::info('Inventory create accessed', [
+                'active_staff_count' => $activeStaff->count(),
+                'user_id' => Auth::id() ?? 'none'
+            ]);
+
+            return view('inventory.issue', [
+                'activeStaff' => $activeStaff,
+                'departments' => $departments,
+                'staffValidationMessage' => 'Only registered active staff members can be issued equipment. If the person is not listed, please register them in the Staff tab first with their consent.'
+            ]);
         } catch (\Exception $e) {
             Log::error('Error in create: ' . $e->getMessage(), ['stack_trace' => $e->getTraceAsString()]);
             return redirect()->back()->with('error', 'Failed to load issue form: ' . $e->getMessage());
@@ -65,7 +148,7 @@ class InventoryController extends Controller
         $defaultReturnPeriod = Settings::where('key', 'default_return_period')->value('value') ?? 30;
 
         $validated = $request->validate([
-            'staff_name' => 'required|string|max:255',
+            'staff_name' => 'required|string|max:255|exists:staff,name', 
             'department_id' => 'required|exists:departments,id',
             'equipment_name' => 'required|string|max:255',
             'model_brand' => 'required|string|max:255',
@@ -79,22 +162,38 @@ class InventoryController extends Controller
         try {
             DB::beginTransaction();
 
-            $staff = Staff::firstOrCreate(
-                ['name' => $validated['staff_name']],
-                [
-                    'email' => strtolower(str_replace(' ', '.', $validated['staff_name'])) . '@example.com',
-                    'position' => 'Staff',
-                    'password' => bcrypt('password'),
-                    'email_verified_at' => now(),
-                    'remember_token' => null,
-                ]
-            );
-            Log::info('Staff processed', ['staff_id' => $staff->id, 'name' => $staff->name]);
+            // Get the existing staff member (must be registered and active)
+            $staff = Staff::withoutTrashed()
+                ->where('name', $validated['staff_name'])
+                ->where('status', 'Active')
+                ->first();
 
+            if (!$staff) {
+                throw new \Exception("Staff member '{$validated['staff_name']}' is not found or not active. Please ensure they are registered in the Staff tab and have an Active status.");
+            }
+
+            Log::info('Staff validated for equipment issue', [
+                'staff_id' => $staff->id,
+                'name' => $staff->name,
+                'status' => $staff->status,
+                'department' => $staff->department
+            ]);
+
+            // Verify the staff member's department matches the selected department
+            $selectedDepartment = Department::find($validated['department_id']);
+            if ($staff->department !== $selectedDepartment->name) {
+                Log::warning('Department mismatch detected', [
+                    'staff_department' => $staff->department,
+                    'selected_department' => $selectedDepartment->name,
+                    'staff_name' => $staff->name
+                ]);
+            }
+
+            // Create or get the corresponding user
             $user = User::firstOrCreate(
                 ['email' => $staff->email],
                 [
-                    'name' => $validated['staff_name'],
+                    'name' => $staff->name,
                     'password' => bcrypt('password'),
                     'email_verified_at' => now(),
                 ]
@@ -136,19 +235,95 @@ class InventoryController extends Controller
                 'staff_id' => $staff->id,
                 'ip_address' => $request->ip(),
                 'user_agent' => $request->userAgent(),
-                'description' => "Issued equipment: {$equipment->equipment_name}, PR: {$validated['pr_number']}, Serial: {$equipment->serial_number}",
+                'description' => "Issued equipment: {$equipment->equipment_name} to registered staff {$staff->name} (Department: {$staff->department}), PR: {$validated['pr_number']}, Serial: {$equipment->serial_number}",
             ]);
             Log::info('History log created', ['model' => 'Equipment', 'model_id' => $equipment->id]);
 
+            // Clear cache to ensure fresh data
+            Cache::forget('active_staff_for_inventory');
+
             DB::commit();
-            return redirect()->route('inventory')->with('success', 'Equipment issued successfully.');
+            return redirect()->route('inventory')->with('success', "Equipment issued successfully to {$staff->name} ({$staff->department}).");
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Error in issue: ' . $e->getMessage(), [
                 'request_data' => $request->all(),
                 'stack_trace' => $e->getTraceAsString()
             ]);
-            return redirect()->back()->with('error', 'Failed to issue equipment: ' . $e->getMessage())->withInput();
+            return redirect()->back()
+                ->with('error', 'Failed to issue equipment: ' . $e->getMessage())
+                ->with('info', 'Remember: Only registered active staff members can be issued equipment. Please check the Staff tab if the person is not listed.')
+                ->withInput();
+        }
+    }
+
+    /**
+     * Get active staff members for AJAX requests
+     * Used by frontend to populate staff dropdowns
+     */
+    public function getActiveStaff()
+    {
+        try {
+            $staff = Cache::remember('active_staff_for_inventory', now()->addMinutes(10), function () {
+                return Staff::withoutTrashed()
+                    ->where('status', 'Active')
+                    ->orderBy('name')
+                    ->get(['id', 'name', 'department', 'email']);
+            });
+
+            return response()->json([
+                'status' => 'success',
+                'data' => $staff,
+                'message' => 'Only registered active staff members can be assigned equipment. If the person is not listed, please register them in the Staff tab first with their consent.'
+            ]);
+        } catch (\Exception $e) {
+            Log::error('InventoryController: Failed to get active staff', ['error' => $e->getMessage()]);
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to load staff data.'
+            ], 500);
+        }
+    }
+
+    /**
+     * Validate if a staff member can be issued equipment
+     */
+    public function validateStaffForEquipment(Request $request)
+    {
+        try {
+            $request->validate([
+                'staff_name' => 'required|string|max:255',
+            ]);
+
+            $staff = Staff::withoutTrashed()
+                ->where('name', $request->staff_name)
+                ->where('status', 'Active')
+                ->first(['id', 'name', 'department', 'email', 'status']);
+
+            if (!$staff) {
+                return response()->json([
+                    'status' => 'error',
+                    'valid' => false,
+                    'message' => "Staff member '{$request->staff_name}' is not registered or not active. Please register them in the Staff tab first with their consent."
+                ]);
+            }
+
+            return response()->json([
+                'status' => 'success',
+                'valid' => true,
+                'staff' => $staff,
+                'message' => 'Staff member is valid for equipment assignment.'
+            ]);
+        } catch (\Exception $e) {
+            Log::error('InventoryController: Staff validation failed', [
+                'staff_name' => $request->staff_name ?? 'unknown',
+                'error' => $e->getMessage()
+            ]);
+            return response()->json([
+                'status' => 'error',
+                'valid' => false,
+                'message' => 'Failed to validate staff member.'
+            ], 500);
         }
     }
 
@@ -207,7 +382,7 @@ class InventoryController extends Controller
         }
     }
 
-    public function destroy(Request $request, Equipment $equipment)
+    public function destroy(Request $request, $id)
     {
         if (!Auth::check()) {
             return $request->expectsJson()
@@ -216,10 +391,23 @@ class InventoryController extends Controller
         }
 
         try {
+            Log::info('Attempting to delete equipment', ['id' => $id]);
+
+            $equipment = Equipment::find($id);
+
+            if (!$equipment) {
+                Log::warning('Equipment not found for deletion', ['id' => $id]);
+                return $request->expectsJson()
+                    ? response()->json(['success' => false, 'message' => 'Equipment not found or already deleted.'], 404)
+                    : redirect()->back()->with('error', 'Equipment not found or already deleted.');
+            }
+
+            Log::info('Equipment found for deletion', ['equipment' => $equipment->toArray()]);
+
             HistoryLog::create([
                 'action' => 'Deleted',
                 'action_date' => now(),
-                'model_brand' => $equipment->model_brand,
+                'model_brand' => 'Equipment',
                 'model_id' => $equipment->id,
                 'old_values' => json_encode($equipment->toArray()),
                 'new_values' => null,
@@ -237,7 +425,7 @@ class InventoryController extends Controller
                 : redirect()->route('inventory')->with('success', 'Equipment deleted successfully');
         } catch (\Exception $e) {
             Log::error('Error in destroy: ' . $e->getMessage(), [
-                'equipment_id' => $equipment->id,
+                'equipment_id' => $id,
                 'stack_trace' => $e->getTraceAsString()
             ]);
             return $request->expectsJson()
@@ -286,8 +474,18 @@ class InventoryController extends Controller
     {
         try {
             $departments = Department::all();
+
+            // Get active staff for editing form
+            $activeStaff = Cache::remember('active_staff_for_inventory', now()->addMinutes(10), function () {
+                return Staff::withoutTrashed()
+                    ->where('status', 'Active')
+                    ->orderBy('name')
+                    ->get(['id', 'name', 'department', 'email']);
+            });
+
             Log::info('Equipment edit accessed', ['equipment_id' => $equipment->id, 'user_id' => Auth::id() ?? 'none']);
-            return view('inventory.edit', compact('equipment', 'departments'));
+
+            return view('inventory.edit', compact('equipment', 'departments', 'activeStaff'));
         } catch (\Exception $e) {
             Log::error('Error in edit: ' . $e->getMessage(), ['stack_trace' => $e->getTraceAsString()]);
             return redirect()->back()->with('error', 'Failed to load edit form: ' . $e->getMessage());
@@ -302,7 +500,7 @@ class InventoryController extends Controller
         }
 
         $validated = $request->validate([
-            'staff_name' => 'required|string|max:255',
+            'staff_name' => 'required|string|max:255|exists:staff,name',
             'department_id' => 'required|exists:departments,id',
             'equipment_name' => 'required|string|max:255',
             'model_brand' => 'required|string|max:255',
@@ -316,6 +514,16 @@ class InventoryController extends Controller
         try {
             DB::beginTransaction();
 
+            // Validate that the staff member exists and is active
+            $staff = Staff::withoutTrashed()
+                ->where('name', $validated['staff_name'])
+                ->where('status', 'Active')
+                ->first();
+
+            if (!$staff) {
+                throw new \Exception("Staff member '{$validated['staff_name']}' is not found or not active. Please ensure they are registered in the Staff tab.");
+            }
+
             $oldValues = $equipment->toArray();
             $equipment->update($validated);
             Log::info('Equipment updated', ['equipment_id' => $equipment->id]);
@@ -328,10 +536,10 @@ class InventoryController extends Controller
                 'old_values' => json_encode($oldValues),
                 'new_values' => json_encode($validated),
                 'user_id' => Auth::id(),
-                'staff_id' => $equipment->staff_id ?? null,
+                'staff_id' => $staff->id, // Use the validated staff ID
                 'ip_address' => $request->ip(),
                 'user_agent' => $request->userAgent(),
-                'description' => "Updated equipment: {$equipment->equipment_name}, PR: {$validated['pr_number']}, Serial: {$equipment->serial_number}",
+                'description' => "Updated equipment: {$equipment->equipment_name} for {$staff->name} ({$staff->department}), PR: {$validated['pr_number']}, Serial: {$equipment->serial_number}",
             ]);
             Log::info('History log created for update', ['equipment_id' => $equipment->id]);
 
@@ -343,7 +551,10 @@ class InventoryController extends Controller
                 'equipment_id' => $equipment->id,
                 'stack_trace' => $e->getTraceAsString()
             ]);
-            return redirect()->back()->with('error', 'Failed to update equipment: ' . $e->getMessage())->withInput();
+            return redirect()->back()
+                ->with('error', 'Failed to update equipment: ' . $e->getMessage())
+                ->with('info', 'Remember: Only registered active staff members can be assigned equipment.')
+                ->withInput();
         }
     }
 

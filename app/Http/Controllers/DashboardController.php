@@ -8,7 +8,6 @@ use App\Models\Staff;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class DashboardController extends Controller
@@ -24,7 +23,6 @@ class DashboardController extends Controller
                 'inventory_search' => 'nullable|string|max:255',
                 'time_filter' => 'nullable|in:all,day,week,month,year',
                 'type_filter' => 'nullable|in:total,active,returned,overdue,lost',
-                'chart_time' => 'nullable|in:month,week,year',
             ]);
 
             // Stats
@@ -46,18 +44,18 @@ class DashboardController extends Controller
             });
 
             // Issuances
-            $issuancesQuery = Issuance::with(['staff', 'equipment.department']);
+            $issuancesQuery = Issuance::with(['equipment', 'equipment.department']);
             if ($search = $validated['stats_search'] ?? null) {
-                $issuancesQuery->whereHas('staff', fn($q) => $q->where('name', 'like', "%{$search}%"))
-                    ->orWhereHas('equipment', fn($q) => $q->where('equipment_name', 'like', "%{$search}%"));
+                $issuancesQuery->whereHas('equipment', fn($q) => $q->where('equipment_name', 'like', "%{$search}%"))
+                    ->orWhereHas('staff_name', fn($q) => $q->where('name', 'like', "%{$search}%"));
             }
             if ($type = $validated['type_filter'] ?? null) {
                 if ($type !== 'total') {
                     $issuancesQuery->where('status', $type);
                 }
             }
-            $issuances = $issuancesQuery->latest()->paginate(10);
-            Cache::forget('dashboard_stats'); // Add to ensure fresh data
+            $issuances = $issuancesQuery->latest()->paginate(20);
+            Cache::forget('dashboard_stats'); 
 
             // Inventory
             $inventoryQuery = Equipment::with(['department', 'issuances.staff']);
@@ -75,31 +73,14 @@ class DashboardController extends Controller
                         ->orWhereHas('issuances.staff', fn($q) => $q->where('name', 'like', "%{$search}%"));
                 });
             }
-            $inventory = $inventoryQuery->paginate(10);
+            $inventory = $inventoryQuery->paginate(20);
             Log::debug('Inventory staff names', [
                 'items' => collect($inventory->items())->map(function ($item) {
                     return $item->issuances->first()->staff->name ?? ($item->issuances->isEmpty() ? 'N/A' : 'Unknown');
                 })->toArray()
             ]);
 
-            // Chart Data
-            $chartCacheKey = 'dashboard_chart_' . ($validated['chart_time'] ?? 'month');
-            $equipmentData = Cache::remember($chartCacheKey, now()->addMinutes(10), function () use ($validated) {
-                $query = Issuance::join('equipment', 'issuances.equipment_id', '=', 'equipment.id')
-                    ->select('equipment.equipment_name', DB::raw('count(*) as issuance_count'))
-                    ->groupBy('equipment.equipment_name');
-                if ($time = $validated['chart_time'] ?? 'month') {
-                    $query->where('issuances.issued_at', '>=', Carbon::now()->{'startOf' . ucfirst($time)}());
-                }
-                if ($type = $validated['type_filter'] ?? null) {
-                    if ($type !== 'total') {
-                        $query->where('issuances.status', $type);
-                    }
-                }
-                return $query->get()->pluck('issuance_count', 'equipment_name')->toArray();
-            });
-
-            return view('dashboard', array_merge($stats, compact('issuances', 'inventory', 'equipmentData')));
+            return view('dashboard', array_merge($stats, compact('issuances', 'inventory')));
         } catch (\Exception $e) {
             Log::error('DashboardController: Failed to load dashboard', [
                 'error' => $e->getMessage(),

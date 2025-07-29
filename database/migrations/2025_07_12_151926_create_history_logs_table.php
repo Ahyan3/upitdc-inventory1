@@ -11,7 +11,7 @@ return new class extends Migration
         Schema::create('history_logs', function (Blueprint $table) {
             $table->id();
             $table->string('action');
-            $table->timestamp('action_date');
+            $table->dateTime('action_date');
             $table->string('model_brand'); 
             $table->unsignedBigInteger('model_id');
             $table->json('old_values')->nullable();

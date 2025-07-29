@@ -37,20 +37,32 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('inventory/{equipment}', [InventoryController::class, 'show'])->name('inventory.show');
     });
 
-    // Staff Routes
-    Route::prefix('staff')->group(function () {
-        Route::get('/', [StaffController::class, 'index'])->name('staff.index');
-        Route::post('/', [StaffController::class, 'store'])->name('staff.store');
-        Route::get('/total-staff', [StaffController::class, 'total']);
+    Route::prefix('')->group(function () {
+        Route::get('/staff', [StaffController::class, 'index'])->name('staff.index');
+        Route::post('/staff', [StaffController::class, 'store'])->name('staff.store');
+
+        // Put specific routes BEFORE generic {id} routes
         Route::get('/export-csv', [StaffController::class, 'exportCsv'])->name('staff.export-csv');
-        Route::prefix('{staff}')->group(function () {
-            Route::get('/edit', [StaffController::class, 'edit'])->name('staff.edit');
-            Route::put('/', [StaffController::class, 'update'])->name('staff.update');
-            Route::get('/history-logs', [StaffController::class, 'historyLogs'])->name('staff.history-logs');
-            Route::put('/status', [StaffController::class, 'updateStatus'])->name('staff.status');
-            Route::delete('/', [StaffController::class, 'destroy'])->name('staff.destroy');
-            Route::get('/api/total-staff', [StaffController::class, 'totalStaff'])->name('staff.total');
-        });
+        Route::get('/total-staff', [StaffController::class, 'total'])->name('staff.total');
+        Route::get('/active', [StaffController::class, 'getActiveStaff'])->name('staff.active');
+        Route::get('/inactive', [StaffController::class, 'getInactiveStaff'])->name('staff.inactive');
+        Route::post('/validate', [StaffController::class, 'validateStaff'])->name('staff.validate');
+        Route::post('/check-email', [StaffController::class, 'checkEmail'])->name('staff.check-email');
+        Route::post('/check-username', [StaffController::class, 'checkUsername'])->name('staff.check-username');
+        Route::get('/staff/{staff}/export-history-logs', [App\Http\Controllers\StaffController::class, 'exportHistoryLogs'])->name('staff.export-history-logs');
+
+
+        // Staff-specific routes with full path
+        Route::get('/staff/{staff}/history-logs', [StaffController::class, 'historyLogs'])->name('staff.history-logs');
+
+        // Debug routes (remove these after debugging)
+        Route::get('/debug/history-logs/{id}', [StaffController::class, 'debugHistoryLogs'])->name('staff.debug-history');
+        Route::get('/debug/create-test-log/{id}', [StaffController::class, 'createTestLog'])->name('staff.create-test-log');
+
+        // Generic {id} routes LAST to avoid conflicts
+        Route::put('/staff/{id}', [StaffController::class, 'update'])->name('staff.update');
+        Route::delete('/staff/{id}', [StaffController::class, 'destroy'])->name('staff.destroy');
+        Route::put('/staff/{staff}/status', [StaffController::class, 'updateStatus'])->name('staff.status');
     });
 
     // History Route

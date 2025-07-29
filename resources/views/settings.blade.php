@@ -92,6 +92,13 @@
             color: white;
             border-color: #90143c;
         }
+        /* Prevent department names from overflowing */
+        .department-name {
+            max-width: 300px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
     </style>
 
     <div class="flex min-h-screen bg-gray-50">
@@ -99,7 +106,7 @@
             <i class="fas fa-bars text-xs"></i>
         </button>
 
-        <div class="flex-1 container mx-auto px-3 py-6 max-w-3xl">
+        <div class="flex-1 container mx-auto px-3 py-6 max-w-6xl">
             <div class="text-center mb-8 fade-in">
                 <div class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-[#90143c] to-[#b01a47] rounded-full mb-4 shadow-lg relative">
                     <i class="fas fa-cog text-white text-xl animate-spin" style="animation-duration: 8s;"></i>
@@ -108,7 +115,7 @@
                 <h1 class="text-2xl font-bold bg-gradient-to-r from-[#90143c] to-[#00553d] bg-clip-text text-transparent">System Settings</h1>
                 <p class="text-xs text-[#00553d] opacity-80 max-w-sm mx-auto">Configure system settings and manage departments</p>
 
-                <div class="grid grid-cols-3 gap-3 mt-6 max-w-sm mx-auto">
+                <div class="grid grid-cols-3 gap-3 mt-6 max-w-md mx-auto">
                     <div class="bg-white p-2 rounded-md shadow-sm border border-[#ffcc34]/30">
                         <div class="text-base font-bold text-[#90143c]">{{ $total_departments ?? 'N/A' }}</div>
                         <div class="text-xs text-gray-600">Departments</div>
@@ -393,7 +400,7 @@
                                                         <i class="fas fa-building text-white text-xs"></i>
                                                     </div>
                                                     <div>
-                                                        <span class="text-xs font-semibold text-[#00553d] block">{{ $department->name }}</span>
+                                                        <span class="text-xs font-semibold text-[#00553d] block department-name">{{ $department->name }}</span>
                                                         <div class="flex items-center space-x-2 mt-1">
                                                             <span class="status-indicator status-active"></span>
                                                             <span class="text-[0.6rem] text-gray-500">Active Department</span>
@@ -815,22 +822,22 @@
                                     </div>
                                 </div>
                                 <div class="text-center text-xs text-gray-600">
-                                    Type "<strong>DELETE</strong>" below to confirm this action:
+                                    Type "<strong>DELETE</strong>" below to confirm:
                                 </div>
                             </div>
                         `,
                         input: 'text',
-                        inputPlaceholder: 'Type DELETE to confirm',
+                        placeholder: 'Type DELETE to confirm',
                         icon: 'warning',
                         showCancelButton: true,
                         confirmButtonColor: '#dc2626',
                         cancelButtonColor: '#6b7280',
-                        confirmButtonText: '<i class="fas fa-trash mr-2"></i>Yes, Delete Forever',
+                        confirmButtonText: '<i class="fas fa-trash mr-2"></i>Delete Forever',
                         cancelButtonText: '<i class="fas fa-shield-alt mr-2"></i>Keep Safe',
                         reverseButtons: true,
                         inputValidator: function(value) {
                             if (value !== 'DELETE') {
-                                return 'Please type "DELETE" exactly to confirm deletion';
+                                return 'Please type "DELETE" exactly to confirm';
                             }
                         }
                     }).then(function(result) {

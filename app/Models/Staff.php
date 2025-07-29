@@ -8,9 +8,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Staff extends Model
 {
-    use HasFactory;
     use SoftDeletes;
-
+    use HasFactory;
+    
     protected $fillable = ['name', 'department', 'email', 'status'];
 
     protected $casts = [

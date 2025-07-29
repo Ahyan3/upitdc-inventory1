@@ -152,7 +152,7 @@ class HistoryController extends Controller
                     ucfirst($log->action),
                     $log->model_brand . ' (ID: ' . $log->model_id . ')',
                     $log->description ?? 'N/A',
-                    $log->action_date instanceof \Carbon\Carbon ? $log->action_date->format('Y-m-d H:i') : ($log->action_date && \Carbon\Carbon::canBeCreatedFromFormat($log->action_date, 'Y-m-d') ? \Carbon\Carbon::createFromFormat('Y-m-d', $log->action_date)->format('Y-m-d H:i') : 'N/A'),
+                    $log->action_date instanceof \Carbon\Carbon ? $log->action_date->format('Y-m-d H:i:s') : ($log->action_date && \Carbon\Carbon::canBeCreatedFromFormat($log->action_date, 'Y-m-d H:i:s') ? \Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $log->action_date)->format('Y-m-d H:i:s') : 'N/A'),
                     $log->ip_address ?? 'N/A',
                     $log->user_agent ?? 'N/A',
                 ]);
@@ -211,7 +211,7 @@ class HistoryController extends Controller
                     $item->model_brand ?? 'N/A',
                     $item->serial_number,
                     $item->pr_number,
-                    $item->date_issued instanceof \Carbon\Carbon ? $item->date_issued->format('Y-m-d') : ($item->date_issued && \Carbon\Carbon::canBeCreatedFromFormat($item->date_issued, 'Y-m-d') ? \Carbon\Carbon::createFromFormat('Y-m-d', $item->date_issued)->format('Y-m-d') : 'N/A'),
+                    $item->date_issued instanceof \Carbon\Carbon ? $item->date_issued->format('Y-m-d H:i:s') : ($item->date_issued && \Carbon\Carbon::canBeCreatedFromFormat($item->date_issued, 'Y-m-d H:i:s') ? \Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $item->date_issued)->format('Y-m-d H:i:s') : 'N/A'),
                     ucfirst(str_replace('_', ' ', $item->status)),
                 ]);
             }
