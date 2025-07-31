@@ -353,9 +353,9 @@
                                            class="px-3 py-3 rounded-lg text-xs border border-[#ffcc34] focus:outline-none focus:ring-2 focus:ring-[#00553d] w-full sm:w-64"
                                            value="{{ request('department_search') }}">
                                     <select name="per_page" id="per-page" class="px-3 py-3 rounded-lg text-xs border border-[#ffcc34] focus:outline-none focus:ring-2 focus:ring-[#00553d] w-full sm:w-24">
-                                        <option value="10" {{ request('per_page', 10) == 10 ? 'selected' : '' }}>10 per page</option>
-                                        <option value="20" {{ request('per_page') == 20 ? 'selected' : '' }}>20 per page</option>
-                                        <option value="50" {{ request('per_page') == 50 ? 'selected' : '' }}>50 per page</option>
+                                        <option value="10" {{ request('per_page', 10) == 10 ? 'selected' : '' }}>10 per page     </option>
+                                        <option value="20" {{ request('per_page') == 20 ? 'selected' : '' }}>20 per page   </option>
+                                        <option value="50" {{ request('per_page') == 50 ? 'selected' : '' }}>50 per page   </option>
                                     </select>
                                     <button type="submit" class="gradient-btn px-6 py-3 text-white font-semibold rounded-lg text-xs border border-[#ffcc34] shadow-md hover:shadow-lg flex items-center">
                                         <i class="spinner fas fa-spinner fa-spin mr-2"></i>

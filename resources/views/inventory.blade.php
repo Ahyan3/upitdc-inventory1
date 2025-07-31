@@ -4,12 +4,18 @@
     </x-slot>
 
     <div class="min-h-screen bg-gray-50">
-        <div class="container mx-auto px-4 py-8 max-w-7xl">
+        <div class="container mx-auto px-4 py-8 max-w-full" style="padding-left: 2rem; padding-right: 2rem;">
             <!-- CSRF Token -->
             <meta name="csrf-token" content="{{ csrf_token() }}">
 
             <!-- Styles -->
             <style>
+                * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
                 .accordion-content {
                     transition: max-height 0.3s ease-in-out, padding 0.3s ease-in-out;
                     max-height: 0;
@@ -231,25 +237,33 @@
                     left: 0;
                     width: 100%;
                     height: 100%;
-                    background-color: rgba(0, 0, 0, 0.5);
+                    background-color: rgba(0, 0, 0, 0.6);
                     z-index: 50;
                     justify-content: center;
                     align-items: center;
+            backdrop-filter: blur(5px);
+            animation: fadeIn 0.3s ease-out;
                 }
 
                 .modal.show {
                     display: flex;
+                    align-items: center;
+            justify-content: center;
                 }
 
                 .modal-content {
-                    background-color: white;
-                    border-radius: 0.75rem;
+                    background: linear-gradient(135deg, #ffffff 0%, #fafafa 100%);
+                    {{--  background-color: white;  --}}
+                    border-radius: 16px;
                     padding: 1.5rem;
                     width: 100%;
-                    max-width: 600px;
+                    max-width: 800px;
+                    overflow-y: auto;
                     border: 1px solid #ffcc34;
                     box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
                     position: relative;
+                    animation: slideIn 0.3s ease-out;
+            border: 1px solid #e0e0e0;
                 }
 
                 .modal-grid {
@@ -263,9 +277,232 @@
                         grid-template-columns: 1fr;
                     }
                 }
+
+                .close-btn {
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 20px;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .close-btn:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+            transform: scale(1.1);
+        }
+
+         /* Equipment Grid */
+        .equipment-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .equipment-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e8e8e8;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .equipment-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+        }
+
+        .equipment-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .equipment-image {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #00553d 0%, #004d35 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 16px;
+            box-shadow: 0 4px 12px rgba(0, 85, 61, 0.2);
+        }
+
+        .equipment-image i {
+            color: white;
+            font-size: 24px;
+        }
+
+        .equipment-info h4 {
+            color: #00553d;
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .equipment-code {
+            color: #666;
+            font-size: 12px;
+            background: #f8f8f8;
+            padding: 2px 8px;
+            border-radius: 4px;
+            display: inline-block;
+        }
+
+        /* Equipment Details */
+        .equipment-details {
+            display: grid;
+            gap: 12px;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #f5f5f5;
+        }
+
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+
+        .detail-label {
+            font-weight: 500;
+            color: #333;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .detail-label i {
+            color: #90143c;
+            width: 16px;
+        }
+
+        .detail-value {
+            color: #666;
+            font-size: 14px;
+            text-align: right;
+        }
+
+        /* Status Badge */
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-available {
+            background-color: #e8f5e8;
+            color: #2d5a2d;
+        }
+
+        .status-maintenance {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .status-unavailable {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        /* Loading State */
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .spinner {
+            width: 12px;
+            height: 12px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #00553d;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 12px;
+        }
+
+        /* Error State */
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 16px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid #f5c6cb;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideIn {
+            from { 
+                opacity: 0;
+                transform: scale(0.9) translateY(-20px);
+            }
+            to { 
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .modal-content {
+                width: 95%;
+                margin: 10px;
+                max-height: 95vh;
+            }
+
+            .equipment-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .modal-header {
+                padding: 20px 20px 16px 20px;
+            }
+
+            .modal-body {
+                padding: 20px;
+            }
+
+            .modal-title {
+                font-size: 16px;
+            }
+        }
             </style>
 
-            <!-- Modified Header (Icon Only) -->
+            <!-- Header -->
             <div class="text-center mb-8 fade-in">
                 <div
                     class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-[#90143c] to-[#b01a47] rounded-full mb-4 shadow-lg relative">
@@ -395,7 +632,7 @@
                                 <label for="date_issued"
                                     class="block text-[0.65rem] font-medium text-[#00553d] mb-1">Date Issued *</label>
                                 <input type="date" name="date_issued" id="date_issued"
-                                    value="{{ now()->format('Y-m-d') }}" required
+                                    value="{{ now()->format('Y-m-d H:i') }}" required
                                     class="w-full px-3 py-2 border border-[#ffcc34] rounded-lg focus:ring-2 focus:ring-[#00553d] text-xs group-hover:shadow-md transition-all duration-300">
                             </div>
                             <div class="relative group">
@@ -493,7 +730,7 @@
                                         @endforeach
                                     </select>
                                 </div>
-                                <div>
+                                {{--  <div>
                                     <select id="returnStatusFilter"
                                         class="w-full px-3 py-2 border border-[#ffcc34] rounded-lg focus:ring-2 focus:ring-[#00553d] text-xs">
                                         <option value="">All Equipment</option>
@@ -501,7 +738,7 @@
                                         <option value="desktop">Desktops</option>
                                         <option value="monitor">Monitors</option>
                                     </select>
-                                </div>
+                                </div>  --}}
                             </div>
                             <div class="space-y-4" id="returnEquipmentContainer">
                                 @foreach ($issuances as $issuance)
@@ -546,15 +783,13 @@
                                                         </div>
                                                         <div class="relative group">
                                                             <label for="date_returned_{{ $issuance->id }}"
-                                                                class="block text-[0.65rem] font-medium text-[#00553d] mb-1">Date
-                                                                Returned *</label>
+                                                                class="block text-[0.65rem] font-medium text-[#00553d] mb-1">Date Returned *</label>
                                                             <input type="date" name="date_returned"
                                                                 id="date_returned_{{ $issuance->id }}"
                                                                 value="{{ now()->format('Y-m-d') }}" required
                                                                 class="w-full px-3 py-2 border border-[#ffcc34] rounded-lg focus:ring-2 focus:ring-[#00553d] text-xs group-hover:shadow-md transition-all duration-300">
                                                             <div
                                                                 class="absolute right-3 top-7 text-gray-400 group-hover:text-[#00553d] transition-colors">
-                                                                <i class="fas fa-calendar-alt text-xs"></i>
                                                             </div>
                                                         </div>
                                                         <div>
@@ -616,6 +851,29 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Equipment Details Modal -->
+            <div id="equipment-details-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <div class="modal-icon">
+                        <i class="fas fa-info-circle"></i>
+                    </div>
+                    Equipment Details
+                </div>
+                <button id="close-details-modal" class="close-btn">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="equipment-details-content">
+                    <!-- Content will be loaded via AJAX -->
+                </div>
+            </div>
+        </div>
+    </div>
+
 
             <!-- Inventory Logs Accordion -->
             <div
@@ -781,11 +1039,11 @@
                                                 <td
                                                     class="px-4 py-3 whitespace-nowrap text-xs text-black min-w-[150px]">
                                                     @if ($item->date_issued instanceof \Carbon\Carbon)
-                                                        {{ $item->date_issued->format('Y-m-d') }}
+                                                        {{ $item->date_issued->format('Y-m-d H:i') }}
                                                     @elseif (is_string($item->date_issued) &&
                                                             !empty($item->date_issued) &&
-                                                            \Carbon\Carbon::canBeCreatedFromFormat($item->date_issued, 'Y-m-d'))
-                                                        {{ \Carbon\Carbon::createFromFormat('Y-m-d', $item->date_issued)->format('Y-m-d') }}
+                                                            \Carbon\Carbon::canBeCreatedFromFormat($item->date_issued, 'Y-m-d H:i'))
+                                                        {{ \Carbon\Carbon::createFromFormat('Y-m-d H:i', $item->date_issued)->format('Y-m-d H:i') }}
                                                     @else
                                                         N/A
                                                     @endif
@@ -1285,6 +1543,92 @@
                     });
                 }
 
+                // Initialize Equipment Details Modal
+                function initializeEquipmentDetailsModal() {
+                    const modal = document.getElementById('equipment-details-modal');
+                    const closeBtn = document.getElementById('close-details-modal');
+                    const content = document.getElementById('equipment-details-content');
+
+                    if (!modal || !closeBtn || !content) {
+                        console.error('Equipment details modal elements not found');
+                        return;
+                    }
+
+                    // Close modal function
+                    function closeModal() {
+                        modal.classList.remove('show');
+                    }
+
+                    // Show loading state
+                    function showLoadingState() {
+                        content.innerHTML = `
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        Loading equipment details...
+                    </div>
+                `;
+                    }
+
+                    // Show error state
+                    function showErrorState(message) {
+                        content.innerHTML = `
+                    <div class="error-message">
+                        <i class="fas fa-exclamation-triangle" style="margin-right: 8px;"></i>
+                        ${message}
+                    </div>
+                `;
+                    }
+
+                    // Event listeners
+                    closeBtn.addEventListener('click', closeModal);
+
+                    // Close modal when clicking outside
+                    modal.addEventListener('click', function(e) {
+                        if (e.target === modal) {
+                            closeModal();
+                        }
+                    });
+
+                    // Close modal with ESC key
+                    document.addEventListener('keydown', function(e) {
+                        if (e.key === 'Escape' && modal.classList.contains('show')) {
+                            closeModal();
+                        }
+                    });
+
+                    // Handle equipment detail links
+                    document.querySelectorAll('a[href*="/inventory/inventory/"]').forEach(link => {
+                        link.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            const url = this.getAttribute('href');
+
+                            // Show loading state
+                            showLoadingState();
+
+                            // Show modal
+                            modal.classList.add('show');
+
+                            // Fetch equipment details
+                            fetch(url)
+                                .then(response => {
+                                    if (!response.ok) {
+                                        throw new Error(`HTTP error! status: ${response.status}`);
+                                    }
+                                    return response.text();
+                                })
+                                .then(html => {
+                                    content.innerHTML = html;
+                                })
+                                .catch(error => {
+                                    console.error('Error loading equipment details:', error);
+                                    showErrorState(
+                                        'Failed to load equipment details. Please try again.');
+                                    showAlert('Failed to load equipment details', 'error');
+                                });
+                        });
+                    });
+                }
+
                 // Initialize Modal Controls
                 function initializeModals() {
                     const issueBtn = document.getElementById('issue-equipment-btn');
@@ -1295,19 +1639,33 @@
                     const closeReturnModal = document.getElementById('close-return-modal');
                     const cancelIssueModal = document.getElementById('cancel-issue-modal');
 
-                    issueBtn.addEventListener('click', () => issueModal.classList.add('show'));
-                    returnBtn.addEventListener('click', () => returnModal.classList.add('show'));
-                    closeIssueModal.addEventListener('click', () => issueModal.classList.remove('show'));
-                    closeReturnModal.addEventListener('click', () => returnModal.classList.remove('show'));
-                    cancelIssueModal.addEventListener('click', () => issueModal.classList.remove('show'));
+                    if (issueBtn && issueModal) {
+                        issueBtn.addEventListener('click', () => issueModal.classList.add('show'));
+                    }
+                    if (returnBtn && returnModal) {
+                        returnBtn.addEventListener('click', () => returnModal.classList.add('show'));
+                    }
+                    if (closeIssueModal && issueModal) {
+                        closeIssueModal.addEventListener('click', () => issueModal.classList.remove('show'));
+                    }
+                    if (closeReturnModal && returnModal) {
+                        closeReturnModal.addEventListener('click', () => returnModal.classList.remove('show'));
+                    }
+                    if (cancelIssueModal && issueModal) {
+                        cancelIssueModal.addEventListener('click', () => issueModal.classList.remove('show'));
+                    }
 
                     // Close modals when clicking outside
-                    issueModal.addEventListener('click', (e) => {
-                        if (e.target === issueModal) issueModal.classList.remove('show');
-                    });
-                    returnModal.addEventListener('click', (e) => {
-                        if (e.target === returnModal) returnModal.classList.remove('show');
-                    });
+                    if (issueModal) {
+                        issueModal.addEventListener('click', (e) => {
+                            if (e.target === issueModal) issueModal.classList.remove('show');
+                        });
+                    }
+                    if (returnModal) {
+                        returnModal.addEventListener('click', (e) => {
+                            if (e.target === returnModal) returnModal.classList.remove('show');
+                        });
+                    }
                 }
 
                 // Initialize Search and Filters
@@ -1425,30 +1783,30 @@
                             Swal.fire({
                                 title: 'Delete Inventory Item?',
                                 html: `
-                    <div class="text-left space-y-3">
-                        <div class="bg-red-50 p-3 rounded-lg border border-red-200">
-                            <div class="flex items-center space-x-2 mb-2">
-                                <i class="fas fa-exclamation-triangle text-red-500 text-base"></i>
-                                <span class="font-semibold text-red-800 text-xs">Permanent Deletion Warning</span>
+                            <div class="text-left space-y-3">
+                                <div class="bg-red-50 p-3 rounded-lg border border-red-200">
+                                    <div class="flex items-center space-x-2 mb-2">
+                                        <i class="fas fa-exclamation-triangle text-red-500 text-base"></i>
+                                        <span class="font-semibold text-red-800 text-xs">Permanent Deletion Warning</span>
+                                    </div>
+                                    <div class="text-xs text-red-700">
+                                        You are about to permanently delete "<strong>${equipmentName}</strong>".
+                                    </div>
+                                </div>
+                                <div class="bg-amber-50 p-2 rounded-lg border border-amber-200">
+                                    <div class="text-xs text-amber-700">
+                                        <strong>Impact:</strong>
+                                        <ul class="mt-1 space-y-1 text-[0.6rem]">
+                                            <li>• This action cannot be undone</li>
+                                            <li>• Related records will be updated</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="text-center text-xs text-gray-600">
+                                    Type "<strong>DELETE</strong>" to confirm:
+                                </div>
                             </div>
-                            <div class="text-xs text-red-700">
-                                You are about to permanently delete "<strong>${equipmentName}</strong>".
-                            </div>
-                        </div>
-                        <div class="bg-amber-50 p-2 rounded-lg border border-amber-200">
-                            <div class="text-xs text-amber-700">
-                                <strong>Impact:</strong>
-                                <ul class="mt-1 space-y-1 text-[0.6rem]">
-                                    <li>• This action cannot be undone</li>
-                                    <li>• Related records will be updated</li>
-                                </ul>
-                            </div>
-                        </div>
-                        <div class="text-center text-xs text-gray-600">
-                            Type "<strong>DELETE</strong>" to confirm:
-                        </div>
-                    </div>
-                `,
+                        `,
                                 input: 'text',
                                 inputPlaceholder: 'Type DELETE to confirm',
                                 icon: 'warning',
@@ -1685,21 +2043,24 @@
                                     `HTTP error! Status: ${response.status}`);
 
                                 const item = await response.json();
-                                document.getElementById('edit_staff_name').value = item
-                                    .staff_name || '';
-                                document.getElementById('edit_equipment_name').value = item
-                                    .equipment_name || '';
-                                document.getElementById('edit_model_brand').value = item
-                                    .model_brand || '';
-                                document.getElementById('edit_serial_number').value = item
-                                    .serial_number || '';
-                                document.getElementById('edit_pr_number').value = item.pr_number ||
-                                    '';
-                                document.getElementById('edit_date_issued').value = item
-                                    .date_issued || '';
-                                document.getElementById('edit_status').value = item.status ||
-                                    'available';
-                                editForm.action = `{{ url('inventory') }}/${itemId}`;
+
+                                // Safely set values only if elements exist
+                                const setValueIfExists = (id, value) => {
+                                    const element = document.getElementById(id);
+                                    if (element) element.value = value || '';
+                                };
+
+                                setValueIfExists('edit_staff_name', item.staff_name);
+                                setValueIfExists('edit_equipment_name', item.equipment_name);
+                                setValueIfExists('edit_model_brand', item.model_brand);
+                                setValueIfExists('edit_serial_number', item.serial_number);
+                                setValueIfExists('edit_pr_number', item.pr_number);
+                                setValueIfExists('edit_date_issued', item.date_issued);
+                                setValueIfExists('edit_status', item.status);
+
+                                if (editForm) {
+                                    editForm.action = `{{ url('inventory') }}/${itemId}`;
+                                }
 
                                 editModal.classList.remove('hidden');
                             } catch (error) {
@@ -1878,6 +2239,7 @@
                 initializeChart();
                 initializeAccordions();
                 initializeEquipmentToggles();
+                initializeEquipmentDetailsModal(); // Add this new initialization
                 initializeModals();
                 initializeSearchAndFilters();
                 initializePagination();

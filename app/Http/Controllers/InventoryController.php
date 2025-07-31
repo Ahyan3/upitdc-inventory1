@@ -20,10 +20,8 @@ class InventoryController extends Controller
     public function index(Request $request)
     {
         try {
-            // Fetch users (optimized to only fetch necessary fields)
             $users = User::select('id', 'name')->get();
 
-            // Fetch departments
             $departments = Department::all();
 
             // Fetch ACTIVE staff members for equipment assignment
@@ -34,7 +32,6 @@ class InventoryController extends Controller
                     ->get(['id', 'name', 'department', 'email']);
             });
 
-            // Fetch issuances
             $issuances = Issuance::with(['equipment.department', 'staff'])
                 ->whereNull('date_returned')
                 ->paginate(20, ['*'], 'issuances_page');
@@ -155,7 +152,7 @@ class InventoryController extends Controller
             'serial_number' => 'required|string|max:255|unique:equipment,serial_number',
             'date_issued' => 'required|date',
             'pr_number' => 'required|string|max:255',
-            'status' => 'required|string|in:available,not_working,working,not_returned,returned',
+            'status' => 'required|string|in:available,in_use,maintenance,damaged',
             'remarks' => 'nullable|string|max:255',
         ]);
 
@@ -239,7 +236,6 @@ class InventoryController extends Controller
             ]);
             Log::info('History log created', ['model' => 'Equipment', 'model_id' => $equipment->id]);
 
-            // Clear cache to ensure fresh data
             Cache::forget('active_staff_for_inventory');
 
             DB::commit();
@@ -257,10 +253,6 @@ class InventoryController extends Controller
         }
     }
 
-    /**
-     * Get active staff members for AJAX requests
-     * Used by frontend to populate staff dropdowns
-     */
     public function getActiveStaff()
     {
         try {
@@ -285,9 +277,6 @@ class InventoryController extends Controller
         }
     }
 
-    /**
-     * Validate if a staff member can be issued equipment
-     */
     public function validateStaffForEquipment(Request $request)
     {
         try {
@@ -536,7 +525,7 @@ class InventoryController extends Controller
                 'old_values' => json_encode($oldValues),
                 'new_values' => json_encode($validated),
                 'user_id' => Auth::id(),
-                'staff_id' => $staff->id, // Use the validated staff ID
+                'staff_id' => $staff->id, 
                 'ip_address' => $request->ip(),
                 'user_agent' => $request->userAgent(),
                 'description' => "Updated equipment: {$equipment->equipment_name} for {$staff->name} ({$staff->department}), PR: {$validated['pr_number']}, Serial: {$equipment->serial_number}",

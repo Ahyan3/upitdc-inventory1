@@ -207,7 +207,7 @@
             <i class="fas fa-bars text-xs"></i>
         </button>
 
-        <div class="flex-1 container mx-auto px-4 py-8 max-w-7xl">
+        <div class="flex-1 container mx-auto px-4 py-8 max-w-full" style="padding-left: 2rem; padding-right: 2rem;">
             <div class="text-center mb-8 fade-in">
                 <div
                     class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-[#90143c] to-[#b01a47] rounded-full mb-4 shadow-lg relative">

@@ -7,8 +7,8 @@
                 <th scope="col" class="px-4 py-2 text-left text-xs font-medium text-[#00553d] uppercase tracking-wider min-w-[120px]">Model/Brand</th>
                 <th scope="col" class="px-4 py-2 text-left text-xs font-medium text-[#00553d] uppercase tracking-wider min-w-[200px]">Description</th>
                 <th scope="col" class="px-4 py-2 text-left text-xs font-medium text-[#00553d] uppercase tracking-wider min-w-[120px]">Action Date</th>
-                <th scope="col" class="px-4 py-2 text-left text-xs font-medium text-[#00553d] uppercase tracking-wider min-w-[100px]">IP Address</th>
-                <th scope="col" class="px-4 py-2 text-left text-xs font-medium text-[#00553d] uppercase tracking-wider min-w-[200px]">User Agent</th>
+                {{--  <th scope="col" class="px-4 py-2 text-left text-xs font-medium text-[#00553d] uppercase tracking-wider min-w-[100px]">IP Address</th>
+                <th scope="col" class="px-4 py-2 text-left text-xs font-medium text-[#00553d] uppercase tracking-wider min-w-[200px]">User Agent</th>  --}}
             </tr>
         </thead>
         <tbody id="historyTableBody" class="bg-white divide-y divide-[#ffcc34]">
@@ -25,7 +25,7 @@
             @else
                 @foreach ($history_logs as $log)
                     <tr class="hover:bg-gray-50 transition-colors slide-up">
-                        <td class="px-4 py-3 whitespace-nowrap text-xs text-black min-w-[150px]">{{ $log->user->name ?? 'N/A' }}</td>
+                        <td class="px-4 py-3 whitespace-nowrap text-xs text-black min-w-[150px]">{{ $log->staff->name ?? 'N/A' }}</td>
                         <td class="px-4 py-3 whitespace-nowrap text-xs text-black min-w-[100px]">
                             <span class="status-indicator {{ $log->action == 'created' ? 'status-active' : ($log->action == 'updated' || $log->action == 'issued' || $log->action == 'returned' ? 'status-warning' : 'status-inactive') }}"></span>
                             {{ ucfirst($log->action) }}
@@ -34,15 +34,15 @@
                         <td class="px-4 py-3 text-xs text-black min-w-[200px]">{{ $log->description ?? 'N/A' }}</td>
                         <td class="px-4 py-3 whitespace-nowrap text-xs text-black min-w-[120px]">
                             @if ($log->action_date instanceof \Carbon\Carbon)
-                                {{ $log->action_date->format('Y-m-d H:i') }}
+                                {{ $log->action_date->format('Y-m-d H:i:s') }}
                             @elseif (is_string($log->action_date) && !empty($log->action_date) && \Carbon\Carbon::canBeCreatedFromFormat($log->action_date, 'Y-m-d H:i:s'))
-                                {{ \Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $log->action_date)->format('Y-m-d H:i') }}
+                                {{ \Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $log->action_date)->format('Y-m-d H:i:s') }}
                             @else
                                 N/A
                             @endif
                         </td>
-                        <td class="px-4 py-3 whitespace-nowrap text-xs text-black min-w-[100px]">{{ $log->ip_address ?? 'N/A' }}</td>
-                        <td class="px-4 py-3 text-xs text-black min-w-[200px]">{{ $log->user_agent ?? 'N/A' }}</td>
+                        {{--  <td class="px-4 py-3 whitespace-nowrap text-xs text-black min-w-[100px]">{{ $log->ip_address ?? 'N/A' }}</td>
+                        <td class="px-4 py-3 text-xs text-black min-w-[200px]">{{ $log->user_agent ?? 'N/A' }}</td>  --}}
                     </tr>
                 @endforeach
             @endif

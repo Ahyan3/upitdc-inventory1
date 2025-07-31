@@ -35,7 +35,7 @@ class StaffController extends Controller
             $cacheKey = 'staff_' . md5(json_encode($request->query()));
 
             $staff = Cache::remember($cacheKey, now()->addMinutes(5), function () use ($validated, $perPage) {
-                $query = Staff::query()->whereNull('deleted_at'); // Explicitly exclude soft-deleted records
+                $query = Staff::query()->whereNull('deleted_at'); 
                 if ($search = $validated['search'] ?? null) {
                     $query->where(function ($q) use ($search) {
                         $q->where('name', 'like', "%{$search}%")
@@ -67,7 +67,7 @@ class StaffController extends Controller
                 'total' => $staff->total(),
                 'per_page' => $perPage,
                 'current_page' => $staff->currentPage(),
-                'staff_data' => $staff->items(), // Log actual staff data
+                'staff_data' => $staff->items(), 
             ]);
 
             return view('staff', compact('staff', 'departments', 'active_staff', 'resigned_staff'));
