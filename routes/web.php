@@ -37,7 +37,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/inventory/history', [InventoryController::class, 'historyLogs'])->name('inventory.history');
         Route::post('/inventory/update-status', [InventoryController::class, 'updateStatus'])->name('inventory.update-status');
         Route::post('/inventory/issue-out', [InventoryController::class, 'issueOut'])->name('inventory.issue-out');
-        Route::post('/inventory/return/{issueOut}', [InventoryController::class, 'return'])->name('inventory.return');
+        Route::post('/return/{issuance}', [InventoryController::class, 'return'])->name('inventory.return');
     });
 
     Route::prefix('')->group(function () {

@@ -36,8 +36,8 @@ class DashboardController extends Controller
                 return [
                     'totalEquipment' => $equipmentQuery->count(),
                     'totalStaff' => Staff::count(),
-                    'totalIssuedEquipment' => Issuance::where('status', 'active')->count(),
-                    'totalReturnedEquipment' => Issuance::where('status', 'returned')->count(),
+                    'totalIssuedEquipment' => Equipment::where('status', 'available')->count(),
+                    'totalReturnedEquipment' => Issuance::where('status', 'in_use')->count(),
                     'pendingRequests' => Issuance::where('status', 'overdue')->count(),
                     'activeIssuances' => Issuance::where('status', 'active')->count(),
                 ];
@@ -96,7 +96,7 @@ class DashboardController extends Controller
             $stats = Cache::remember('dashboard_counts', now()->addMinutes(10), function () {
                 return [
                     'totalStaff' => Staff::count(),
-                    'totalIssuedEquipment' => Issuance::where('status', 'issued')->count(),
+                    'totalIssuedEquipment' => Issuance::where('status', 'in_used')->count(),
                     'totalReturnedEquipment' => Issuance::where('status', 'returned')->count(),
                     'pendingRequests' => Issuance::where('status', 'pending')->count(),
                     'activeIssuances' => Issuance::where('status', 'active')->count(),

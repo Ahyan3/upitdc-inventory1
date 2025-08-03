@@ -347,7 +347,7 @@
                                         Staff List
                                     </h3>
                                     <button id="export-btn"
-                                        class="gradient-btn px-4 py-2 text-white font-semibold rounded-lg text-xs border border-[#ffcc34] shadow-md hover:shadow-lg flex items-center transition-all duration-300">
+                                        class="bg-[#00553d] hover:bg-[#007a5a] px-4 py-2 text-white font-semibold rounded-lg text-xs border border-[#ffcc34] shadow-md hover:shadow-lg flex items-center transition-all duration-300">
                                         <i class="fas fa-file-export mr-2"></i>Export CSV
                                     </button>
                                 </div>

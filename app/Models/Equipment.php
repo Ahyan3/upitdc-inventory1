@@ -21,6 +21,8 @@ class Equipment extends Model
         'date_issued',
         'status',
         'remarks',
+        'returned_condition',
+        'returned_at',
         'location',
         'created_at',
         'updated_at',
@@ -41,6 +43,11 @@ class Equipment extends Model
         return $this->hasMany(Issuance::class);
     }
 
+    public function currentIssuance()
+    {
+        return $this->hasOne(Issuance::class)->whereNull('date_returned')->latest();
+    }
+
     public function scopeSearch($query, $search)
     {
         if ($search) {
@@ -58,5 +65,10 @@ class Equipment extends Model
     public function scopeStatus($query, $status)
     {
         return $status !== 'all' ? $query->where('status', $status) : $query;
+    }
+
+    public function getRouteKeyName()
+    {
+        return 'id';
     }
 }

@@ -21,7 +21,8 @@ class Issuance extends Model
         'date_returned',
         'status',
         'notes',
-        'return_notes'
+        'return_notes',
+        'returned_condition'
     ];
 
     protected $casts = [
@@ -34,16 +35,16 @@ class Issuance extends Model
 
     public function equipment()
     {
-        return $this->belongsTo(Equipment::class);
+        return $this->belongsTo(Equipment::class, 'equipment_id');
     }
 
     public function staff()
     {
-        return $this->belongsTo(Staff::class);
+        return $this->belongsTo(Staff::class, 'staff_id');
     }
 
     public function user()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'user_id');
     }
 }

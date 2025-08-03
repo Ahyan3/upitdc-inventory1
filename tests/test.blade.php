@@ -1,3 +1,5 @@
+// inventory.blade.php
+
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-base text-[#00553d] leading-tight">{{ __('Inventory') }}</h2>
@@ -528,14 +530,14 @@
                 class="stats-container flex flex-row gap-3 max-w-full mx-auto justify-center items-center mb-6 slide-up">
                 @php
                     $totalItems = isset($inventory) ? $inventory->total() : 0;
-                    $inUseItems = isset($inventory) ? $inventory->where('status', 'in_use')->count() : 0;
                     $availableItems = isset($inventory) ? $inventory->where('status', 'available')->count() : 0;
+                    $inUseItems = isset($inventory) ? $inventory->where('status', 'in_use')->count() : 0;
                     $maintenanceItems = isset($inventory) ? $inventory->where('status', 'maintenance')->count() : 0;
                     $damagedItems = isset($inventory) ? $inventory->where('status', 'damaged')->count() : 0;
                     $overviewStats = [
                         ['label' => 'Total Items', 'value' => $totalItems],
-                        ['label' => 'In Use', 'value' => $inUseItems],
                         ['label' => 'Available', 'value' => $availableItems],
+                        ['label' => 'In Use', 'value' => $inUseItems],
                         ['label' => 'Maintenance', 'value' => $maintenanceItems],
                         ['label' => 'Damaged', 'value' => $damagedItems],
                     ];
@@ -599,23 +601,18 @@
                             <div class="relative group">
                                 <label for="staff_name"
                                     class="block text-[0.65rem] font-medium text-[#00553d] mb-1">Staff Name *</label>
-                                <select name="staff_name" id="staff_name" required
-                                    class="w-full px-3 py-2 border border-[#ffcc34] rounded-lg focus:ring-2 focus:ring-[#00553d] text-xs">
-                                    <option value="">Select Staff</option>
-                                    @foreach ($activeStaff as $staffMember)
-                                        <option value="{{ $staffMember->name }}"
-                                            data-department="{{ $staffMember->department }}">
-                                            {{ $staffMember->name }} ({{ $staffMember->department }})
-                                        </option>
-                                    @endforeach
-                                </select>
+                                <input type="text" name="staff_name" id="staff_name" required
+                                    class="w-full px-3 py-2 border border-[#ffcc34] rounded-lg focus:ring-2 focus:ring-[#00553d] text-xs group-hover:shadow-md transition-all duration-300">
+                                <div
+                                    class="absolute right-3 top-7 text-gray-400 group-hover:text-[#00553d] transition-colors">
+                                    <i class="fas fa-user text-xs"></i>
+                                </div>
                             </div>
                             <div>
                                 <label for="department_id"
                                     class="block text-[0.65rem] font-medium text-[#00553d] mb-1">Department *</label>
                                 <select name="department_id" id="department_id" required
                                     class="w-full px-3 py-2 border border-[#ffcc34] rounded-lg focus:ring-2 focus:ring-[#00553d] text-xs">
-
                                     <option value="">Select Department</option>
                                     @foreach ($departments as $department)
                                         <option value="{{ $department->id }}">{{ $department->name }}</option>
@@ -646,8 +643,8 @@
                             <div class="relative group">
                                 <label for="date_issued"
                                     class="block text-[0.65rem] font-medium text-[#00553d] mb-1">Date Issued *</label>
-                                <input type="datetime-local" name="date_issued" id="date_issued"
-                                    value="{{ now()->format('Y-m-d\TH:i') }}" required
+                                <input type="date" name="date_issued" id="date_issued"
+                                    value="{{ now()->format('Y-m-d H:i') }}" required
                                     class="w-full px-3 py-2 border border-[#ffcc34] rounded-lg focus:ring-2 focus:ring-[#00553d] text-xs group-hover:shadow-md transition-all duration-300">
                             </div>
                             <div class="relative group">
@@ -675,14 +672,11 @@
                                     class="block text-[0.65rem] font-medium text-[#00553d] mb-1">Status *</label>
                                 <select name="status" id="status" required
                                     class="w-full px-3 py-2 border border-[#ffcc34] rounded-lg focus:ring-2 focus:ring-[#00553d] text-xs">
-                                    <option value="in_use">In Use</option>
                                     <option value="available">Available</option>
+                                    <option value="in_use">In Use</option>
                                     <option value="maintenance">Maintenance</option>
                                     <option value="damaged">Damaged</option>
                                 </select>
-                                {{--  <small class="form-text text-muted">
-                                 Note: Only equipment marked as "In Use" will appear in the Return Equipment section.
-                                </small>  --}}
                             </div>
                             <div class="col-span-2">
                                 <label for="remarks"
@@ -706,7 +700,7 @@
 
             <!-- Return Equipment Modal -->
             <div id="return-equipment-modal" class="modal">
-                <div class="modal-content max-h-[80vh] overflow-y-auto">
+                <div class="modal-content">
                     <div class="flex justify-between items-center mb-4">
                         <h3 class="text-sm font-semibold text-[#00553d] flex items-center">
                             <div class="p-1.5 bg-gradient-to-br from-[#90143c] to-[#b01a47] rounded-md mr-2">
@@ -759,7 +753,6 @@
                                 </div>  --}}
                             </div>
                             <div class="space-y-4" id="returnEquipmentContainer">
-
                                 @foreach ($issuances as $issuance)
                                     <div
                                         class="equipment-accordion bg-gray-50 rounded-lg overflow-hidden shadow-sm border border-[#ffcc34] slide-up">
@@ -767,15 +760,11 @@
                                             class="equipment-toggle w-full flex justify-between items-center p-4 bg-[#ffcc34] hover:bg-[#e6b82f] transition duration-200"
                                             data-target="equipment-content-{{ $issuance->id }}">
                                             <div class="text-left">
-                                                <h3 class="font-medium text-xs text-black">
-                                                    {{ $issuance->equipment->equipment_name ?? 'N/A' }} •
-                                                    {{ $issuance->equipment->model_brand ?? 'N/A' }} •
-                                                    {{ $issuance->equipment->serial_number ?? 'N/A' }} •
-                                                    {{ $issuance->equipment->pr_number ?? 'N/A' }}</h3>
+                                                <h3 class="font-medium text-xs text-[#00553d]">
+                                                    {{ $issuance->equipment->equipment_name ?? 'N/A' }}</h3>
                                                 <p class="text-[0.65rem] text-[#00553d]">
                                                     {{ $issuance->staff->name ?? 'N/A' }} •
-                                                    {{ $issuance->equipment->department->name ?? 'N/A' }} •
-                                                    {{ $issuance->equipment->date_issued ?? 'N/A' }}</p>
+                                                    {{ $issuance->equipment->department->name ?? 'N/A' }}</p>
                                             </div>
                                             <svg class="w-4 h-4 transform transition-transform duration-300"
                                                 fill="none" stroke="#00553d" viewBox="0 0 24 24">
@@ -783,7 +772,6 @@
                                                     stroke-width="1.5" d="M19 9l-7 7-7-7"></path>
                                             </svg>
                                         </button>
-
                                         <div id="equipment-content-{{ $issuance->id }}" class="equipment-content">
                                             <div class="p-4">
                                                 <form action="{{ route('inventory.return', $issuance) }}"
@@ -818,18 +806,15 @@
                                                             </div>
                                                         </div>
                                                         <div>
-                                                            <label for="returned_condition{{ $issuance->id }}"
+                                                            <label for="condition_{{ $issuance->id }}"
                                                                 class="block text-[0.65rem] font-medium text-[#00553d] mb-1">Condition</label>
-                                                            <select name="returned_condition"
-                                                                id="returned_condition{{ $issuance->id }}"
-                                                                class="w-full px-3 py-2 border border-[#ffcc34] rounded-lg focus:ring-2 focus:ring-[#00553d] text-xs"
-                                                                required>
-                                                                <option value="" disabled {{ old('returned_condition') ? '' : 'selected' }}>Select Condition</option>
-                                                                <option value="good" {{ old('returned_condition') == 'good' ? 'selected' : '' }}>Good</option>
-                                                                <option value="damaged" {{ old('returned_condition') == 'damaged' ? 'selected' : '' }}>Damaged</option>
-                                                                <option value="lost" {{ old('returned_condition') == 'lost' ? 'selected' : '' }}>Lost</option>
+                                                            <select name="condition"
+                                                                id="condition_{{ $issuance->id }}"
+                                                                class="w-full px-3 py-2 border border-[#ffcc34] rounded-lg focus:ring-2 focus:ring-[#00553d] text-xs">
+                                                                <option value="good">Good</option>
+                                                                <option value="damaged">Damaged</option>
+                                                                <option value="lost">Lost</option>
                                                             </select>
-
                                                         </div>
                                                         <div class="md:col-span-2">
                                                             <label for="remarks_{{ $issuance->id }}"
@@ -944,16 +929,14 @@
                                     <option value="all"
                                         {{ request('inventory_status') == 'all' ? 'selected' : '' }}>All Status
                                     </option>
-                                    <option value="in_use"
-                                        {{ request('inventory_status') == 'in_use' ? 'selected' : '' }}>In Use
-                                    </option>
                                     <option value="available"
                                         {{ request('inventory_status') == 'available' ? 'selected' : '' }}>Available
                                     </option>
+                                    <option value="in_use"
+                                        {{ request('inventory_status') == 'in_use' ? 'selected' : '' }}>In Use</option>
                                     <option value="maintenance"
                                         {{ request('inventory_status') == 'maintenance' ? 'selected' : '' }}>
-                                        Maintenance
-                                    </option>
+                                        Maintenance</option>
                                     <option value="damaged"
                                         {{ request('inventory_status') == 'damaged' ? 'selected' : '' }}>Damaged
                                     </option>
@@ -989,17 +972,12 @@
                                     placeholder="Date Issued"
                                     class="border border-[#ffcc34] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00553d] w-full sm:w-32"
                                     value="{{ request('inventory_date_from') }}">
-
-                            </form>
-                            <div class="w-full sm:w-auto flex justify-end">
                                 <button type="button" id="inventory-export-btn"
-                                    class="bg-[#00553d] hover:bg-[#007a5a] text-white text-sm font-medium px-4 py-2 rounded-lg border border-[#ffcc34] shadow-sm hover:shadow-md transition-all duration-200 flex items-center gap-2">
-                                    <i class="fas fa-spinner fa-spin hidden" id="export-spinner"></i>
-                                    <i class="fas fa-download"></i>
-                                    <span>Export CSV</span>
+                                    class="gradient-btn text-white font-semibold rounded-lg border border-[#ffcc34] shadow-md hover:shadow-lg flex items-center">
+                                    <i class="spinner fas fa-spinner fa-spin mr-2"></i>
+                                    <span class="btn-text"><i class="fas fa-download mr-2"></i>Export CSV</span>
                                 </button>
-                            </div>
-
+                            </form>
                         </div>
                         <div class="overflow-x-auto">
                             <table class="min-w-full table-auto divide-y divide-[#ffcc34]"
@@ -1074,11 +1052,11 @@
                                                 <td
                                                     class="px-4 py-3 whitespace-nowrap text-xs text-black min-w-[150px]">
                                                     @if ($item->date_issued instanceof \Carbon\Carbon)
-                                                        {{ $item->date_issued->format('Y-m-d H:i:s') }}
+                                                        {{ $item->date_issued->format('Y-m-d H:i') }}
                                                     @elseif (is_string($item->date_issued) &&
                                                             !empty($item->date_issued) &&
-                                                            \Carbon\Carbon::canBeCreatedFromFormat($item->date_issued, 'Y-m-d H:i:s'))
-                                                        {{ \Carbon\Carbon::createFromFormat('Y-m-d H:i', $item->date_issued)->format('Y-m-d H:i:s') }}
+                                                            \Carbon\Carbon::canBeCreatedFromFormat($item->date_issued, 'Y-m-d H:i'))
+                                                        {{ \Carbon\Carbon::createFromFormat('Y-m-d H:i', $item->date_issued)->format('Y-m-d H:i') }}
                                                     @else
                                                         N/A
                                                     @endif
@@ -1086,7 +1064,7 @@
                                                 <td class="px-4 py-3 whitespace-nowrap min-w-[150px]">
                                                     <span class="status-indicator status-{{ $item->status }}"></span>
                                                     <span
-                                                        class="px-2 py-1 inline-flex text-xs leading-5 font-bold rounded-full {{ $item->status == 'available' ? 'bg-green-100 text-green-800' : ($item->status == 'in_use' ? 'bg-blue-100 text-blue-800' : ($item->status == 'maintenance' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800')) }}">{{ ucfirst(str_replace('_', ' ', $item->status)) }}</span>
+                                                        class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full {{ $item->status == 'available' ? 'bg-green-100 text-green-800' : ($item->status == 'in_use' ? 'bg-blue-100 text-blue-800' : ($item->status == 'maintenance' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800')) }}">{{ ucfirst(str_replace('_', ' ', $item->status)) }}</span>
                                                 </td>
                                                 <td class="px-4 py-3 whitespace-nowrap flex space-x-2">
                                                     <a href="{{ route('inventory.show', $item->id) }}"
@@ -1202,16 +1180,12 @@
                             <i class="fas fa-times"></i>
                         </button>
                     </div>
-                    <form id="edit-inventory-form">
+                    <form id="edit-inventory-form" method="POST" action="">
                         @csrf
-                        <input type="hidden" name="equipment_id" id="edit_equipment_id">
+                        @method('PUT')
                         <div class="mb-4 space-y-3">
                             <div class="form-group">
-                                <label for="staff_name" class="block text-xs font-medium text-gray-700 mb-1">Staff
-                                    Name *</label>
-                                <input type="text" name="staff_name" id="staff_name" required
-                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500 text-xs">
-                                {{--  <label for="staff_name">Staff Member *</label>
+                                <label for="staff_name">Staff Member *</label>
                                 <select name="staff_name" id="staff_name" class="form-control" required>
                                     <option value="">Select Registered Staff Member</option>
                                     @foreach ($activeStaff as $staff)
@@ -1224,7 +1198,7 @@
                                 </select>
                                 <small class="text-info mt-1">
                                     <i class="fas fa-info-circle"></i> {{ $staffValidationMessage }}
-                                </small>  --}}
+                                </small>
                             </div>
                             <div class="relative group">
                                 <label for="edit_equipment_name"
@@ -1279,8 +1253,8 @@
                                     class="block text-[0.65rem] font-medium text-[#00553d] mb-1">Status *</label>
                                 <select name="status" id="edit_status"
                                     class="w-full px-3 py-2 border border-[#ffcc34] rounded-lg focus:ring-2 focus:ring-[#00553d] text-xs">
-                                    <option value="in_use">In Use</option>
                                     <option value="available">Available</option>
+                                    <option value="in_use">In Use</option>
                                     <option value="maintenance">Maintenance</option>
                                     <option value="damaged">Damaged</option>
                                 </select>
@@ -1290,9 +1264,11 @@
                             <button type="button"
                                 class="px-4 py-2 text-xs font-semibold text-[#00553d] bg-gray-100 rounded-lg hover:bg-gray-200 border border-gray-200 transition-all duration-200"
                                 onclick="document.getElementById('edit-inventory-modal').classList.add('hidden')">Cancel</button>
-                            {{--  @foreach ($equipments as $equipment)
-    <button class="btn-edit" data-equipment='@json($equipment)'>Edit</button>
-@endforeach  --}}
+                            <button type="submit" id="edit-inventory-submit"
+                                class="gradient-btn px-4 py-2 text-xs font-semibold text-white rounded-lg border border-[#ffcc34] shadow-md hover:shadow-lg flex items-center transition-all duration-300">
+                                <i class="spinner fas fa-spinner fa-spin mr-2"></i>
+                                <span class="btn-text"><i class="fas fa-save mr-2"></i>Update</span>
+                            </button>
                         </div>
                     </form>
                 </div>
@@ -1315,75 +1291,6 @@
                 if (departmentField && department) {
                     departmentField.value = department;
                 }
-            });
-        </script>
-
-        <script>
-            document.getElementById('staff_name').addEventListener('change', function() {
-                const selectedOption = this.options[this.selectedIndex];
-                const staffDepartment = selectedOption.getAttribute('data-department');
-                const departmentSelect = document.getElementById('department_id');
-
-                // Auto-select the matching department
-                for (let i = 0; i < departmentSelect.options.length; i++) {
-                    if (departmentSelect.options[i].text === staffDepartment) {
-                        departmentSelect.selectedIndex = i;
-                        break;
-                    }
-                }
-            });
-
-            document.getElementById('status').addEventListener('change', function() {
-                const selectedStatus = this.value;
-                const noteElement = document.querySelector('.status-note');
-
-                // Remove existing note if any
-                if (noteElement) {
-                    noteElement.remove();
-                }
-
-                // Add note for non-in-use status
-                if (selectedStatus !== 'in_use') {
-                    const note = document.createElement('div');
-                    note.className = 'alert alert-info mt-2 status-note';
-                    note.innerHTML =
-                        '<i class="fas fa-info-circle"></i> This equipment will not appear in the Return Equipment section since it\'s not marked as "In Use".';
-                    this.parentElement.appendChild(note);
-                }
-            });
-
-            // Trigger edit modal with data
-            $(document).on('click', '.btn-edit', function() {
-                const equipment = $(this).data('equipment'); // contains full JSON object
-
-                $('#edit_equipment_id').val(equipment.id);
-                $('#edit_equipment_name').val(equipment.equipment_name);
-                $('#edit_model_brand').val(equipment.model_brand);
-                // set other fields...
-
-                $('#editInventoryModal').modal('show');
-            });
-
-            // Handle AJAX form submit
-            $('#edit-inventory-form').on('submit', function(e) {
-                e.preventDefault();
-
-                const equipmentId = $('#edit_equipment_id').val();
-                const formData = $(this).serialize();
-
-                $.ajax({
-                    url: `/inventory/${equipmentId}`,
-                    method: 'PUT',
-                    data: formData,
-                    success: function(response) {
-                        $('#editInventoryModal').modal('hide');
-                        alert('Equipment updated successfully!');
-                        // Optionally, reload data table or update row directly
-                    },
-                    error: function(xhr) {
-                        alert('Update failed: ' + xhr.responseJSON?.message || 'Something went wrong.');
-                    }
-                });
             });
         </script>
 
@@ -1418,14 +1325,6 @@
                         alertDiv.classList.add('fade-out');
                         setTimeout(() => alertDiv.remove(), 300);
                     }, 3000);
-                }
-
-                // Scroll to Bottom Function
-                function scrollToReturnBottom() {
-                    const container = document.getElementById('returnEquipmentContainer');
-                    if (container) {
-                        container.scrollTop = container.scrollHeight;
-                    }
                 }
 
                 // Initialize Chart
@@ -2108,7 +2007,7 @@
                                         </div>
                                         <div class="flex justify-between items-center mt-1">
                                             <span>Condition:</span>
-                                            <span class="font-medium">${payload.returned_condition.charAt(0).toUpperCase() + payload.returned_condition.slice(1)}</span>
+                                            <span class="font-medium">${payload.condition.charAt(0).toUpperCase() + payload.condition.slice(1)}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -2144,120 +2043,161 @@
                     editButtons.forEach(button => {
                         button.addEventListener('click', async function() {
                             const itemId = this.dataset.id;
-
                             try {
-                                // Show loading state
-                                if (editSubmitButton) {
-                                    editSubmitButton.disabled = true;
-                                    editSubmitButton.querySelector('.spinner').classList.remove(
-                                        'hidden');
-                                    editSubmitButton.querySelector('.btn-text').classList.add(
-                                        'hidden');
-                                }
-
-                                const response = await fetch(`/inventory/${itemId}`, {
+                                const response = await fetch(`{{ url('inventory') }}/${itemId}`, {
                                     method: 'GET',
                                     headers: {
                                         'X-CSRF-TOKEN': document.querySelector(
-                                            'meta[name="csrf-token"]').content,
-                                        'Accept': 'application/json'
+                                            'meta[name="csrf-token"]').content
                                     }
                                 });
 
-                                if (!response.ok) {
-                                    const error = await response.json().catch(() => ({}));
-                                    throw new Error(error.message ||
-                                        'Failed to fetch equipment data');
+                                if (!response.ok) throw new Error(
+                                    `HTTP error! Status: ${response.status}`);
+
+                                const item = await response.json();
+
+                                // Safely set values only if elements exist
+                                const setValueIfExists = (id, value) => {
+                                    const element = document.getElementById(id);
+                                    if (element) element.value = value || '';
+                                };
+
+                                setValueIfExists('edit_staff_name', item.staff_name);
+                                setValueIfExists('edit_equipment_name', item.equipment_name);
+                                setValueIfExists('edit_model_brand', item.model_brand);
+                                setValueIfExists('edit_serial_number', item.serial_number);
+                                setValueIfExists('edit_pr_number', item.pr_number);
+                                setValueIfExists('edit_date_issued', item.date_issued);
+                                setValueIfExists('edit_status', item.status);
+
+                                if (editForm) {
+                                    editForm.action = `{{ url('inventory') }}/${itemId}`;
                                 }
 
-                                const {
-                                    data,
-                                    departments,
-                                    activeStaff
-                                } = await response.json();
-
-                                // Populate form fields
-                                document.getElementById('edit_equipment_id').value = data.id;
-                                document.getElementById('edit_staff_name').value = data
-                                    .staff_name || '';
-                                document.getElementById('edit_department_id').value = data
-                                    .department_id || '';
-                                document.getElementById('edit_equipment_name').value = data
-                                    .equipment_name || '';
-                                document.getElementById('edit_model_brand').value = data
-                                    .model_brand || '';
-                                document.getElementById('edit_serial_number').value = data
-                                    .serial_number || '';
-                                document.getElementById('edit_pr_number').value = data.pr_number ||
-                                    '';
-                                document.getElementById('edit_date_issued').value = data
-                                    .date_issued ? data.date_issued.split(' ')[0] : '';
-                                document.getElementById('edit_status').value = data.status ||
-                                    'available';
-                                document.getElementById('edit_remarks').value = data.remarks || '';
-
-                                // Show modal
                                 editModal.classList.remove('hidden');
-
                             } catch (error) {
-                                console.error('Error:', error);
-                                showAlert(`Failed to load equipment data: ${error.message}`,
+                                console.error('Error fetching inventory item:', error);
+                                showAlert(
+                                    'Failed to load inventory item for editing. Please try again.',
                                     'error');
-                            } finally {
-                                // Reset loading state
-                                if (editSubmitButton) {
-                                    editSubmitButton.disabled = false;
-                                    editSubmitButton.querySelector('.spinner').classList.add(
-                                        'hidden');
-                                    editSubmitButton.querySelector('.btn-text').classList.remove(
-                                        'hidden');
-                                }
                             }
                         });
                     });
 
-                    // Form submission handler
                     if (editForm) {
                         editForm.addEventListener('submit', async function(e) {
                             e.preventDefault();
                             const formData = new FormData(this);
-                            const itemId = formData.get('equipment_id');
+                            const payload = Object.fromEntries(formData.entries());
+                            setLoadingState(editSubmitButton, true);
 
                             try {
-                                // Set loading state
-                                editSubmitButton.disabled = true;
-                                editSubmitButton.querySelector('.spinner').classList.remove('hidden');
-                                editSubmitButton.querySelector('.btn-text').classList.add('hidden');
-
-                                const response = await fetch(`/inventory/${itemId}`, {
-                                    method: 'PUT',
+                                const checkResponse = await fetch(window.checkDuplicatesUrl, {
+                                    method: 'POST',
                                     headers: {
+                                        'Content-Type': 'application/json',
                                         'X-CSRF-TOKEN': document.querySelector(
-                                            'meta[name="csrf-token"]').content,
+                                            'meta[name="csrf-token"]').content
                                     },
-                                    body: formData
+                                    body: JSON.stringify({
+                                        serial_number: payload.serial_number,
+                                        pr_number: payload.pr_number,
+                                        exclude_id: editForm.action.split('/').pop()
+                                    })
                                 });
 
-                                if (!response.ok) {
-                                    const error = await response.json().catch(() => ({}));
-                                    throw new Error(error.message || 'Failed to update equipment');
+                                if (!checkResponse.ok) throw new Error(
+                                    `HTTP error! Status: ${checkResponse.status}`);
+
+                                const checkData = await checkResponse.json();
+                                if (checkData.serial_exists || checkData.pr_exists) {
+                                    let message = 'Potential duplicates found:<br>';
+                                    if (checkData.serial_exists) message +=
+                                        `• Serial Number "${payload.serial_number}" exists<br>`;
+                                    if (checkData.pr_exists) message +=
+                                        `• PR Number "${payload.pr_number}" exists<br>`;
+
+                                    const result = await Swal.fire({
+                                        title: 'Duplicate Detected',
+                                        html: `
+                                    <div class="text-left space-y-3">
+                                        <div class="bg-yellow-50 p-3 rounded-lg border border-yellow-200">
+                                            <div class="text-xs text-yellow-700">${message}</div>
+                                        </div>
+                                    </div>
+                                `,
+                                        icon: 'warning',
+                                        showCancelButton: !checkData.serial_exists,
+                                        confirmButtonColor: '#00553d',
+                                        cancelButtonColor: '#90143c',
+                                        confirmButtonText: checkData.serial_exists ? 'OK' :
+                                            '<i class="fas fa-check mr-2"></i>Proceed Anyway',
+                                        cancelButtonText: '<i class="fas fa-times mr-2"></i>Cancel',
+                                        customClass: {
+                                            title: 'text-xs',
+                                            content: 'text-[0.6rem]'
+                                        }
+                                    });
+
+                                    if (result.isConfirmed && !checkData.serial_exists) {
+                                        editForm.submit();
+                                    } else {
+                                        setLoadingState(editSubmitButton, false);
+                                    }
+                                } else {
+                                    const result = await Swal.fire({
+                                        title: 'Update Inventory Item?',
+                                        html: `
+                                    <div class="text-left space-y-3">
+                                        <div class="bg-blue-50 p-3 rounded-lg border border-blue-200">
+                                            <div class="font-semibold text-blue-800 mb-2">Update Details:</div>
+                                            <div class="text-xs text-blue-700">
+                                                <div class="flex justify-between items-center">
+                                                    <span>Staff Name:</span>
+                                                    <span class="font-medium">${payload.staff_name}</span>
+                                                </div>
+                                                <div class="flex justify-between items-center mt-1">
+                                                    <span>Equipment:</span>
+                                                    <span class="font-medium">${payload.equipment_name}</span>
+                                                </div>
+                                                <div class="flex justify-between items-center mt-1">
+                                                    <span>Serial Number:</span>
+                                                    <span class="font-medium">${payload.serial_number}</span>
+                                                </div>
+                                                <div class="flex justify-between items-center mt-1">
+                                                    <span>PR Number:</span>
+                                                    <span class="font-medium">${payload.pr_number}</span>
+                                                </div>
+                                                <div class="flex justify-between items-center mt-1">
+                                                    <span>Status:</span>
+                                                    <span class="font-medium">${payload.status.charAt(0).toUpperCase() + payload.status.slice(1)}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `,
+                                        icon: 'question',
+                                        showCancelButton: true,
+                                        confirmButtonColor: '#00553d',
+                                        cancelButtonColor: '#90143c',
+                                        confirmButtonText: '<i class="fas fa-save mr-2"></i>Update',
+                                        cancelButtonText: '<i class="fas fa-times mr-2"></i>Cancel',
+                                        customClass: {
+                                            title: 'text-xs',
+                                            content: 'text-[0.6rem]'
+                                        }
+                                    });
+
+                                    if (result.isConfirmed) {
+                                        editForm.submit();
+                                    } else {
+                                        setLoadingState(editSubmitButton, false);
+                                    }
                                 }
-
-                                const result = await response.json();
-                                showAlert('Equipment updated successfully!', 'success');
-                                editModal.classList.add('hidden');
-
-                                // Refresh the page after 1 second
-                                setTimeout(() => window.location.reload(), 1000);
-
                             } catch (error) {
-                                console.error('Error:', error);
-                                showAlert(`Failed to update equipment: ${error.message}`, 'error');
-                            } finally {
-                                // Reset loading state
-                                editSubmitButton.disabled = false;
-                                editSubmitButton.querySelector('.spinner').classList.add('hidden');
-                                editSubmitButton.querySelector('.btn-text').classList.remove('hidden');
+                                setLoadingState(editSubmitButton, false);
+                                showAlert('Failed to validate data. Please try again.', 'error');
                             }
                         });
                     }
@@ -2312,7 +2252,7 @@
                 initializeChart();
                 initializeAccordions();
                 initializeEquipmentToggles();
-                initializeEquipmentDetailsModal(); 
+                initializeEquipmentDetailsModal(); // Add this new initialization
                 initializeModals();
                 initializeSearchAndFilters();
                 initializePagination();
@@ -2333,3 +2273,28 @@
 
         <x-auth-footer />
 </x-app-layout>
+
+
+
+<div>
+    <label for="staff_name" class="block text-[0.65rem] font-medium text-[#00553d] mb-1">Staff Name *</label>
+    <select name="staff_name" id="staff_name" required
+        class="w-full px-3 py-2 border border-[#ffcc34] rounded-lg focus:ring-2 focus:ring-[#00553d] text-xs">
+        <option value="{{ $staffMember->id }}" data-department="{{ $staffMember->department }}">
+    {{ $staffMember->name }} ({{ $staffMember->department }})
+</option>
+    </select>
+</div>
+<div>
+    <label for="department_id" class="block text-[0.65rem] font-medium text-[#00553d] mb-1">Department *</label>
+    <select name="department_id" id="department_id" required
+        class="w-full px-3 py-2 border border-[#ffcc34] rounded-lg focus:ring-2 focus:ring-[#00553d] text-xs">
+        
+        <option value="">Select Department</option>
+        @foreach ($departments as $department)
+            <option value="{{ $department->id }}">{{ $department->name }}</option>
+        @endforeach
+    </select>
+</div>
+
+

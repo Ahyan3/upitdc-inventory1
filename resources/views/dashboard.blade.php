@@ -254,7 +254,7 @@
                                     <input type="text" name="inventory_search"
                                         value="{{ request('inventory_search') }}" placeholder="Search inventory..."
                                         class="px-3 py-3 rounded-lg text-xs border border-[#ffcc34] focus:outline-none focus:ring-2 focus:ring-[#00553d] w-full sm:w-64">
-                                    <select name="inventory_status"
+                                    {{--  <select name="inventory_status"
                                         class="px-3 py-3 rounded-lg text-xs border border-[#ffcc34] focus:outline-none focus:ring-2 focus:ring-[#00553d] w-full sm:w-36">
                                         <option value="all"
                                             {{ request('inventory_status') == 'all' ? 'selected' : '' }}>All Status
@@ -274,7 +274,7 @@
                                         <option value="returned"
                                             {{ request('inventory_status') == 'returned' ? 'selected' : '' }}>Returned
                                         </option>
-                                    </select>
+                                    </select>  --}}
                                     <button type="submit"
                                         class="gradient-btn px-6 py-3 text-white font-semibold rounded-lg text-xs border border-[#ffcc34] shadow-md hover:shadow-lg flex items-center transition-all duration-300">
                                         <i class="spinner fas fa-spinner fa-spin mr-2"></i>
@@ -330,11 +330,11 @@
                                                 </td>
                                                 <td class="px-4 py-2 text-xs text-[#00553d]">
                                                     @if ($item->date_issued instanceof \Carbon\Carbon)
-                                                        {{ $item->date_issued->format('Y-m-d') }}
+                                                        {{ $item->date_issued->format('Y-m-d H:i') }}
                                                     @elseif (is_string($item->date_issued) &&
                                                             !empty($item->date_issued) &&
-                                                            \Carbon\Carbon::canBeCreatedFromFormat($item->date_issued, 'Y-m-d'))
-                                                        {{ \Carbon\Carbon::createFromFormat('Y-m-d', $item->date_issued)->format('Y-m-d') }}
+                                                            \Carbon\Carbon::canBeCreatedFromFormat($item->date_issued, 'Y-m-d H:i'))
+                                                        {{ \Carbon\Carbon::createFromFormat('Y-m-d\TH:i', $item->date_issued)->format('Y-m-d H:i') }}
                                                     @else
                                                         N/A
                                                     @endif

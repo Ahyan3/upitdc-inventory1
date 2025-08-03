@@ -21,10 +21,8 @@ class InventoryController extends Controller
     {
         try {
             $users = User::select('id', 'name')->get();
-
             $departments = Department::all();
 
-            // Fetch ACTIVE staff members for equipment assignment
             $activeStaff = Cache::remember('active_staff_for_inventory', now()->addMinutes(10), function () {
                 return Staff::withoutTrashed()
                     ->where('status', 'Active')
@@ -34,9 +32,11 @@ class InventoryController extends Controller
 
             $issuances = Issuance::with(['equipment.department', 'staff'])
                 ->whereNull('date_returned')
+                ->whereHas('equipment', function($query) {
+                    $query->where('status', 'in_use');
+                })
                 ->paginate(20, ['*'], 'issuances_page');
 
-            // Build inventory query with filters
             $query = Equipment::query();
 
             // Apply filters from the request
@@ -96,7 +96,7 @@ class InventoryController extends Controller
                 'issuances' => $issuances,
                 'equipmentData' => $equipmentData,
                 'users' => $users,
-                'activeStaff' => $activeStaff, 
+                'activeStaff' => $activeStaff,
                 'inventoryPerPage' => $inventoryPerPage,
                 'staffValidationMessage' => 'Only registered active staff members can be issued equipment. If the person is not listed below, please register them in the Staff tab first with their consent.',
             ]);
@@ -145,7 +145,7 @@ class InventoryController extends Controller
         $defaultReturnPeriod = Settings::where('key', 'default_return_period')->value('value') ?? 30;
 
         $validated = $request->validate([
-            'staff_name' => 'required|string|max:255|exists:staff,name', 
+            'staff_name' => 'required|exists:staff,name',
             'department_id' => 'required|exists:departments,id',
             'equipment_name' => 'required|string|max:255',
             'model_brand' => 'required|string|max:255',
@@ -176,7 +176,6 @@ class InventoryController extends Controller
                 'department' => $staff->department
             ]);
 
-            // Verify the staff member's department matches the selected department
             $selectedDepartment = Department::find($validated['department_id']);
             if ($staff->department !== $selectedDepartment->name) {
                 Log::warning('Department mismatch detected', [
@@ -184,6 +183,7 @@ class InventoryController extends Controller
                     'selected_department' => $selectedDepartment->name,
                     'staff_name' => $staff->name
                 ]);
+
             }
 
             // Create or get the corresponding user
@@ -210,16 +210,18 @@ class InventoryController extends Controller
             ]);
             Log::info('Equipment created', ['equipment_id' => $equipment->id]);
 
-            $issuance = Issuance::create([
-                'user_id' => $user->id,
-                'staff_id' => $staff->id,
-                'equipment_id' => $equipment->id,
-                'issued_at' => $validated['date_issued'],
-                'expected_return_at' => now()->addDays($defaultReturnPeriod),
-                'notes' => ($validated['remarks'] ?? '') . ($validated['pr_number'] ? " (PR: {$validated['pr_number']})" : ''),
-                'status' => 'active',
-            ]);
-            Log::info('Issuance created', ['issuance_id' => $issuance->id]);
+            if ($validated['status'] === 'in_use') {
+                $issuance = Issuance::create([
+                    'user_id' => $user->id,
+                    'staff_id' => $staff->id,
+                    'equipment_id' => $equipment->id,
+                    'issued_at' => $validated['date_issued'],
+                    'expected_return_at' => now()->addDays($defaultReturnPeriod),
+                    'notes' => ($validated['remarks'] ?? '') . ($validated['pr_number'] ? " (PR: {$validated['pr_number']})" : ''),
+                    'status' => 'in_use',
+                ]);
+                Log::info('Issuance created', ['issuance_id' => $issuance->id]);
+            }
 
             HistoryLog::create([
                 'action' => 'Issued',
@@ -316,60 +318,82 @@ class InventoryController extends Controller
         }
     }
 
-    public function return(Request $request, Issuance $issuance)
-    {
-        if (!Auth::check()) {
-            Log::error('No authenticated user found for return');
-            return redirect()->route('login')->with('error', 'Please log in to return equipment.');
+    public function getReturnableEquipment()
+{
+    return Issuance::with(['equipment.department', 'staff'])
+        ->whereNull('date_returned')
+        ->whereHas('equipment', function ($query) {
+            $query->where('status', 'returned');
+        })
+        ->get();
+}
+
+  public function return(Request $request, Issuance $issuance)
+{
+    if (!Auth::check()) {
+        Log::error('No authenticated user found for return');
+        return redirect()->route('login')->with('error', 'Please log in to return equipment.');
+    }
+
+    Log::info('Return request received', [
+        'returned_condition' => $request->input('returned_condition'),
+        'all_data' => $request->all()
+    ]);
+
+    $validated = $request->validate([
+        'date_returned' => 'required|date',
+        'returned_condition' => 'required|string|in:good,damaged,lost',
+        'remarks' => 'nullable|string|max:500',
+    ]);
+
+    try {
+        if (!$issuance->equipment) {
+            throw new \Exception('Associated equipment not found for issuance ID: ' . $issuance->id);
         }
 
-        $validated = $request->validate([
-            'date_returned' => 'required|date',
-            'remarks' => 'nullable|string|max:255',
+        $equipment = $issuance->equipment;
+        $oldValues = $issuance->only(['status', 'notes', 'returned_at', 'date_returned']);
+
+        $issuance->update([
+            'date_returned' => $validated['date_returned'],
+            'returned_at' => $validated['date_returned'],
+            'return_notes' => $validated['remarks'] ?? $issuance->return_notes,
+            'returned_condition' => $validated['returned_condition'],
+            'status' => 'returned',
+        ]);
+        Log::info('Issuance updated', ['issuance_id' => $issuance->id]);
+
+        $equipment->update([
+            'status' => 'available',
+            'returned_condition' => $validated['returned_condition'],
         ]);
 
-        try {
-            if (!$issuance->equipment) {
-                throw new \Exception('Associated equipment not found for issuance ID: ' . $issuance->id);
-            }
+        Log::info('Equipment updated', ['equipment_id' => $equipment->id]);
 
-            $equipment = $issuance->equipment;
-            $oldValues = $issuance->only(['status', 'notes', 'returned_at', 'date_returned']);
-            $issuance->update([
-                'date_returned' => $validated['date_returned'],
-                'returned_at' => $validated['date_returned'],
-                'return_notes' => $validated['remarks'] ?? $issuance->return_notes,
-                'status' => 'returned',
-            ]);
-            Log::info('Issuance updated', ['issuance_id' => $issuance->id]);
+        HistoryLog::create([
+            'action' => 'Returned',
+            'action_date' => $validated['date_returned'],
+            'model_brand' => $equipment->model_brand,
+            'model_id' => $equipment->id,
+            'old_values' => json_encode($oldValues),
+            'new_values' => json_encode(['status' => 'returned', 'return_notes' => $validated['remarks']]),
+            'user_id' => Auth::id() ?? $issuance->user_id,
+            'staff_id' => $issuance->staff_id,
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+            'description' => "Returned equipment: {$equipment->equipment_name}, PR: {$equipment->pr_number}, Serial: {$equipment->serial_number}",
+        ]);
+        Log::info('History log created for return', ['issuance_id' => $issuance->id]);
 
-            $equipment->update(['status' => 'available']);
-            Log::info('Equipment updated', ['equipment_id' => $equipment->id]);
-
-            HistoryLog::create([
-                'action' => 'Returned',
-                'action_date' => $validated['date_returned'],
-                'model_brand' => $equipment->model_brand,
-                'model_id' => $equipment->id,
-                'old_values' => json_encode($oldValues),
-                'new_values' => json_encode(['status' => 'returned', 'return_notes' => $validated['remarks']]),
-                'user_id' => Auth::id() ?? $issuance->user_id,
-                'staff_id' => $issuance->staff_id,
-                'ip_address' => $request->ip(),
-                'user_agent' => $request->userAgent(),
-                'description' => "Returned equipment: {$equipment->equipment_name}, PR: {$equipment->pr_number}, Serial: {$equipment->serial_number}",
-            ]);
-            Log::info('History log created for return', ['issuance_id' => $issuance->id]);
-
-            return redirect()->route('inventory')->with('success', 'Equipment returned successfully.');
-        } catch (\Exception $e) {
-            Log::error('Error in return: ' . $e->getMessage(), [
-                'issuance_id' => $issuance->id,
-                'stack_trace' => $e->getTraceAsString()
-            ]);
-            return redirect()->back()->with('error', 'Failed to return equipment: ' . $e->getMessage())->withInput();
-        }
+        return redirect()->route('inventory')->with('success', 'Equipment returned successfully.');
+    } catch (\Exception $e) {
+        Log::error('Error in return: ' . $e->getMessage(), [
+            'issuance_id' => $issuance->id,
+            'stack_trace' => $e->getTraceAsString()
+        ]);
+        return redirect()->back()->with('error', 'Failed to return equipment: ' . $e->getMessage())->withInput();
     }
+}
 
     public function destroy(Request $request, $id)
     {
@@ -496,7 +520,7 @@ class InventoryController extends Controller
             'serial_number' => 'required|string|max:255|unique:equipment,serial_number,' . $equipment->id,
             'date_issued' => 'required|date',
             'pr_number' => 'required|string|max:255',
-            'status' => 'required|string|in:available,not_working,working,not_returned,returned',
+            'status' => 'required|string|in:available,in_use,maintenance,damaged',
             'remarks' => 'nullable|string|max:255',
         ]);
 
@@ -515,6 +539,23 @@ class InventoryController extends Controller
 
             $oldValues = $equipment->toArray();
             $equipment->update($validated);
+
+            if ($validated['status'] === 'available') {
+                // Find the latest active issuance for this equipment
+                $issuance = Issuance::where('equipment_id', $equipment->id)
+                                    ->where('status', 'in_use')
+                                    ->latest()
+                                    ->first();
+
+                if ($issuance) {
+                    $issuance->update([
+                        'status' => 'returned',
+                        'returned_at' => now(),
+                    ]);
+                    Log::info('Issuance marked as returned', ['issuance_id' => $issuance->id]);
+                }
+            }
+
             Log::info('Equipment updated', ['equipment_id' => $equipment->id]);
 
             HistoryLog::create([
@@ -525,7 +566,7 @@ class InventoryController extends Controller
                 'old_values' => json_encode($oldValues),
                 'new_values' => json_encode($validated),
                 'user_id' => Auth::id(),
-                'staff_id' => $staff->id, 
+                'staff_id' => $staff->id,
                 'ip_address' => $request->ip(),
                 'user_agent' => $request->userAgent(),
                 'description' => "Updated equipment: {$equipment->equipment_name} for {$staff->name} ({$staff->department}), PR: {$validated['pr_number']}, Serial: {$equipment->serial_number}",

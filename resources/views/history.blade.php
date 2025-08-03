@@ -305,12 +305,15 @@
                                         <option value="50" {{ $perPage == 50 ? 'selected' : '' }}>50</option>
                                         <option value="100" {{ $perPage == 100 ? 'selected' : '' }}>100</option>
                                     </select>
-                                    <button type="button" id="log-export-btn"
-                                        class="export-btn text-white font-semibold rounded-lg border border-[#ffcc34] shadow-md hover:shadow-lg flex items-center">
-                                        <i class="spinner fas fa-spinner fa-spin mr-2"></i>
-                                        <span class="btn-text"><i class="fas fa-download mr-2"></i>Export CSV</span>
-                                    </button>
                                 </form>
+                                <div class="w-full sm:w-auto flex justify-end">
+                                    <button type="button" id="log-export-btn"
+                                        class="bg-[#00553d] hover:bg-[#007a5a] text-white text-sm font-medium px-4 py-2 rounded-lg border border-[#ffcc34] shadow-sm hover:shadow-md transition-all duration-200 flex items-center gap-2">
+                                        <i class="fas fa-spinner fa-spin hidden" id="export-spinner"></i>
+                                        <i class="fas fa-download"></i>
+                                        <span>Export CSV</span>
+                                    </button>
+                                </div>
                             </div>
                             @include('partials.history_logs')
                         </div>
@@ -397,12 +400,16 @@
                                         <option value="100" {{ $inventoryPerPage == 100 ? 'selected' : '' }}>100
                                         </option>
                                     </select>
-                                    <button type="button" id="inventory-export-btn"
-                                        class="export-btn text-white font-semibold rounded-lg border border-[#ffcc34] shadow-md hover:shadow-lg flex items-center">
-                                        <i class="spinner fas fa-spinner fa-spin mr-2"></i>
-                                        <span class="btn-text"><i class="fas fa-download mr-2"></i>Export CSV</span>
-                                    </button>
                                 </form>
+                                <div class="w-full sm:w-auto flex justify-end">
+                                    <button type="button" id="log-export-btn"
+                                        class="bg-[#00553d] hover:bg-[#007a5a] text-white text-sm font-medium px-4 py-2 rounded-lg border border-[#ffcc34] shadow-sm hover:shadow-md transition-all duration-200 flex items-center gap-2">
+                                        <i class="fas fa-spinner fa-spin hidden" id="export-spinner"></i>
+                                        <i class="fas fa-download"></i>
+                                        <span>Export CSV</span>
+                                    </button>
+                                </div>
+                            </div>
                             </div>
                             <div class="overflow-x-auto">
                                 <table class="min-w-full table-auto divide-y divide-[#ffcc34]"
@@ -589,7 +596,7 @@
                     icon.classList.toggle('rotate-180');
                     if (!isOpen) {
                         target.style.maxHeight = (target.scrollHeight + 30) +
-                        'px'; // Reduced to 30px for pagination
+                            'px'; // Reduced to 30px for pagination
                     } else {
                         target.style.maxHeight = '0';
                     }

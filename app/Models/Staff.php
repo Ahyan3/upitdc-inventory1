@@ -19,4 +19,20 @@ class Staff extends Model
     ];
 
     protected $dates = ['deleted_at'];
+
+    public function issuances()
+    {
+        return $this->hasMany(Issuance::class); 
+    }
+
+    public function user()
+    {
+        return $this->hasOne(User::class, 'email', 'email');
+    }
+
+     public function scopeActive($query)
+    {
+        return $query->where('status', 'Active');
+    }
+
 }
