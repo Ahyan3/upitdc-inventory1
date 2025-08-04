@@ -26,22 +26,20 @@ class DashboardController extends Controller
             ]);
 
             // Stats
-            $statsCacheKey = 'dashboard_stats_' . md5(json_encode($request->only(['equipment_filter', 'time_filter', 'type_filter'])));
-            $stats = Cache::remember($statsCacheKey, now()->addMinutes(10), function () use ($validated) {
-                $equipmentQuery = Equipment::query();
-                if ($filter = $validated['equipment_filter'] ?? null) {
-                    $equipmentQuery->where('created_at', '>=', Carbon::now()->{'startOf' . ucfirst($filter)}());
-                }
+            $equipmentQuery = Equipment::query();
+            if ($filter = $validated['equipment_filter'] ?? null) {
+                $equipmentQuery->where('created_at', '>=', Carbon::now()->{'startOf' . ucfirst($filter)}());
+            }
 
-                return [
-                    'totalEquipment' => $equipmentQuery->count(),
-                    'totalStaff' => Staff::count(),
-                    'totalIssuedEquipment' => Equipment::where('status', 'available')->count(),
-                    'totalReturnedEquipment' => Issuance::where('status', 'in_use')->count(),
-                    'pendingRequests' => Issuance::where('status', 'overdue')->count(),
-                    'activeIssuances' => Issuance::where('status', 'active')->count(),
-                ];
-            });
+            $stats = [
+                'totalEquipment' => $equipmentQuery->count(),
+                'totalStaff' => Staff::count(),
+                'totalIssuedEquipment' => Equipment::where('status', 'available')->count(),
+                'totalReturnedEquipment' => Issuance::where('status', 'returned')->whereNull('deleted_at')->count(),
+                'pendingRequests' => Issuance::where('status', 'overdue')->count(),
+                'activeIssuances' => Issuance::where('status', 'active')->count(),
+            ];
+
 
             // Issuances
             $issuancesQuery = Issuance::with(['equipment', 'equipment.department']);
@@ -55,7 +53,7 @@ class DashboardController extends Controller
                 }
             }
             $issuances = $issuancesQuery->latest()->paginate(20);
-            Cache::forget('dashboard_stats'); 
+            Cache::forget('dashboard_stats');
 
             // Inventory
             $inventoryQuery = Equipment::with(['department', 'issuances.staff']);

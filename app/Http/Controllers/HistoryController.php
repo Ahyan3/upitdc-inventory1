@@ -7,6 +7,7 @@ use App\Models\Equipment;
 use App\Models\User;
 use App\Models\Department;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Cache;
 
 class HistoryController extends Controller
@@ -44,15 +45,18 @@ class HistoryController extends Controller
             $historyQuery->whereDate('action_date', '>=', $request->log_date_from);
         }
 
+        // Apply filters...
         if ($request->filled('log_date_to')) {
             $historyQuery->whereDate('action_date', '<=', $request->log_date_to);
         }
 
-        // Default order
-        $historyQuery->latest('action_date');
+        // Sort Order (default: desc)
+        $order = $request->query('order', 'desc');
+        $historyQuery->orderBy('action_date', $order);
 
         // Apply pagination
         $perPage = $request->input('per_page', 20);
+        
         if (!in_array($perPage, [20, 50, 100])) {
             $perPage = 20;
         }
@@ -84,6 +88,9 @@ class HistoryController extends Controller
             $inventoryQuery->whereDate('date_issued', '<=', $request->inventory_date_to);
         }
 
+        $order = $request->query('order', 'desc');
+        $inventoryQuery->orderBy('updated_at', $order);
+
         // Apply pagination for inventory
         $inventoryPerPage = $request->input('inventory_per_page', 20);
         if (!in_array($inventoryPerPage, [20, 50, 100])) {
@@ -108,60 +115,70 @@ class HistoryController extends Controller
         ]);
     }
 
-    public function exportCsv(Request $request)
+
+    public function exportHistoryCsv(Request $request)
     {
-        $query = HistoryLog::query()->with('user');
+        try {
+            $query = HistoryLog::query()->with('user');
 
-        if ($request->filled('log_search')) {
-            $query->where('description', 'like', '%' . $request->log_search . '%');
-        }
+            Log::info('Export CSV request received', $request->all());
 
-        if ($request->filled('log_action') && $request->log_action !== 'all') {
-            $query->where('action', $request->log_action);
-        }
+            $query = HistoryLog::query()->with('user');
 
-        if ($request->filled('log_user') && $request->log_user !== 'all') {
-            $query->where('user_id', $request->log_user);
-        }
-
-        if ($request->filled('log_date_from')) {
-            $query->whereDate('action_date', '>=', $request->log_date_from);
-        }
-
-        if ($request->filled('log_date_to')) {
-            $query->whereDate('action_date', '<=', $request->log_date_to);
-        }
-
-        $query->latest('action_date');
-
-        $logs = $query->get();
-
-        $filename = 'history_logs_export_' . now()->format('Ymd_His') . '.csv';
-        $headers = [
-            'Content-Type' => 'text/csv',
-            'Content-Disposition' => "attachment; filename=\"$filename\"",
-        ];
-
-        $callback = function () use ($logs) {
-            $file = fopen('php://output', 'w');
-            fputcsv($file, ['Staff Name', 'Action', 'Model/Brand', 'Description', 'Action Date', 'IP Address', 'User Agent']);
-
-            foreach ($logs as $log) {
-                fputcsv($file, [
-                    $log->user->name ?? 'N/A',
-                    ucfirst($log->action),
-                    $log->model_brand . ' (ID: ' . $log->model_id . ')',
-                    $log->description ?? 'N/A',
-                    $log->action_date instanceof \Carbon\Carbon ? $log->action_date->format('Y-m-d H:i:s') : ($log->action_date && \Carbon\Carbon::canBeCreatedFromFormat($log->action_date, 'Y-m-d H:i:s') ? \Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $log->action_date)->format('Y-m-d H:i:s') : 'N/A'),
-                    $log->ip_address ?? 'N/A',
-                    $log->user_agent ?? 'N/A',
-                ]);
+            if ($request->filled('log_search')) {
+                $query->where('description', 'like', '%' . $request->log_search . '%');
             }
 
-            fclose($file);
-        };
+            if ($request->filled('log_action') && $request->log_action !== 'all') {
+                $query->where('action', $request->log_action);
+            }
 
-        return response()->stream($callback, 200, $headers);
+            if ($request->filled('log_user') && $request->log_user !== 'all') {
+                $query->where('user_id', $request->log_user);
+            }
+
+            if ($request->filled('log_date_from')) {
+                $query->whereDate('action_date', '>=', $request->log_date_from);
+            }
+
+            if ($request->filled('log_date_to')) {
+                $query->whereDate('action_date', '<=', $request->log_date_to);
+            }
+
+            $query->latest('action_date');
+
+            $logs = $query->get();
+
+            Log::info('Exporting ' . $logs->count() . ' logs');
+
+            $filename = 'history_logs_export_' . now()->format('Ymd_His') . '.csv';
+            $headers = [
+                'Content-Type' => 'text/csv',
+                'Content-Disposition' => "attachment; filename=\"$filename\"",
+            ];
+
+            $callback = function () use ($logs) {
+                $file = fopen('php://output', 'w');
+                fputcsv($file, ['Staff Name', 'Action', 'Model/Brand', 'Description', 'Action Date']);
+
+                foreach ($logs as $log) {
+                    fputcsv($file, [
+                        $log->user->name ?? 'N/A',
+                        ucfirst($log->action),
+                        $log->model_brand . ' (ID: ' . $log->model_id . ')',
+                        $log->description ?? 'N/A',
+                        optional($log->action_date)->format('Y-m-d H:i:s'),
+                    ]);
+                }
+
+                fclose($file);
+            };
+
+            return response()->stream($callback, 200, $headers);
+        } catch (\Exception $e) {
+            Log::error('CSV Export Error: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
+            return response()->json(['message' => 'Export failed.', 'error' => $e->getMessage()], 500);
+        }
     }
 
     public function exportInventoryCsv(Request $request)

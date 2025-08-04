@@ -1171,6 +1171,7 @@
 
                             // Export Staff CSV
                             document.getElementById('export-btn').addEventListener('click', async () => {
+                                const staffId = document.getElementById('export-btn').dataset.staffId;
                                 console.log('Export CSV clicked');
                                 Swal.fire({
                                     title: 'Export Staff List?',

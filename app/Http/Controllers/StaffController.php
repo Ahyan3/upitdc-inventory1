@@ -16,6 +16,7 @@ class StaffController extends Controller
 {
     public function index(Request $request)
     {
+
         Log::info('StaffController: Starting index method', [
             'query' => $request->query(),
             'ip' => $request->ip(),
@@ -56,9 +57,7 @@ class StaffController extends Controller
                 return $query->latest()->paginate($perPage);
             });
 
-            $departments = Cache::remember('departments_all', now()->addMinutes(5), function () {
-                return Department::orderBy('name')->get();
-            });
+            $departments = Department::orderBy('name')->get();
 
             $active_staff = Cache::remember('active_staff_count', now()->addMinutes(5), fn() => Staff::whereNull('deleted_at')->where('status', 'Active')->count());
             $resigned_staff = Cache::remember('resigned_staff_count', now()->addMinutes(5), fn() => Staff::whereNull('deleted_at')->where('status', 'Resigned')->count());

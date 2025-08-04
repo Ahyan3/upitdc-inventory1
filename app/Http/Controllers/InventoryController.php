@@ -70,6 +70,15 @@ class InventoryController extends Controller
             if ($request->filled('inventory_date_from')) {
                 $query->whereDate('date_issued', '>=', $request->input('inventory_date_from'));
             }
+        
+            // Apply filters...
+            if ($request->filled('inventory_date_to')) {
+                $query->whereDate('action_date', '<=', $request->inventory_date_to);
+            }
+
+            // Sort Order (default: desc)
+            $order = $request->query('order', 'desc');
+            $query->orderBy('date_issued', $order);
 
             // Apply pagination for inventory 
             $inventoryPerPage = $request->input('inventory_per_page', 20);
@@ -486,7 +495,7 @@ class InventoryController extends Controller
     public function show($id)
     {
         try {
-            $equipment = Equipment::with('department')->findOrFail($id);
+            $equipment = Equipment::with('department')->findOrFail($id);    
             return response()->json([
                 'data' => [
                     'id' => $equipment->id,
@@ -699,6 +708,75 @@ class InventoryController extends Controller
                 ->withInput();
         }
     }
+
+
+    public function details($id)
+{
+    try {
+        $equipment = Equipment::with('department')->findOrFail($id);
+
+        // Use raw DB query for logs if you don't have a model
+        $logs = DB::table('equipment_logs')
+            ->where('equipment_id', $id)
+            ->orderByDesc('created_at')
+            ->get();
+
+        $html = '
+        <div class="space-y-6">
+            <div class="border border-gray-200 rounded-lg p-5 shadow-sm bg-white">
+                <h2 class="text-lg font-semibold text-[#00553d] mb-4 flex items-center gap-2">
+                    <i class="fas fa-laptop-code text-[#ffcc34]"></i> Equipment Information
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-700">
+                    <div><strong>Equipment Name:</strong> ' . e($equipment->equipment_name) . '</div>
+                    <div><strong>Model/Brand:</strong> ' . e($equipment->model_brand) . '</div>
+                    <div><strong>Serial Number:</strong> ' . e($equipment->serial_number) . '</div>
+                    <div><strong>PR Number:</strong> ' . e($equipment->pr_number) . '</div>
+                    <div><strong>Date Issued:</strong> ' . $equipment->date_issued->format('F d, Y') . '</div>
+                    <div><strong>Status:</strong> 
+                        <span class="inline-block px-2 py-1 rounded text-white text-xs ' . $this->statusColor($equipment->status) . '">' .
+                            ucfirst(str_replace('_', ' ', $equipment->status)) . '
+                        </span>
+                    </div>
+                    <div><strong>Assigned Staff:</strong> ' . e($equipment->staff_name ?? 'N/A') . '</div>
+                    <div><strong>Department:</strong> ' . e($equipment->department->name ?? 'N/A') . '</div>
+                    <div class="md:col-span-2"><strong>Remarks:</strong> ' . e($equipment->remarks ?? 'None') . '</div>
+                </div>
+            </div>
+
+            <div class="border border-gray-200 rounded-lg p-5 shadow-sm bg-white">
+                <h2 class="text-lg font-semibold text-[#00553d] mb-4 flex items-center gap-2">
+                    <i class="fas fa-history text-[#ffcc34]"></i> Equipment Logs
+                </h2>';
+
+        if ($logs->isEmpty()) {
+            $html .= '<div class="text-gray-500 italic text-sm">No logs available for this equipment.</div>';
+        } else {
+            $html .= '<ul class="space-y-3 text-sm text-gray-800">';
+            foreach ($logs as $log) {
+                $html .= '<li class="border-b pb-2">
+                            <span class="block font-medium">' . ucfirst($log->action) . '</span>
+                            <span class="text-xs text-gray-500">' . date('F d, Y h:i A', strtotime($log->created_at)) . ' by ' . e($log->performed_by ?? 'System') . '</span>';
+                if ($log->notes) {
+                    $html .= '<div class="text-gray-600 mt-1 italic">“' . e($log->notes) . '”</div>';
+                }
+                $html .= '</li>';
+            }
+            $html .= '</ul>';
+        }
+
+        $html .= '</div></div>';
+
+        return response($html);
+    } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+        return response('<div class="text-red-500">Equipment not found.</div>', 404);
+    } catch (\Exception $e) {
+        return response('<div class="text-red-500">Something went wrong. Please try again later.</div>', 500);
+    }
+}
+
+
+
 
     public function exportCsv()
     {

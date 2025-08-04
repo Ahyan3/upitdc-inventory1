@@ -27,6 +27,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/issue', [InventoryController::class, 'issue'])->name('inventory.issue');
         Route::post('/check-duplicates', [InventoryController::class, 'checkDuplicates'])->name('inventory.check-duplicates');
         Route::get('/{id}', [InventoryController::class, 'show'])->name('inventory.show');
+        Route::get('/{id}/details', [InventoryController::class, 'details'])->name('inventory.details');
         // Route::get('/{id}/edit', [InventoryController::class, 'edit'])->name('inventory.edit');
         // Route::put('/{id}', [InventoryController::class, 'update'])->name('inventory.update');
         // Route::put('/{id}/edit', [InventoryController::class, 'show'])->name('inventory.edit.form'); 
@@ -35,7 +36,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/export/csv', [InventoryController::class, 'exportCsv'])->name('inventory.export');
         Route::get('/chart-data', [InventoryController::class, 'chartData'])->name('inventory.chart-data');
         Route::delete('/{equipment}', [InventoryController::class, 'delete'])->name('inventory.delete');
-        // Route::get('inventory/{equipment}', [InventoryController::class, 'show'])->name('inventory.show');
+            // Route::get('inventory/{equipment}', [InventoryController::class, 'show'])->name('inventory.show');
         Route::get('/inventory/history', [InventoryController::class, 'historyLogs'])->name('inventory.history');
         Route::post('/inventory/update-status', [InventoryController::class, 'updateStatus'])->name('inventory.update-status');
         Route::post('/inventory/issue-out', [InventoryController::class, 'issueOut'])->name('inventory.issue-out');
@@ -47,7 +48,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/staff', [StaffController::class, 'store'])->name('staff.store');
 
         // Put specific routes BEFORE generic {id} routes
-        Route::get('/export-csv', [StaffController::class, 'exportCsv'])->name('staff.export-csv');
+        Route::get('/staff/export-csv', [StaffController::class, 'exportCsv'])->name('staff.export-csv');
         Route::get('/total-staff', [StaffController::class, 'total'])->name('staff.total');
         Route::get('/active', [StaffController::class, 'getActiveStaff'])->name('staff.active');
         Route::get('/inactive', [StaffController::class, 'getInactiveStaff'])->name('staff.inactive');
@@ -72,6 +73,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // History Route
     Route::get('/history', [HistoryController::class, 'index'])->name('history');
+    Route::get('/history/export/csv', [HistoryController::class, 'exportHistoryCsv'])->name('history.export.csv');
+
+
 
     // Issuance Routes
     Route::get('/issuances/{id}', [IssuanceController::class, 'show'])->name('issuances.show');

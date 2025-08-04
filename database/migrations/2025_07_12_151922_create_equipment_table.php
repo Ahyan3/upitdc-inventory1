@@ -11,8 +11,7 @@ return new class extends Migration
         Schema::create('equipment', function (Blueprint $table) {
             $table->id();
             $table->string('staff_name');
-            $table->foreignId('department_id')->constrained()->onDelete('cascade');
-            $table->string('equipment_name');
+            $table->foreignId('department_id')->nullable()->constrained('departments')->onDelete('set null');
             $table->string('model_brand')->nullable();
             $table->string('serial_number')->unique();
             $table->string('pr_number')->unique();

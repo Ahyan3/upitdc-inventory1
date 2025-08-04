@@ -647,7 +647,7 @@
                                 <label for="date_issued"
                                     class="block text-[0.65rem] font-medium text-[#00553d] mb-1">Date Issued *</label>
                                 <input type="datetime-local" name="date_issued" id="date_issued"
-                                    value="{{ now()->format('Y-m-d\TH:i') }}" required
+                                    value="{{ now()->format('Y-m-d\TH:i:s') }}" required
                                     class="w-full px-3 py-2 border border-[#ffcc34] rounded-lg focus:ring-2 focus:ring-[#00553d] text-xs group-hover:shadow-md transition-all duration-300">
                             </div>
                             <div class="relative group">
@@ -809,9 +809,9 @@
                                                             <label for="date_returned_{{ $issuance->id }}"
                                                                 class="block text-[0.65rem] font-medium text-[#00553d] mb-1">Date
                                                                 Returned *</label>
-                                                            <input type="date" name="date_returned"
+                                                            <input type="datetime-local" name="date_returned"
                                                                 id="date_returned_{{ $issuance->id }}"
-                                                                value="{{ now()->format('Y-m-d') }}" required
+                                                                value="{{ now()->format('Y-m-d\TH:i:s') }}" required
                                                                 class="w-full px-3 py-2 border border-[#ffcc34] rounded-lg focus:ring-2 focus:ring-[#00553d] text-xs group-hover:shadow-md transition-all duration-300">
                                                             <div
                                                                 class="absolute right-3 top-7 text-gray-400 group-hover:text-[#00553d] transition-colors">
@@ -999,7 +999,15 @@
                                     class="border border-[#ffcc34] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00553d] w-full sm:w-32"
                                     value="{{ request('inventory_date_from') }}">
 
+                                    <select name="order" id="inventory-order"
+    class="bg-white border border-[#ffcc34] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00553d]">
+    <option value="desc" {{ request('order') == 'desc' ? 'selected' : '' }}>Newest First</option>
+    <option value="asc" {{ request('order') == 'asc' ? 'selected' : '' }}>Oldest First</option>
+</select>
+
+
                             </form>
+
                             <div class="w-full sm:w-auto flex justify-end">
                                 <button type="button" id="inventory-export-btn"
                                     class="bg-[#00553d] hover:bg-[#007a5a] text-white text-sm font-medium px-4 py-2 rounded-lg border border-[#ffcc34] shadow-sm hover:shadow-md transition-all duration-200 flex items-center gap-2">
@@ -1098,11 +1106,11 @@
                                                         class="px-2 py-1 inline-flex text-xs leading-5 font-bold rounded-full {{ $item->status == 'available' ? 'bg-green-100 text-green-800' : ($item->status == 'in_use' ? 'bg-blue-100 text-blue-800' : ($item->status == 'maintenance' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800')) }}">{{ ucfirst(str_replace('_', ' ', $item->status)) }}</span>
                                                 </td>
                                                 <td class="px-4 py-3 whitespace-nowrap flex space-x-2">
-                                                    <a href="{{ route('inventory.show', $item->id) }}"
+                                                    {{--  <a href="{{ route('inventory.details', $item->id) }}"
                                                         class="text-[#00553d] hover:text-[#007a52] px-2 py-1 rounded-md hover:bg-blue-50 transition-all duration-200 text-[0.6rem] font-semibold border border-blue-200 hover:border-blue-300"
                                                         title="View Details">
                                                         <i class="fas fa-eye"></i>
-                                                    </a>
+                                                    </a>  --}}
                                                     <button data-id="{{ $item->id }}"
                                                         class="edit-inventory-btn text-[#00553d] hover:text-[#007a52] px-2 py-1 rounded-md hover:bg-blue-50 transition-all duration-200 text-[0.6rem] font-semibold border border-blue-200 hover:border-blue-300"
                                                         title="Edit">
@@ -1178,14 +1186,9 @@
                         </h3>
                         <select id="chart-time-filter"
                             class="px-3 py-2 rounded-lg text-xs border border-[#ffcc34] focus:outline-none focus:ring-2 focus:ring-[#00553d] w-full sm:w-36">
-                            <option value="month" {{ request('chart_time', 'month') == 'month' ? 'selected' : '' }}>
-                                This Month</option>
-                            <option value="week" {{ request('chart_time') == 'week' ? 'selected' : '' }}>This Week
+                            <option value="month" selected disabled style="color: #6b7280; cursor: not-allowed;">
+                                This Month
                             </option>
-                            <option value="year" {{ request('chart_time') == 'year' ? 'selected' : '' }}>This Year
-                            </option>
-                            <option value="past_year" {{ request('chart_time') == 'past_year' ? 'selected' : '' }}>
-                                Past Year</option>
                         </select>
                     </div>
                     <div class="chart-container">
@@ -1308,6 +1311,13 @@
             <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
 
             <script>
+    document.getElementById('inventory-order').addEventListener('change', function () {
+        document.getElementById('inventory-filter-form').submit();
+    });
+</script>
+
+
+            <script>
                 window.checkDuplicatesUrl = "{{ route('inventory.check-duplicates') }}";
                 let chartInstance = null;
 
@@ -1377,7 +1387,7 @@
                                         const errorData = await response.json().catch(() => ({}));
                                         throw new Error(errorData.error ||
                                             `Failed to fetch equipment data (Status: ${response.status})`
-                                            );
+                                        );
                                     }
 
                                     const {
@@ -1820,7 +1830,7 @@
                                     'change';
                                 input.addEventListener(eventType, _.debounce(() => {
                                     const queryParams = new URLSearchParams(new FormData(
-                                    inventoryForm));
+                                        inventoryForm));
                                     queryParams.set('inventory_page', '1');
                                     window.location.href =
                                         `{{ route('inventory') }}?${queryParams.toString()}`;
@@ -1853,7 +1863,7 @@
 
                         if (returnSearch) returnSearch.addEventListener('input', filterReturnEquipment);
                         if (returnDepartmentFilter) returnDepartmentFilter.addEventListener('change',
-                        filterReturnEquipment);
+                            filterReturnEquipment);
                         if (returnStatusFilter) returnStatusFilter.addEventListener('change', filterReturnEquipment);
                     }
 
@@ -2170,7 +2180,7 @@
                                 queryParams.set('export', 'csv');
                                 setLoadingState(exportButton, true);
 
-                                fetch(`{{ route('inventory') }}?${queryParams.toString()}`, {
+                                fetch(`{{ route('inventory.export') }}?${queryParams.toString()}`, {
                                         method: 'GET',
                                         headers: {
                                             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')

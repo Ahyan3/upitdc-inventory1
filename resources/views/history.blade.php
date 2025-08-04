@@ -305,6 +305,14 @@
                                         <option value="50" {{ $perPage == 50 ? 'selected' : '' }}>50</option>
                                         <option value="100" {{ $perPage == 100 ? 'selected' : '' }}>100</option>
                                     </select>
+                                    <select name="order" id="order"
+                                        class="bg-white border border-[#ffcc34] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00553d]"
+                                        onchange="this.form.submit()">
+                                        <option value="desc" {{ request('order') == 'desc' ? 'selected' : '' }}>
+                                            Newest First</option>
+                                        <option value="asc" {{ request('order') == 'asc' ? 'selected' : '' }}>
+                                            Oldest First</option>
+                                    </select>
                                 </form>
                                 <div class="w-full sm:w-auto flex justify-end">
                                     <button type="button" id="log-export-btn"
@@ -348,12 +356,14 @@
                     <div id="inventory-log" class="accordion-content open">
                         <div class="p-4">
                             <div class="flex flex-col sm:flex-row justify-between items-center gap-3 mb-4">
-                                <form id="inventory-filter-form" class="filter-form w-full sm:w-auto" method="GET"
+                                <form id="inventory-filter-form"
+                                    class="filter-form w-full sm:w-auto flex flex-wrap gap-2" method="GET"
                                     action="{{ route('history') }}">
                                     <input type="text" name="inventory_search" id="inventory-search"
                                         placeholder="Search staff or equipment..."
                                         class="border border-[#ffcc34] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00553d] w-full sm:w-56"
                                         value="{{ request('inventory_search') }}">
+
                                     <select name="inventory_status" id="inventory-status-filter"
                                         class="bg-white border border-[#ffcc34] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00553d]">
                                         <option value="all"
@@ -372,6 +382,7 @@
                                             {{ request('inventory_status') == 'damaged' ? 'selected' : '' }}>Damaged
                                         </option>
                                     </select>
+
                                     <select name="inventory_department" id="inventory-department-filter"
                                         class="bg-white border border-[#ffcc34] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00553d]">
                                         <option value="all"
@@ -380,17 +391,19 @@
                                         @foreach ($departments as $department)
                                             <option value="{{ $department->id }}"
                                                 {{ request('inventory_department') == $department->id ? 'selected' : '' }}>
-                                                {{ $department->name }}</option>
+                                                {{ $department->name }}
+                                            </option>
                                         @endforeach
                                     </select>
+
                                     <input type="date" name="inventory_date_from" id="inventory-date-from"
-                                        placeholder="Date Issued From"
                                         class="border border-[#ffcc34] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00553d] w-full sm:w-32"
                                         value="{{ request('inventory_date_from') }}">
+
                                     <input type="date" name="inventory_date_to" id="inventory-date-to"
-                                        placeholder="Date Issued To"
                                         class="border border-[#ffcc34] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00553d] w-full sm:w-32"
                                         value="{{ request('inventory_date_to') }}">
+
                                     <select name="inventory_per_page" id="inventory-per-page"
                                         class="bg-white border border-[#ffcc34] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00553d]">
                                         <option value="20" {{ $inventoryPerPage == 20 ? 'selected' : '' }}>20
@@ -400,145 +413,155 @@
                                         <option value="100" {{ $inventoryPerPage == 100 ? 'selected' : '' }}>100
                                         </option>
                                     </select>
+
+                                    <select name="order" id="order"
+                                        class="bg-white border border-[#ffcc34] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00553d]"
+                                        onchange="this.form.submit()">
+                                        <option value="desc" {{ request('order') == 'desc' ? 'selected' : '' }}>
+                                            Newest First</option>
+                                        <option value="asc" {{ request('order') == 'asc' ? 'selected' : '' }}>
+                                            Oldest First</option>
+                                    </select>
                                 </form>
-                                <div class="w-full sm:w-auto flex justify-end">
+
+                                {{--  <div class="w-full sm:w-auto flex justify-end">
                                     <button type="button" id="log-export-btn"
                                         class="bg-[#00553d] hover:bg-[#007a5a] text-white text-sm font-medium px-4 py-2 rounded-lg border border-[#ffcc34] shadow-sm hover:shadow-md transition-all duration-200 flex items-center gap-2">
                                         <i class="fas fa-spinner fa-spin hidden" id="export-spinner"></i>
                                         <i class="fas fa-download"></i>
                                         <span>Export CSV</span>
                                     </button>
-                                </div>
+                                </div>  --}}
                             </div>
-                            </div>
-                            <div class="overflow-x-auto">
-                                <table class="min-w-full table-auto divide-y divide-[#ffcc34]"
-                                    aria-label="Inventory Logs">
-                                    <thead class="table-header">
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full table-auto divide-y divide-[#ffcc34]"
+                                aria-label="Inventory Logs">
+                                <thead class="table-header">
+                                    <tr>
+                                        <th scope="col"
+                                            class="px-4 py-2 text-left text-xs font-medium text-[#00553d] uppercase tracking-wider min-w-[150px]">
+                                            Staff Name</th>
+                                        <th scope="col"
+                                            class="px-4 py-2 text-left text-xs font-medium text-[#00553d] uppercase tracking-wider min-w-[100px]">
+                                            Department</th>
+                                        <th scope="col"
+                                            class="px-4 py-2 text-left text-xs font-medium text-[#00553d] uppercase tracking-wider min-w-[150px]">
+                                            Equipment</th>
+                                        <th scope="col"
+                                            class="px-4 py-2 text-left text-xs font-medium text-[#00553d] uppercase tracking-wider min-w-[120px]">
+                                            Model/Brand</th>
+                                        <th scope="col"
+                                            class="px-4 py-2 text-left text-xs font-medium text-[#00553d] uppercase tracking-wider min-w-[100px]">
+                                            Serial No.</th>
+                                        <th scope="col"
+                                            class="px-4 py-2 text-left text-xs font-medium text-[#00553d] uppercase tracking-wider min-w-[100px]">
+                                            PR No.</th>
+                                        <th scope="col"
+                                            class="px-4 py-2 text-left text-xs font-medium text-[#00553d] uppercase tracking-wider min-w-[100px]">
+                                            Date Issued</th>
+                                        <th scope="col"
+                                            class="px-4 py-2 text-left text-xs font-medium text-[#00553d] uppercase tracking-wider min-w-[100px]">
+                                            Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="inventoryTableBody" class="bg-white divide-y divide-[#ffcc34]">
+                                    @if ($inventory->isEmpty())
                                         <tr>
-                                            <th scope="col"
-                                                class="px-4 py-2 text-left text-xs font-medium text-[#00553d] uppercase tracking-wider min-w-[150px]">
-                                                Staff Name</th>
-                                            <th scope="col"
-                                                class="px-4 py-2 text-left text-xs font-medium text-[#00553d] uppercase tracking-wider min-w-[100px]">
-                                                Department</th>
-                                            <th scope="col"
-                                                class="px-4 py-2 text-left text-xs font-medium text-[#00553d] uppercase tracking-wider min-w-[150px]">
-                                                Equipment</th>
-                                            <th scope="col"
-                                                class="px-4 py-2 text-left text-xs font-medium text-[#00553d] uppercase tracking-wider min-w-[120px]">
-                                                Model/Brand</th>
-                                            <th scope="col"
-                                                class="px-4 py-2 text-left text-xs font-medium text-[#00553d] uppercase tracking-wider min-w-[100px]">
-                                                Serial No.</th>
-                                            <th scope="col"
-                                                class="px-4 py-2 text-left text-xs font-medium text-[#00553d] uppercase tracking-wider min-w-[100px]">
-                                                PR No.</th>
-                                            <th scope="col"
-                                                class="px-4 py-2 text-left text-xs font-medium text-[#00553d] uppercase tracking-wider min-w-[100px]">
-                                                Date Issued</th>
-                                            <th scope="col"
-                                                class="px-4 py-2 text-left text-xs font-medium text-[#00553d] uppercase tracking-wider min-w-[100px]">
-                                                Status</th>
+                                            <td colspan="8"
+                                                class="px-4 py-4 text-center text-xs text-black bg-gradient-to-br from-gray-50 to-white rounded-lg border-2 border-dashed border-gray-300">
+                                                <div
+                                                    class="w-16 h-16 bg-gradient-to-br from-gray-200 to-gray-300 rounded-full flex items-center justify-center mx-auto mb-3">
+                                                    <i class="fas fa-boxes text-2xl text-gray-400"></i>
+                                                </div>
+                                                <p class="text-xs text-gray-500 mb-2 font-medium">No inventory
+                                                    items found</p>
+                                                <p class="text-[0.6rem] text-gray-400">Items will appear here once
+                                                    added</p>
+                                            </td>
                                         </tr>
-                                    </thead>
-                                    <tbody id="inventoryTableBody" class="bg-white divide-y divide-[#ffcc34]">
-                                        @if ($inventory->isEmpty())
-                                            <tr>
-                                                <td colspan="8"
-                                                    class="px-4 py-4 text-center text-xs text-black bg-gradient-to-br from-gray-50 to-white rounded-lg border-2 border-dashed border-gray-300">
-                                                    <div
-                                                        class="w-16 h-16 bg-gradient-to-br from-gray-200 to-gray-300 rounded-full flex items-center justify-center mx-auto mb-3">
-                                                        <i class="fas fa-boxes text-2xl text-gray-400"></i>
-                                                    </div>
-                                                    <p class="text-xs text-gray-500 mb-2 font-medium">No inventory
-                                                        items found</p>
-                                                    <p class="text-[0.6rem] text-gray-400">Items will appear here once
-                                                        added</p>
+                                    @else
+                                        @foreach ($inventory as $item)
+                                            <tr class="hover:bg-gray-50 transition-colors slide-up">
+                                                <td class="px-4 py-3 whitespace-nowrap text-xs text-black min-w-[150px] truncate max-w-xs"
+                                                    title="{{ $item->staff_name ?? 'N/A' }}">
+                                                    {{ $item->staff_name ?? 'N/A' }}</td>
+                                                <td
+                                                    class="px-4 py-3 whitespace-nowrap text-xs text-black min-w-[100px]">
+                                                    {{ $item->department->name ?? 'N/A' }}</td>
+                                                <td class="px-4 py-3 whitespace-nowrap text-xs text-black min-w-[150px] truncate max-w-xs"
+                                                    title="{{ $item->equipment_name }}">
+                                                    {{ $item->equipment_name }}</td>
+                                                <td class="px-4 py-3 whitespace-nowrap text-xs text-black min-w-[120px] truncate max-w-xs"
+                                                    title="{{ $item->model_brand ?? 'N/A' }}">
+                                                    {{ $item->model_brand ?? 'N/A' }}</td>
+                                                <td
+                                                    class="px-4 py-3 whitespace-nowrap text-xs text-black min-w-[100px]">
+                                                    {{ $item->serial_number }}</td>
+                                                <td
+                                                    class="px-4 py-3 whitespace-nowrap text-xs text-black min-w-[100px]">
+                                                    {{ $item->pr_number }}</td>
+                                                <td
+                                                    class="px-4 py-3 whitespace-nowrap text-xs text-black min-w-[100px]">
+                                                    @if ($item->date_issued instanceof \Carbon\Carbon)
+                                                        {{ $item->date_issued->format('Y-m-d H:i:s') }}
+                                                    @elseif (is_string($item->date_issued) &&
+                                                            !empty($item->date_issued) &&
+                                                            \Carbon\Carbon::canBeCreatedFromFormat($item->date_issued, 'Y-m-d H:i:s'))
+                                                        {{ \Carbon\Carbon::createFromFormat('Y-m-d', $item->date_issued)->format('Y-m-d H:i:s') }}
+                                                    @else
+                                                        N/A
+                                                    @endif
+                                                </td>
+                                                <td class="px-4 py-3 whitespace-nowrap min-w-[100px]">
+                                                    <span
+                                                        class="status-indicator {{ $item->status == 'available' ? 'status-active' : ($item->status == 'in_use' ? 'status-warning' : ($item->status == 'maintenance' ? 'status-warning' : 'status-inactive')) }}"></span>
+                                                    <span
+                                                        class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full {{ $item->status == 'available' ? 'bg-green-100 text-green-800' : ($item->status == 'in_use' ? 'bg-blue-100 text-blue-800' : ($item->status == 'maintenance' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800')) }}">
+                                                        {{ ucfirst(str_replace('_', ' ', $item->status)) }}
+                                                    </span>
                                                 </td>
                                             </tr>
-                                        @else
-                                            @foreach ($inventory as $item)
-                                                <tr class="hover:bg-gray-50 transition-colors slide-up">
-                                                    <td class="px-4 py-3 whitespace-nowrap text-xs text-black min-w-[150px] truncate max-w-xs"
-                                                        title="{{ $item->staff_name ?? 'N/A' }}">
-                                                        {{ $item->staff_name ?? 'N/A' }}</td>
-                                                    <td
-                                                        class="px-4 py-3 whitespace-nowrap text-xs text-black min-w-[100px]">
-                                                        {{ $item->department->name ?? 'N/A' }}</td>
-                                                    <td class="px-4 py-3 whitespace-nowrap text-xs text-black min-w-[150px] truncate max-w-xs"
-                                                        title="{{ $item->equipment_name }}">
-                                                        {{ $item->equipment_name }}</td>
-                                                    <td class="px-4 py-3 whitespace-nowrap text-xs text-black min-w-[120px] truncate max-w-xs"
-                                                        title="{{ $item->model_brand ?? 'N/A' }}">
-                                                        {{ $item->model_brand ?? 'N/A' }}</td>
-                                                    <td
-                                                        class="px-4 py-3 whitespace-nowrap text-xs text-black min-w-[100px]">
-                                                        {{ $item->serial_number }}</td>
-                                                    <td
-                                                        class="px-4 py-3 whitespace-nowrap text-xs text-black min-w-[100px]">
-                                                        {{ $item->pr_number }}</td>
-                                                    <td
-                                                        class="px-4 py-3 whitespace-nowrap text-xs text-black min-w-[100px]">
-                                                        @if ($item->date_issued instanceof \Carbon\Carbon)
-                                                            {{ $item->date_issued->format('Y-m-d') }}
-                                                        @elseif (is_string($item->date_issued) &&
-                                                                !empty($item->date_issued) &&
-                                                                \Carbon\Carbon::canBeCreatedFromFormat($item->date_issued, 'Y-m-d'))
-                                                            {{ \Carbon\Carbon::createFromFormat('Y-m-d', $item->date_issued)->format('Y-m-d') }}
-                                                        @else
-                                                            N/A
-                                                        @endif
-                                                    </td>
-                                                    <td class="px-4 py-3 whitespace-nowrap min-w-[100px]">
-                                                        <span
-                                                            class="status-indicator {{ $item->status == 'available' ? 'status-active' : ($item->status == 'in_use' ? 'status-warning' : ($item->status == 'maintenance' ? 'status-warning' : 'status-inactive')) }}"></span>
-                                                        <span
-                                                            class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full {{ $item->status == 'available' ? 'bg-green-100 text-green-800' : ($item->status == 'in_use' ? 'bg-blue-100 text-blue-800' : ($item->status == 'maintenance' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800')) }}">
-                                                            {{ ucfirst(str_replace('_', ' ', $item->status)) }}
-                                                        </span>
-                                                    </td>
-                                                </tr>
-                                            @endforeach
-                                        @endif
-                                    </tbody>
-                                </table>
-                            </div>
-                            <div id="inventoryPagination" class="pagination-container mt-4">
-                                <select id="inventory-per-page-display"
-                                    class="bg-white border border-[#ffcc34] rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-[#00553d] mr-2">
-                                    <option value="20" {{ $inventoryPerPage == 20 ? 'selected' : '' }}>20</option>
-                                    <option value="50" {{ $inventoryPerPage == 50 ? 'selected' : '' }}>50</option>
-                                    <option value="100" {{ $inventoryPerPage == 100 ? 'selected' : '' }}>100
-                                    </option>
-                                </select>
-                                <span class="pagination-info">
-                                    Page {{ $inventory->currentPage() }} to {{ $inventory->currentPage() }} of
-                                    {{ $inventory->total() }} results
-                                </span>
-                                @if ($inventory->onFirstPage())
-                                    <span class="pagination-btn opacity-50 cursor-not-allowed">Previous</span>
-                                @else
-                                    <a href="{{ $inventory->previousPageUrl() }}" class="pagination-btn">Previous</a>
-                                @endif
-                                @foreach ($inventory->getUrlRange(1, $inventory->lastPage()) as $page => $url)
-                                    <a href="{{ $url }}"
-                                        class="pagination-btn {{ $inventory->currentPage() == $page ? 'current' : '' }}">{{ $page }}</a>
-                                @endforeach
-                                @if ($inventory->hasMorePages())
-                                    <a href="{{ $inventory->nextPageUrl() }}" class="pagination-btn">Next</a>
-                                @else
-                                    <span class="pagination-btn opacity-50 cursor-not-allowed">Next</span>
-                                @endif
-                                <input type="number" id="inventoryPageJump" class="page-jump-input"
-                                    placeholder="Page" min="1" max="{{ $inventory->lastPage() }}"
-                                    value="{{ $inventory->currentPage() }}">
-                            </div>
+                                        @endforeach
+                                    @endif
+                                </tbody>
+                            </table>
+                        </div>
+                        <div id="inventoryPagination" class="pagination-container mt-4">
+                            <select id="inventory-per-page-display"
+                                class="bg-white border border-[#ffcc34] rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-[#00553d] mr-2">
+                                <option value="20" {{ $inventoryPerPage == 20 ? 'selected' : '' }}>20</option>
+                                <option value="50" {{ $inventoryPerPage == 50 ? 'selected' : '' }}>50</option>
+                                <option value="100" {{ $inventoryPerPage == 100 ? 'selected' : '' }}>100
+                                </option>
+                            </select>
+                            <span class="pagination-info">
+                                Page {{ $inventory->currentPage() }} to {{ $inventory->currentPage() }} of
+                                {{ $inventory->total() }} results
+                            </span>
+                            @if ($inventory->onFirstPage())
+                                <span class="pagination-btn opacity-50 cursor-not-allowed">Previous</span>
+                            @else
+                                <a href="{{ $inventory->previousPageUrl() }}" class="pagination-btn">Previous</a>
+                            @endif
+                            @foreach ($inventory->getUrlRange(1, $inventory->lastPage()) as $page => $url)
+                                <a href="{{ $url }}"
+                                    class="pagination-btn {{ $inventory->currentPage() == $page ? 'current' : '' }}">{{ $page }}</a>
+                            @endforeach
+                            @if ($inventory->hasMorePages())
+                                <a href="{{ $inventory->nextPageUrl() }}" class="pagination-btn">Next</a>
+                            @else
+                                <span class="pagination-btn opacity-50 cursor-not-allowed">Next</span>
+                            @endif
+                            <input type="number" id="inventoryPageJump" class="page-jump-input" placeholder="Page"
+                                min="1" max="{{ $inventory->lastPage() }}"
+                                value="{{ $inventory->currentPage() }}">
                         </div>
                     </div>
                 </div>
             </div>
         </div>
+    </div>
     </div>
 
     <meta name="csrf-token" content="{{ csrf_token() }}">
@@ -777,7 +800,7 @@
                             const queryParams = new URLSearchParams(new FormData(document
                                 .getElementById('inventory-filter-form')));
                             const response = await fetch(
-                                `{{ route('history.inventory.export.csv') }}?${queryParams.toString()}`, {
+                                `{{ route('history.export.csv') }}?${queryParams.toString()}`, {
                                     method: 'GET',
                                     headers: {
                                         'X-CSRF-TOKEN': document.querySelector(

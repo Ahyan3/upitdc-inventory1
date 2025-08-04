@@ -334,7 +334,7 @@
                                                     @elseif (is_string($item->date_issued) &&
                                                             !empty($item->date_issued) &&
                                                             \Carbon\Carbon::canBeCreatedFromFormat($item->date_issued, 'Y-m-d H:i'))
-                                                        {{ \Carbon\Carbon::createFromFormat('Y-m-d\TH:i', $item->date_issued)->format('Y-m-d H:i') }}
+                                                        {{ \Carbon\Carbon::createFromFormat('Y-m-d\TH:i:s', $item->date_issued)->format('Y-m-d H:i') }}
                                                     @else
                                                         N/A
                                                     @endif
