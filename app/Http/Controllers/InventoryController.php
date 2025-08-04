@@ -57,6 +57,10 @@ class InventoryController extends Controller
                 $query->where('status', $request->input('inventory_status'));
             }
 
+            if ($request->filled('equipment_name') && $request->equipment_name !== 'all') {
+                $query->where('equipment_name', $request->equipment_name);
+            }
+
             if ($request->filled('inventory_department') && $request->input('inventory_department') != 'all') {
                 $query->where('department_id', $request->input('inventory_department'));
             }

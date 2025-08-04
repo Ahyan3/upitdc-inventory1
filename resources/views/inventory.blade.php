@@ -938,14 +938,14 @@
                     </div>
                 </button>
                 <div id="inventory-log" class="accordion-content open">
-                    <div class="p-4">
+                    <div class="p-8">
                         <!-- Filter Form -->
                         <div class="flex flex-col sm:flex-row justify-between items-center gap-3 mb-4">
                             <form id="inventory-filter-form" class="filter-form w-full sm:w-auto" method="GET"
                                 action="{{ route('inventory') }}">
                                 <input type="text" name="inventory_search" id="inventory-search"
                                     placeholder="Search staff or equipment..."
-                                    class="border border-[#ffcc34] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00553d] w-full sm:w-56"
+                                    class="border border-[#ffcc34] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00553d] w-full sm:w-80"
                                     value="{{ request('inventory_search') }}">
                                 <select name="inventory_status" id="inventory-status-filter"
                                     class="bg-white border border-[#ffcc34] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00553d]">
@@ -966,6 +966,24 @@
                                         {{ request('inventory_status') == 'damaged' ? 'selected' : '' }}>Damaged
                                     </option>
                                 </select>
+                                <select name="equipment_name" id="equipment-name-filter"
+                                    class="bg-white border border-[#ffcc34] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00553d]">
+                                    <option value="all" {{ request('equipment_name') == 'all' ? 'selected' : '' }}>
+                                        All Equipment</option>
+                                    @php
+                                        $equipmentNames = \App\Models\Equipment::select('equipment_name')
+                                            ->distinct()
+                                            ->orderBy('equipment_name')
+                                            ->get();
+                                    @endphp
+                                    @foreach ($equipmentNames as $equip)
+                                        <option value="{{ $equip->equipment_name }}"
+                                            {{ request('equipment_name') == $equip->equipment_name ? 'selected' : '' }}>
+                                            {{ $equip->equipment_name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+
                                 <select name="inventory_department" id="inventory-department-filter"
                                     class="bg-white border border-[#ffcc34] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00553d]">
                                     <option value="all"
@@ -999,12 +1017,23 @@
                                     class="border border-[#ffcc34] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00553d] w-full sm:w-32"
                                     value="{{ request('inventory_date_from') }}">
 
-                                    <select name="order" id="inventory-order"
-    class="bg-white border border-[#ffcc34] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00553d]">
-    <option value="desc" {{ request('order') == 'desc' ? 'selected' : '' }}>Newest First</option>
-    <option value="asc" {{ request('order') == 'asc' ? 'selected' : '' }}>Oldest First</option>
-</select>
+                                <input type="date" name="inventory_date_to" id="inventory-date-to"
+                                    placeholder="Date Issued"
+                                    class="border border-[#ffcc34] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00553d] w-full sm:w-32"
+                                    value="{{ request('inventory_date_to') }}">
 
+                                <select name="order" id="inventory-order"
+                                    class="bg-white border border-[#ffcc34] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00553d] ">
+                                    <option value="desc" {{ request('order') == 'desc' ? 'selected' : '' }}>Newest
+                                        First</option>
+                                    <option value="asc" {{ request('order') == 'asc' ? 'selected' : '' }}>Oldest
+                                        First</option>
+                                </select>
+                                <a href="{{ route('inventory') }}"
+                                    class="bg-white border border-[#ffcc34] hover:bg-[#ffcc34]/20 text-sm font-small px-4 py-2 rounded-lg shadow-sm transition-all duration-200 flex items-center gap-2">
+                                    <i class="fas fa-rotate-left"></i>
+                                    <span>Reset Filters</span>
+                                </a>
 
                             </form>
 
@@ -1311,10 +1340,10 @@
             <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
 
             <script>
-    document.getElementById('inventory-order').addEventListener('change', function () {
-        document.getElementById('inventory-filter-form').submit();
-    });
-</script>
+                document.getElementById('inventory-order').addEventListener('change', function() {
+                    document.getElementById('inventory-filter-form').submit();
+                });
+            </script>
 
 
             <script>

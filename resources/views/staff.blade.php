@@ -363,7 +363,7 @@
                                                 class="w-full px-3 py-3 border border-[#ffcc34] rounded-lg text-xs focus:ring-2 focus:ring-[#00553d] focus:border-transparent transition-all duration-300 hover:shadow-md"
                                                 aria-label="Search staff">
                                         </div>
-                                        <div class="flex-1">
+                                        <div class="flex-0.5">
                                             <select name="department" id="filter-department"
                                                 class="w-full px-3 py-3 border border-[#ffcc34] rounded-lg text-xs focus:ring-2 focus:ring-[#00553d] focus:border-transparent transition-all duration-300 hover:shadow-md"
                                                 aria-label="Filter Department">
@@ -375,7 +375,7 @@
                                                 @endforeach
                                             </select>
                                         </div>
-                                        <div class="flex-1">
+                                        <div class="flex-0.5">
                                             <select name="status" id="filter-status"
                                                 class="w-full px-3 py-3 border border-[#ffcc34] rounded-lg text-xs focus:ring-2 focus:ring-[#00553d] focus:border-transparent transition-all duration-300 hover:shadow-md"
                                                 aria-label="Filter Status">
@@ -388,8 +388,23 @@
                                                 </option>
                                             </select>
                                         </div>
-                                    </div>
-                                </form>
+                                        <div class="flex-0.5">
+                                            <select name="order" id="staff-order"
+                                                class="w-full px-3 py-3 border border-[#ffcc34] rounded-lg text-xs focus:ring-2 focus:ring-[#00553d] focus:border-transparent transition-all duration-300 hover:shadow-md"
+                                                onchange="this.form.submit()" aria-label="Sort Order">
+                                                <option value="desc" {{ request('order') == 'desc' ? 'selected' : '' }}>Newest First</option>
+                                                <option value="asc" {{ request('order') == 'asc' ? 'selected' : '' }}>Oldest First</option>
+                                            </select>
+                                        </div>
+                                            <div class="flex-0.5">
+                                                <a href="{{ route('staff.index') }}"
+                                                    class="bg-white border border-[#ffcc34] hover:bg-[#ffcc34]/20 text-sm font-small px-4 py-2 rounded-lg shadow-sm transition-all duration-200 flex items-center gap-2">
+                                                    <i class="fas fa-rotate-left"></i>
+                                                    <span>Reset Filters</span>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </form>
 
                                 @if ($staff->isEmpty())
                                     <div

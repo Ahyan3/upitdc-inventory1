@@ -313,6 +313,13 @@
                                         <option value="asc" {{ request('order') == 'asc' ? 'selected' : '' }}>
                                             Oldest First</option>
                                     </select>
+
+                                    <a href="{{ route('history') }}"
+                                        class="bg-white border border-[#ffcc34] hover:bg-[#ffcc34]/20 text-sm font-small px-4 py-2 rounded-lg shadow-sm transition-all duration-200 flex items-center gap-2">
+                                        <i class="fas fa-rotate-left"></i>
+                                        <span>Reset Filters</span>
+                                    </a>
+
                                 </form>
                                 <div class="w-full sm:w-auto flex justify-end">
                                     <button type="button" id="log-export-btn"
@@ -422,16 +429,14 @@
                                         <option value="asc" {{ request('order') == 'asc' ? 'selected' : '' }}>
                                             Oldest First</option>
                                     </select>
+
+                                    <a href="{{ route('history') }}"
+                                        class="bg-white border border-[#ffcc34] hover:bg-[#ffcc34]/20 text-sm font-small px-4 py-2 rounded-lg shadow-sm transition-all duration-200 flex items-center gap-2">
+                                        <i class="fas fa-rotate-left"></i>
+                                        <span>Reset Filters</span>
+                                    </a>
                                 </form>
 
-                                {{--  <div class="w-full sm:w-auto flex justify-end">
-                                    <button type="button" id="log-export-btn"
-                                        class="bg-[#00553d] hover:bg-[#007a5a] text-white text-sm font-medium px-4 py-2 rounded-lg border border-[#ffcc34] shadow-sm hover:shadow-md transition-all duration-200 flex items-center gap-2">
-                                        <i class="fas fa-spinner fa-spin hidden" id="export-spinner"></i>
-                                        <i class="fas fa-download"></i>
-                                        <span>Export CSV</span>
-                                    </button>
-                                </div>  --}}
                             </div>
                         </div>
                         <div class="overflow-x-auto">
