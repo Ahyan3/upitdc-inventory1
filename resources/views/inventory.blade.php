@@ -824,10 +824,18 @@
                                                                 id="returned_condition{{ $issuance->id }}"
                                                                 class="w-full px-3 py-2 border border-[#ffcc34] rounded-lg focus:ring-2 focus:ring-[#00553d] text-xs"
                                                                 required>
-                                                                <option value="" disabled {{ old('returned_condition') ? '' : 'selected' }}>Select Condition</option>
-                                                                <option value="good" {{ old('returned_condition') == 'good' ? 'selected' : '' }}>Good</option>
-                                                                <option value="damaged" {{ old('returned_condition') == 'damaged' ? 'selected' : '' }}>Damaged</option>
-                                                                <option value="lost" {{ old('returned_condition') == 'lost' ? 'selected' : '' }}>Lost</option>
+                                                                <option value="" disabled
+                                                                    {{ old('returned_condition') ? '' : 'selected' }}>
+                                                                    Select Condition</option>
+                                                                <option value="good"
+                                                                    {{ old('returned_condition') == 'good' ? 'selected' : '' }}>
+                                                                    Good</option>
+                                                                <option value="damaged"
+                                                                    {{ old('returned_condition') == 'damaged' ? 'selected' : '' }}>
+                                                                    Damaged</option>
+                                                                <option value="lost"
+                                                                    {{ old('returned_condition') == 'lost' ? 'selected' : '' }}>
+                                                                    Lost</option>
                                                             </select>
 
                                                         </div>
@@ -971,20 +979,21 @@
                                 </select>
                                 <select name="inventory_user" id="inventory-user-filter"
                                     class="bg-white border border-[#ffcc34] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00553d]">
-                                    @if ($users->isEmpty())
-                                        <option value="all" selected>No users available</option>
+                                    @if ($activeStaff->isEmpty())
+                                        <option value="all" selected>No staff available</option>
                                     @else
                                         <option value="all"
-                                            {{ request('inventory_user') == 'all' ? 'selected' : '' }}>All Users
+                                            {{ request('inventory_user') == 'all' ? 'selected' : '' }}>All Staff
                                         </option>
-                                        @foreach ($users as $user)
-                                            <option value="{{ $user->id }}"
-                                                {{ request('inventory_user') == $user->id ? 'selected' : '' }}>
-                                                {{ $user->name }}
+                                        @foreach ($activeStaff as $staff)
+                                            <option value="{{ $staff->id }}"
+                                                {{ request('inventory_user') == $staff->id ? 'selected' : '' }}>
+                                                {{ $staff->name }}
                                             </option>
                                         @endforeach
                                     @endif
                                 </select>
+
                                 <input type="date" name="inventory_date_from" id="inventory-date-from"
                                     placeholder="Date Issued"
                                     class="border border-[#ffcc34] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00553d] w-full sm:w-32"
@@ -1118,12 +1127,12 @@
                             </table>
                         </div>
                         <div id="inventoryPagination" class="pagination-container mt-4">
-                            <select id="inventory-per-page-display"
+                            {{--  <select id="inventory-per-page-display" 
                                 class="bg-white border border-[#ffcc34] rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-[#00553d] mr-2">
                                 <option value="20" {{ $inventoryPerPage == 20 ? 'selected' : '' }}>20</option>
                                 <option value="50" {{ $inventoryPerPage == 50 ? 'selected' : '' }}>50</option>
                                 <option value="100" {{ $inventoryPerPage == 100 ? 'selected' : '' }}>100</option>
-                            </select>
+                            </select>  --}}
                             <span class="pagination-info">
                                 Page {{ isset($inventory) ? $inventory->currentPage() : 1 }} to
                                 {{ isset($inventory) ? $inventory->currentPage() : 1 }} of
@@ -1202,29 +1211,23 @@
                             <i class="fas fa-times"></i>
                         </button>
                     </div>
-                    <form id="edit-inventory-form">
+                    <form id="edit-inventory-form" action="" method="POST">
                         @csrf
+                        @method('PUT')
                         <input type="hidden" name="equipment_id" id="edit_equipment_id">
                         <div class="mb-4 space-y-3">
-                            <div class="form-group">
-                                <label for="staff_name" class="block text-xs font-medium text-gray-700 mb-1">Staff
-                                    Name *</label>
-                                <input type="text" name="staff_name" id="staff_name" required
-                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500 text-xs">
-                                {{--  <label for="staff_name">Staff Member *</label>
-                                <select name="staff_name" id="staff_name" class="form-control" required>
-                                    <option value="">Select Registered Staff Member</option>
-                                    @foreach ($activeStaff as $staff)
-                                        <option value="{{ $staff->name }}"
-                                            data-department="{{ $staff->department }}"
-                                            data-email="{{ $staff->email }}">
-                                            {{ $staff->name }} - {{ $staff->department }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                                <small class="text-info mt-1">
-                                    <i class="fas fa-info-circle"></i> {{ $staffValidationMessage }}
-                                </small>  --}}
+                            <div class="relative group">
+                                <label for="edit_staff_name"
+                                    class="block text-[0.65rem] font-medium text-[#00553d] mb-1">Staff Name</label>
+                                <input type="text" name="staff_name" id="edit_staff_name" readonly
+                                    class="w-full px-3 py-2 border border-[#ffcc34] rounded-lg text-xs bg-gray-100 text-gray-500 cursor-not-allowed">
+                            </div>
+                            <div class="relative group">
+                                <label for="edit_department_id"
+                                    class="block text-[0.65rem] font-medium text-[#00553d] mb-1">Department</label>
+                                <input type="text" name="department_name" id="edit_department_name" readonly
+                                    class="w-full px-3 py-2 border border-[#ffcc34] rounded-lg text-xs bg-gray-100 text-gray-500 cursor-not-allowed">
+                                <input type="hidden" name="department_id" id="edit_department_id">
                             </div>
                             <div class="relative group">
                                 <label for="edit_equipment_name"
@@ -1251,22 +1254,14 @@
                                 <label for="edit_serial_number"
                                     class="block text-[0.65rem] font-medium text-[#00553d] mb-1">Serial Number
                                     *</label>
-                                <input type="text" name="serial_number" id="edit_serial_number" required
-                                    class="w-full px-3 py-2 border border-[#ffcc34] rounded-lg text-xs focus:ring-2 focus:ring-[#00553d] group-hover:shadow-md transition-all duration-300">
-                                <div
-                                    class="absolute right-3 top-7 text-gray-400 group-hover:text-[#00553d] transition-colors">
-                                    <i class="fas fa-barcode text-xs"></i>
-                                </div>
+                                <input type="text" name="serial_number" id="edit_serial_number" readonly
+                                    class="w-full px-3 py-2 border border-[#ffcc34] rounded-lg text-xs bg-gray-100 text-gray-500 cursor-not-allowed">
                             </div>
                             <div class="relative group">
                                 <label for="edit_pr_number"
                                     class="block text-[0.65rem] font-medium text-[#00553d] mb-1">PR Number *</label>
-                                <input type="text" name="pr_number" id="edit_pr_number" required
-                                    class="w-full px-3 py-2 border border-[#ffcc34] rounded-lg text-xs focus:ring-2 focus:ring-[#00553d] group-hover:shadow-md transition-all duration-300">
-                                <div
-                                    class="absolute right-3 top-7 text-gray-400 group-hover:text-[#00553d] transition-colors">
-                                    <i class="fas fa-hashtag text-xs"></i>
-                                </div>
+                                <input type="text" name="pr_number" id="edit_pr_number" readonly
+                                    class="w-full px-3 py-2 border border-[#ffcc34] rounded-lg text-xs bg-gray-100 text-gray-500 cursor-not-allowed">
                             </div>
                             <div class="relative group">
                                 <label for="edit_date_issued"
@@ -1285,618 +1280,649 @@
                                     <option value="damaged">Damaged</option>
                                 </select>
                             </div>
+                            <div class="relative group">
+                                <label for="edit_remarks"
+                                    class="block text-[0.65rem] font-medium text-[#00553d] mb-1">Remarks</label>
+                                <textarea name="remarks" id="edit_remarks"
+                                    class="w-full px-3 py-2 border border-[#ffcc34] rounded-lg text-xs focus:ring-2 focus:ring-[#00553d] group-hover:shadow-md transition-all duration-300"></textarea>
+                            </div>
                         </div>
                         <div class="flex justify-end gap-2">
                             <button type="button"
                                 class="px-4 py-2 text-xs font-semibold text-[#00553d] bg-gray-100 rounded-lg hover:bg-gray-200 border border-gray-200 transition-all duration-200"
                                 onclick="document.getElementById('edit-inventory-modal').classList.add('hidden')">Cancel</button>
-                            {{--  @foreach ($equipments as $equipment)
-    <button class="btn-edit" data-equipment='@json($equipment)'>Edit</button>
-@endforeach  --}}
+                            <button type="submit"
+                                class="px-4 py-2 text-xs font-semibold text-white bg-gradient-to-br from-[#00553d] to-[#007a58] rounded-lg hover:from-[#004934] hover:to-[#006248] transition-all duration-200 submit-button">
+                                <i class="spinner fas fa-spinner fa-spin mr-2 hidden"></i>
+                                <span class="btn-text"><i class="fas fa-save mr-2"></i>Update</span>
+                            </button>
                         </div>
                     </form>
                 </div>
             </div>
-        </div>
 
-        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-        <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.21/lodash.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+            <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+            <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+            <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+            <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.21/lodash.min.js"></script>
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
 
-        <script>
-            document.getElementById('staff_name').addEventListener('change', function() {
-                const selectedOption = this.options[this.selectedIndex];
-                const department = selectedOption.getAttribute('data-department');
+            <script>
+                window.checkDuplicatesUrl = "{{ route('inventory.check-duplicates') }}";
+                let chartInstance = null;
 
-                // If you have a department field that should be auto-filled
-                const departmentField = document.getElementById('department_name');
-                if (departmentField && department) {
-                    departmentField.value = department;
-                }
-            });
-        </script>
-
-        <script>
-            document.getElementById('staff_name').addEventListener('change', function() {
-                const selectedOption = this.options[this.selectedIndex];
-                const staffDepartment = selectedOption.getAttribute('data-department');
-                const departmentSelect = document.getElementById('department_id');
-
-                // Auto-select the matching department
-                for (let i = 0; i < departmentSelect.options.length; i++) {
-                    if (departmentSelect.options[i].text === staffDepartment) {
-                        departmentSelect.selectedIndex = i;
-                        break;
+                document.addEventListener('DOMContentLoaded', function() {
+                    // Utility Functions
+                    function setLoadingState(button, isLoading) {
+                        if (isLoading) {
+                            button.classList.add('btn-loading');
+                            button.disabled = true;
+                        } else {
+                            button.classList.remove('btn-loading');
+                            button.disabled = false;
+                        }
                     }
-                }
-            });
 
-            document.getElementById('status').addEventListener('change', function() {
-                const selectedStatus = this.value;
-                const noteElement = document.querySelector('.status-note');
-
-                // Remove existing note if any
-                if (noteElement) {
-                    noteElement.remove();
-                }
-
-                // Add note for non-in-use status
-                if (selectedStatus !== 'in_use') {
-                    const note = document.createElement('div');
-                    note.className = 'alert alert-info mt-2 status-note';
-                    note.innerHTML =
-                        '<i class="fas fa-info-circle"></i> This equipment will not appear in the Return Equipment section since it\'s not marked as "In Use".';
-                    this.parentElement.appendChild(note);
-                }
-            });
-
-            // Trigger edit modal with data
-            $(document).on('click', '.btn-edit', function() {
-                const equipment = $(this).data('equipment'); // contains full JSON object
-
-                $('#edit_equipment_id').val(equipment.id);
-                $('#edit_equipment_name').val(equipment.equipment_name);
-                $('#edit_model_brand').val(equipment.model_brand);
-                // set other fields...
-
-                $('#editInventoryModal').modal('show');
-            });
-
-            // Handle AJAX form submit
-            $('#edit-inventory-form').on('submit', function(e) {
-                e.preventDefault();
-
-                const equipmentId = $('#edit_equipment_id').val();
-                const formData = $(this).serialize();
-
-                $.ajax({
-                    url: `/inventory/${equipmentId}`,
-                    method: 'PUT',
-                    data: formData,
-                    success: function(response) {
-                        $('#editInventoryModal').modal('hide');
-                        alert('Equipment updated successfully!');
-                        // Optionally, reload data table or update row directly
-                    },
-                    error: function(xhr) {
-                        alert('Update failed: ' + xhr.responseJSON?.message || 'Something went wrong.');
-                    }
-                });
-            });
-        </script>
-
-        <script>
-            window.checkDuplicatesUrl = "{{ route('inventory.check-duplicates') }}";
-            let chartInstance = null;
-
-            document.addEventListener('DOMContentLoaded', function() {
-                // Utility Functions
-                function setLoadingState(button, isLoading) {
-                    if (isLoading) {
-                        button.classList.add('btn-loading');
-                        button.disabled = true;
-                    } else {
-                        button.classList.remove('btn-loading');
-                        button.disabled = false;
-                    }
-                }
-
-                function showAlert(message, type) {
-                    const alertContainer = document.getElementById('alert-container');
-                    const alertDiv = document.createElement('div');
-                    alertDiv.className =
-                        `p-3 rounded-lg text-xs flex items-center space-x-2 ${type === 'error' ? 'bg-red-100 text-red-700 border-red-200' : type === 'success' ? 'bg-green-100 text-green-700 border-green-200' : 'bg-blue-100 text-blue-700 border-blue-200'} border fade-in`;
-                    alertDiv.innerHTML = `
+                    function showAlert(message, type) {
+                        const alertContainer = document.getElementById('alert-container');
+                        const alertDiv = document.createElement('div');
+                        alertDiv.className =
+                            `p-3 rounded-lg text-xs flex items-center space-x-2 ${type === 'error' ? 'bg-red-100 text-red-700 border-red-200' : type === 'success' ? 'bg-green-100 text-green-700 border-green-200' : 'bg-blue-100 text-blue-700 border-blue-200'} border fade-in`;
+                        alertDiv.innerHTML = `
                 <i class="fas ${type === 'error' ? 'fa-exclamation-circle' : type === 'success' ? 'fa-check-circle' : 'fa-info-circle'} text-base"></i>
                 <span>${message}</span>
             `;
-                    alertContainer.appendChild(alertDiv);
-                    setTimeout(() => {
-                        alertDiv.classList.remove('fade-in');
-                        alertDiv.classList.add('fade-out');
-                        setTimeout(() => alertDiv.remove(), 300);
-                    }, 3000);
-                }
-
-                // Scroll to Bottom Function
-                function scrollToReturnBottom() {
-                    const container = document.getElementById('returnEquipmentContainer');
-                    if (container) {
-                        container.scrollTop = container.scrollHeight;
-                    }
-                }
-
-                // Initialize Chart
-                function initializeChart() {
-                    const ctx = document.getElementById('equipmentChart');
-                    if (!ctx) {
-                        console.error('Canvas element with ID "equipmentChart" not found');
-                        return;
+                        alertContainer.appendChild(alertDiv);
+                        setTimeout(() => {
+                            alertDiv.classList.remove('fade-in');
+                            alertDiv.classList.add('fade-out');
+                            setTimeout(() => alertDiv.remove(), 300);
+                        }, 3000);
                     }
 
-                    try {
-                        const equipmentDataAttr = ctx.dataset.equipment;
-                        if (!equipmentDataAttr) {
-                            console.log('No equipment data found in canvas dataset');
-                            ctx.style.display = 'none';
-                            return;
-                        }
+                    // Initialize Edit Functionality
+                    function initializeEditFunctionality() {
+                        const editButtons = document.querySelectorAll('.edit-inventory-btn');
+                        const editModal = document.getElementById('edit-inventory-modal');
+                        const editForm = document.getElementById('edit-inventory-form');
 
-                        const equipmentData = JSON.parse(equipmentDataAttr);
-                        const labels = Object.keys(equipmentData);
-                        const data = Object.values(equipmentData);
+                        editButtons.forEach(button => {
+                            button.addEventListener('click', async function() {
+                                const itemId = this.dataset.id;
+                                if (!itemId) {
+                                    showAlert('Equipment ID is missing.', 'error');
+                                    return;
+                                }
 
-                        if (labels.length === 0) {
-                            console.log('Equipment data is empty');
-                            ctx.style.display = 'none';
-                            return;
-                        }
+                                const submitButton = editForm.querySelector('.submit-button');
+                                if (submitButton) {
+                                    submitButton.disabled = true;
+                                    const spinner = submitButton.querySelector('.spinner');
+                                    const btnText = submitButton.querySelector('.btn-text');
+                                    if (spinner) spinner.classList.remove('hidden');
+                                    if (btnText) btnText.classList.add('hidden');
+                                }
 
-                        if (chartInstance) {
-                            chartInstance.destroy();
-                        }
-
-                        chartInstance = new Chart(ctx, {
-                            type: 'bar',
-                            data: {
-                                labels: labels,
-                                datasets: [{
-                                    label: 'Issuance Count',
-                                    data: data,
-                                    backgroundColor: '#ffcc34',
-                                    borderColor: '#00553d',
-                                    borderWidth: 1
-                                }]
-                            },
-                            options: {
-                                responsive: true,
-                                maintainAspectRatio: false,
-                                scales: {
-                                    y: {
-                                        beginAtZero: true,
-                                        title: {
-                                            display: true,
-                                            text: 'Number of Issuances',
-                                            color: '#00553d',
-                                            font: {
-                                                size: 10,
-                                                family: 'Inter'
-                                            }
-                                        },
-                                        ticks: {
-                                            color: '#00553d',
-                                            font: {
-                                                size: 10,
-                                                family: 'Inter'
-                                            },
-                                            stepSize: 1
-                                        },
-                                        grid: {
-                                            color: 'rgba(0, 85, 61, 0.1)'
+                                try {
+                                    const response = await fetch(`/inventory/${itemId}`, {
+                                        method: 'GET',
+                                        headers: {
+                                            'X-CSRF-TOKEN': document.querySelector(
+                                                'meta[name="csrf-token"]').content,
+                                            'Accept': 'application/json'
                                         }
-                                    },
-                                    x: {
-                                        title: {
-                                            display: true,
-                                            text: 'Equipment',
-                                            color: '#00553d',
-                                            font: {
-                                                size: 10,
-                                                family: 'Inter'
-                                            }
-                                        },
-                                        ticks: {
-                                            color: '#00553d',
-                                            font: {
-                                                size: 10,
-                                                family: 'Inter'
-                                            },
-                                            autoSkip: true,
-                                            maxRotation: 45,
-                                            minRotation: 0
-                                        },
-                                        grid: {
-                                            display: false
-                                        }
+                                    });
+
+                                    if (!response.ok) {
+                                        const errorData = await response.json().catch(() => ({}));
+                                        throw new Error(errorData.error ||
+                                            `Failed to fetch equipment data (Status: ${response.status})`
+                                            );
                                     }
+
+                                    const {
+                                        data
+                                    } = await response.json();
+
+                                    if (!data) {
+                                        throw new Error('No equipment data returned from server');
+                                    }
+
+                                    // Populate form fields
+                                    document.getElementById('edit_equipment_id').value = data.id || '';
+                                    document.getElementById('edit_equipment_name').value = data
+                                        .equipment_name || '';
+                                    document.getElementById('edit_model_brand').value = data
+                                        .model_brand || '';
+                                    document.getElementById('edit_serial_number').value = data
+                                        .serial_number || '';
+                                    document.getElementById('edit_pr_number').value = data.pr_number ||
+                                        '';
+                                    document.getElementById('edit_date_issued').value = data
+                                        .date_issued ? data.date_issued.split(' ')[0] : '';
+                                    document.getElementById('edit_status').value = data.status ||
+                                        'available';
+                                    document.getElementById('edit_staff_name').value = data
+                                        .staff_name || '';
+                                    document.getElementById('edit_department_id').value = data
+                                        .department_id || '';
+                                    document.getElementById('edit_department_name').value = data
+                                        .department_name || '';
+                                    document.getElementById('edit_remarks').value = data.remarks || '';
+
+                                    // Show modal
+                                    editModal.classList.remove('hidden');
+                                } catch (error) {
+                                    console.error('Error fetching equipment:', error);
+                                    showAlert(`Failed to load equipment data: ${error.message}`,
+                                        'error');
+                                } finally {
+                                    if (submitButton) {
+                                        submitButton.disabled = false;
+                                        const spinner = submitButton.querySelector('.spinner');
+                                        const btnText = submitButton.querySelector('.btn-text');
+                                        if (spinner) spinner.classList.add('hidden');
+                                        if (btnText) btnText.classList.remove('hidden');
+                                    }
+                                }
+                            });
+                        });
+                    }
+
+                    // Form submission handler
+                    document.getElementById('edit-inventory-form').addEventListener('submit', async function(e) {
+                        e.preventDefault();
+
+                        const id = document.getElementById('edit_equipment_id').value;
+                        if (!id) {
+                            showAlert('Equipment ID is missing!', 'error');
+                            return;
+                        }
+
+                        const updateButton = this.querySelector('.submit-button');
+                        if (updateButton) {
+                            updateButton.disabled = true;
+                            const spinner = updateButton.querySelector('.spinner');
+                            const btnText = updateButton.querySelector('.btn-text');
+                            if (spinner) spinner.classList.remove('hidden');
+                            if (btnText) btnText.classList.add('hidden');
+                        }
+
+                        const formData = new FormData(this);
+
+                        // Explicitly add values from disabled or non-standard inputs
+                        formData.append('staff_name', document.getElementById('edit_staff_name').value);
+                        formData.append('department_id', document.getElementById('edit_department_id').value);
+                        formData.append('equipment_name', document.getElementById('edit_equipment_name').value);
+                        formData.append('model_brand', document.getElementById('edit_model_brand').value);
+                        formData.append('serial_number', document.getElementById('edit_serial_number').value);
+                        formData.append('date_issued', document.getElementById('edit_date_issued').value);
+                        formData.append('pr_number', document.getElementById('edit_pr_number').value);
+                        formData.append('status', document.getElementById('edit_status').value);
+                        formData.append('remarks', document.getElementById('edit_remarks').value);
+
+                        try {
+                            formData.append('_method', 'PUT'); // Laravel spoofing
+
+                            const response = await fetch(`/inventory/${id}/update`, {
+                                method: 'POST', // important
+                                headers: {
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')
+                                        .content,
+                                    'Accept': 'application/json',
                                 },
-                                plugins: {
-                                    legend: {
-                                        labels: {
-                                            color: '#00553d',
-                                            font: {
-                                                size: 10,
-                                                family: 'Inter'
+                                body: formData
+                            });
+
+
+
+                            const result = await response.json();
+
+                            if (response.ok) {
+                                showAlert('Equipment updated successfully!', 'success');
+                                document.getElementById('edit-inventory-modal').classList.add('hidden');
+                                setTimeout(() => window.location.reload(), 1000);
+                            } else {
+                                showAlert(result.error || 'Failed to update equipment: ' + JSON.stringify(result
+                                    .messages || {}), 'error');
+                                console.log("Server response:", result);
+                            }
+                        } catch (err) {
+                            console.error('Error:', err);
+                            showAlert('An error occurred while updating: ' + err.message, 'error');
+                        } finally {
+                            if (updateButton) {
+                                updateButton.disabled = false;
+                                const spinner = updateButton.querySelector('.spinner');
+                                const btnText = updateButton.querySelector('.btn-text');
+                                if (spinner) spinner.classList.add('hidden');
+                                if (btnText) btnText.classList.remove('hidden');
+                            }
+                        }
+                    });
+
+
+                    // Initialize Chart
+                    function initializeChart() {
+                        const ctx = document.getElementById('equipmentChart');
+                        if (!ctx) {
+                            console.error('Canvas element with ID "equipmentChart" not found');
+                            return;
+                        }
+
+                        try {
+                            const equipmentDataAttr = ctx.dataset.equipment;
+                            if (!equipmentDataAttr) {
+                                console.log('No equipment data found in canvas dataset');
+                                ctx.style.display = 'none';
+                                return;
+                            }
+
+                            const equipmentData = JSON.parse(equipmentDataAttr);
+                            const labels = Object.keys(equipmentData);
+                            const data = Object.values(equipmentData);
+
+                            if (labels.length === 0) {
+                                console.log('Equipment data is empty');
+                                ctx.style.display = 'none';
+                                return;
+                            }
+
+                            if (chartInstance) {
+                                chartInstance.destroy();
+                            }
+
+                            chartInstance = new Chart(ctx, {
+                                type: 'bar',
+                                data: {
+                                    labels: labels,
+                                    datasets: [{
+                                        label: 'Issuance Count',
+                                        data: data,
+                                        backgroundColor: '#ffcc34',
+                                        borderColor: '#00553d',
+                                        borderWidth: 1
+                                    }]
+                                },
+                                options: {
+                                    responsive: true,
+                                    maintainAspectRatio: false,
+                                    scales: {
+                                        y: {
+                                            beginAtZero: true,
+                                            title: {
+                                                display: true,
+                                                text: 'Number of Issuances',
+                                                color: '#00553d',
+                                                font: {
+                                                    size: 10,
+                                                    family: 'Inter'
+                                                }
+                                            },
+                                            ticks: {
+                                                color: '#00553d',
+                                                font: {
+                                                    size: 10,
+                                                    family: 'Inter'
+                                                },
+                                                stepSize: 1
+                                            },
+                                            grid: {
+                                                color: 'rgba(0, 85, 61, 0.1)'
+                                            }
+                                        },
+                                        x: {
+                                            title: {
+                                                display: true,
+                                                text: 'Equipment',
+                                                color: '#00553d',
+                                                font: {
+                                                    size: 10,
+                                                    family: 'Inter'
+                                                }
+                                            },
+                                            ticks: {
+                                                color: '#00553d',
+                                                font: {
+                                                    size: 10,
+                                                    family: 'Inter'
+                                                },
+                                                autoSkip: true,
+                                                maxRotation: 45,
+                                                minRotation: 0
+                                            },
+                                            grid: {
+                                                display: false
                                             }
                                         }
                                     },
-                                    tooltip: {
-                                        backgroundColor: '#90143c',
-                                        titleColor: '#ffffff',
-                                        bodyColor: '#ffffff',
-                                        titleFont: {
-                                            size: 10,
-                                            family: 'Inter'
+                                    plugins: {
+                                        legend: {
+                                            labels: {
+                                                color: '#00553d',
+                                                font: {
+                                                    size: 10,
+                                                    family: 'Inter'
+                                                }
+                                            }
                                         },
-                                        bodyFont: {
-                                            size: 10,
-                                            family: 'Inter'
+                                        tooltip: {
+                                            backgroundColor: '#90143c',
+                                            titleColor: '#ffffff',
+                                            bodyColor: '#ffffff',
+                                            titleFont: {
+                                                size: 10,
+                                                family: 'Inter'
+                                            },
+                                            bodyFont: {
+                                                size: 10,
+                                                family: 'Inter'
+                                            }
                                         }
                                     }
                                 }
-                            }
-                        });
-                    } catch (error) {
-                        console.error('Error initializing chart:', error);
-                        ctx.style.display = 'none';
+                            });
+                        } catch (error) {
+                            console.error('Error initializing chart:', error);
+                            ctx.style.display = 'none';
+                        }
                     }
-                }
 
-                // Chart Filter Logic
-                const chartFilter = document.getElementById('chart-time-filter');
-                if (chartFilter) {
-                    chartFilter.addEventListener('change', function() {
-                        const timeRange = this.value;
-                        $.ajax({
-                            url: "{{ route('inventory.chart-data') }}",
-                            method: 'GET',
-                            data: {
-                                time_range: timeRange
-                            },
-                            success: function(response) {
-                                if (response.equipmentData) {
-                                    const ctx = document.getElementById('equipmentChart');
-                                    ctx.dataset.equipment = JSON.stringify(response.equipmentData);
-                                    initializeChart();
-                                } else {
-                                    showAlert('No data available for the selected time range.',
-                                        'info');
+                    // Chart Filter Logic
+                    const chartFilter = document.getElementById('chart-time-filter');
+                    if (chartFilter) {
+                        chartFilter.addEventListener('change', function() {
+                            const timeRange = this.value;
+                            $.ajax({
+                                url: "{{ route('inventory.chart-data') }}",
+                                method: 'GET',
+                                data: {
+                                    time_range: timeRange
+                                },
+                                success: function(response) {
+                                    if (response.equipmentData) {
+                                        const ctx = document.getElementById('equipmentChart');
+                                        ctx.dataset.equipment = JSON.stringify(response.equipmentData);
+                                        initializeChart();
+                                    } else {
+                                        showAlert('No data available for the selected time range.',
+                                            'info');
+                                        const ctx = document.getElementById('equipmentChart');
+                                        ctx.style.display = 'none';
+                                    }
+                                },
+                                error: function(xhr) {
+                                    console.error('Error fetching chart data:', xhr);
+                                    showAlert('Failed to load chart data. Please try again.', 'error');
                                     const ctx = document.getElementById('equipmentChart');
                                     ctx.style.display = 'none';
                                 }
-                            },
-                            error: function(xhr) {
-                                console.error('Error fetching chart data:', xhr);
-                                showAlert('Failed to load chart data. Please try again.', 'error');
-                                const ctx = document.getElementById('equipmentChart');
-                                ctx.style.display = 'none';
+                            });
+                        });
+                    }
+
+                    // Initialize Accordions
+                    function initializeAccordions() {
+                        const accordionToggles = document.querySelectorAll('.accordion-toggle');
+                        accordionToggles.forEach(toggle => {
+                            toggle.addEventListener('click', function() {
+                                const target = document.getElementById(toggle.dataset.target);
+                                const icon = toggle.querySelector('.accordion-icon');
+                                if (!target || !icon) return;
+                                const isOpen = target.classList.contains('open');
+                                target.classList.toggle('open');
+                                icon.classList.toggle('rotate-180');
+                                target.style.maxHeight = isOpen ? '0' : (target.scrollHeight + 30 || 2000) +
+                                    'px';
+                            });
+
+                            const inventoryLogContent = document.getElementById('inventory-log');
+                            const inventoryLogIcon = document.querySelector(
+                                '[data-target="inventory-log"] .accordion-icon');
+                            if (inventoryLogContent && inventoryLogIcon) {
+                                inventoryLogContent.classList.add('open');
+                                inventoryLogIcon.classList.add('rotate-180');
+                                inventoryLogContent.style.maxHeight = (inventoryLogContent.scrollHeight + 30 ||
+                                    2000) + 'px';
+                                window.addEventListener('resize', () => {
+                                    if (inventoryLogContent.classList.contains('open')) {
+                                        inventoryLogContent.style.maxHeight = (inventoryLogContent
+                                            .scrollHeight + 30 || 2000) + 'px';
+                                    }
+                                });
                             }
                         });
-                    });
-                }
+                    }
 
-                function initializeAccordions() {
-                    const accordionToggles = document.querySelectorAll('.accordion-toggle');
-
-                    // Toggle handler for all accordions
-                    accordionToggles.forEach(toggle => {
-                        toggle.addEventListener('click', function() {
-                            const target = document.getElementById(toggle.dataset.target);
-                            const icon = toggle.querySelector('.accordion-icon');
-                            if (!target || !icon) {
-                                console.error('Accordion target or icon not found for toggle:', toggle
-                                    .dataset.target);
-                                return;
-                            }
-                            const isOpen = target.classList.contains('open');
-                            target.classList.toggle('open');
-                            icon.classList.toggle('rotate-180');
-                            target.style.maxHeight = isOpen ? '0' : (target.scrollHeight + 30 || 2000) +
-                                'px';
+                    // Initialize Equipment Toggles
+                    function initializeEquipmentToggles() {
+                        const equipmentToggles = document.querySelectorAll('.equipment-toggle');
+                        equipmentToggles.forEach(toggle => {
+                            toggle.addEventListener('click', function() {
+                                const content = document.getElementById(toggle.dataset.target);
+                                content.classList.toggle('open');
+                                const svg = toggle.querySelector('svg');
+                                svg.classList.toggle('rotate-180');
+                                content.style.maxHeight = content.classList.contains('open') ? (content
+                                    .scrollHeight + 30) + 'px' : '0';
+                            });
                         });
-                    });
+                    }
 
-                    // Initialize inventory log accordion as open with retry mechanism
-                    function initializeInventoryLog() {
-                        const inventoryLogContent = document.getElementById('inventory-log');
-                        const inventoryLogIcon = document.querySelector(
-                            '[data-target="inventory-log"] .accordion-icon');
-                        if (!inventoryLogContent || !inventoryLogIcon) {
-                            console.warn('Inventory log elements not found. Retrying...');
-                            setTimeout(initializeInventoryLog, 100); // Retry after 100ms
-                            return;
+                    // Initialize Equipment Details Modal
+                    function initializeEquipmentDetailsModal() {
+                        const modal = document.getElementById('equipment-details-modal');
+                        const closeBtn = document.getElementById('close-details-modal');
+                        const content = document.getElementById('equipment-details-content');
+
+                        if (!modal || !closeBtn || !content) return;
+
+                        function closeModal() {
+                            modal.classList.remove('show');
                         }
 
-                        inventoryLogContent.classList.add('open');
-                        inventoryLogIcon.classList.add('rotate-180');
-                        const maxHeight = inventoryLogContent.scrollHeight > 0 ? (inventoryLogContent.scrollHeight +
-                            30) : 2000;
-                        inventoryLogContent.style.maxHeight = maxHeight + 'px';
-
-                        // Update max-height on window resize
-                        window.addEventListener('resize', () => {
-                            if (inventoryLogContent.classList.contains('open')) {
-                                const newMaxHeight = inventoryLogContent.scrollHeight > 0 ? (inventoryLogContent
-                                    .scrollHeight + 30) : 2000;
-                                inventoryLogContent.style.maxHeight = newMaxHeight + 'px';
-                            }
-                        });
-                    }
-
-                    // Initial attempt to initialize inventory log
-                    initializeInventoryLog();
-                }
-
-                // Initialize Equipment Toggles
-                function initializeEquipmentToggles() {
-                    const equipmentToggles = document.querySelectorAll('.equipment-toggle');
-                    equipmentToggles.forEach(toggle => {
-                        toggle.addEventListener('click', function() {
-                            const content = document.getElementById(toggle.dataset.target);
-                            content.classList.toggle('open');
-                            const svg = toggle.querySelector('svg');
-                            svg.classList.toggle('rotate-180');
-                            if (content.classList.contains('open')) {
-                                content.style.maxHeight = (content.scrollHeight + 30) + 'px';
-                            } else {
-                                content.style.maxHeight = '0';
-                            }
-                        });
-                    });
-                }
-
-                // Initialize Equipment Details Modal
-                function initializeEquipmentDetailsModal() {
-                    const modal = document.getElementById('equipment-details-modal');
-                    const closeBtn = document.getElementById('close-details-modal');
-                    const content = document.getElementById('equipment-details-content');
-
-                    if (!modal || !closeBtn || !content) {
-                        console.error('Equipment details modal elements not found');
-                        return;
-                    }
-
-                    // Close modal function
-                    function closeModal() {
-                        modal.classList.remove('show');
-                    }
-
-                    // Show loading state
-                    function showLoadingState() {
-                        content.innerHTML = `
+                        function showLoadingState() {
+                            content.innerHTML = `
                     <div class="loading">
                         <div class="spinner"></div>
                         Loading equipment details...
                     </div>
                 `;
-                    }
+                        }
 
-                    // Show error state
-                    function showErrorState(message) {
-                        content.innerHTML = `
+                        function showErrorState(message) {
+                            content.innerHTML = `
                     <div class="error-message">
                         <i class="fas fa-exclamation-triangle" style="margin-right: 8px;"></i>
                         ${message}
                     </div>
                 `;
-                    }
-
-                    // Event listeners
-                    closeBtn.addEventListener('click', closeModal);
-
-                    // Close modal when clicking outside
-                    modal.addEventListener('click', function(e) {
-                        if (e.target === modal) {
-                            closeModal();
                         }
-                    });
 
-                    // Close modal with ESC key
-                    document.addEventListener('keydown', function(e) {
-                        if (e.key === 'Escape' && modal.classList.contains('show')) {
-                            closeModal();
+                        closeBtn.addEventListener('click', closeModal);
+                        modal.addEventListener('click', function(e) {
+                            if (e.target === modal) closeModal();
+                        });
+                        document.addEventListener('keydown', function(e) {
+                            if (e.key === 'Escape' && modal.classList.contains('show')) closeModal();
+                        });
+
+                        document.querySelectorAll('a[href*="/inventory/"]').forEach(link => {
+                            link.addEventListener('click', function(e) {
+                                e.preventDefault();
+                                const url = this.getAttribute('href');
+                                showLoadingState();
+                                modal.classList.add('show');
+                                fetch(url)
+                                    .then(response => {
+                                        if (!response.ok) throw new Error(
+                                            `HTTP error! status: ${response.status}`);
+                                        return response.text();
+                                    })
+                                    .then(html => {
+                                        content.innerHTML = html;
+                                    })
+                                    .catch(error => {
+                                        console.error('Error loading equipment details:', error);
+                                        showErrorState(
+                                            'Failed to load equipment details. Please try again.');
+                                        showAlert('Failed to load equipment details', 'error');
+                                    });
+                            });
+                        });
+                    }
+
+                    // Initialize Modals
+                    function initializeModals() {
+                        const issueBtn = document.getElementById('issue-equipment-btn');
+                        const returnBtn = document.getElementById('return-equipment-btn');
+                        const issueModal = document.getElementById('issue-equipment-modal');
+                        const returnModal = document.getElementById('return-equipment-modal');
+                        const closeIssueModal = document.getElementById('close-issue-modal');
+                        const closeReturnModal = document.getElementById('close-return-modal');
+                        const cancelIssueModal = document.getElementById('cancel-issue-modal');
+
+                        if (issueBtn && issueModal) {
+                            issueBtn.addEventListener('click', () => issueModal.classList.add('show'));
                         }
-                    });
+                        if (returnBtn && returnModal) {
+                            returnBtn.addEventListener('click', () => returnModal.classList.add('show'));
+                        }
+                        if (closeIssueModal && issueModal) {
+                            closeIssueModal.addEventListener('click', () => issueModal.classList.remove('show'));
+                        }
+                        if (closeReturnModal && returnModal) {
+                            closeReturnModal.addEventListener('click', () => returnModal.classList.remove('show'));
+                        }
+                        if (cancelIssueModal && issueModal) {
+                            cancelIssueModal.addEventListener('click', () => issueModal.classList.remove('show'));
+                        }
 
-                    // Handle equipment detail links
-                    document.querySelectorAll('a[href*="/inventory/inventory/"]').forEach(link => {
-                        link.addEventListener('click', function(e) {
-                            e.preventDefault();
-                            const url = this.getAttribute('href');
-
-                            // Show loading state
-                            showLoadingState();
-
-                            // Show modal
-                            modal.classList.add('show');
-
-                            // Fetch equipment details
-                            fetch(url)
-                                .then(response => {
-                                    if (!response.ok) {
-                                        throw new Error(`HTTP error! status: ${response.status}`);
-                                    }
-                                    return response.text();
-                                })
-                                .then(html => {
-                                    content.innerHTML = html;
-                                })
-                                .catch(error => {
-                                    console.error('Error loading equipment details:', error);
-                                    showErrorState(
-                                        'Failed to load equipment details. Please try again.');
-                                    showAlert('Failed to load equipment details', 'error');
-                                });
-                        });
-                    });
-                }
-
-                // Initialize Modal Controls
-                function initializeModals() {
-                    const issueBtn = document.getElementById('issue-equipment-btn');
-                    const returnBtn = document.getElementById('return-equipment-btn');
-                    const issueModal = document.getElementById('issue-equipment-modal');
-                    const returnModal = document.getElementById('return-equipment-modal');
-                    const closeIssueModal = document.getElementById('close-issue-modal');
-                    const closeReturnModal = document.getElementById('close-return-modal');
-                    const cancelIssueModal = document.getElementById('cancel-issue-modal');
-
-                    if (issueBtn && issueModal) {
-                        issueBtn.addEventListener('click', () => issueModal.classList.add('show'));
-                    }
-                    if (returnBtn && returnModal) {
-                        returnBtn.addEventListener('click', () => returnModal.classList.add('show'));
-                    }
-                    if (closeIssueModal && issueModal) {
-                        closeIssueModal.addEventListener('click', () => issueModal.classList.remove('show'));
-                    }
-                    if (closeReturnModal && returnModal) {
-                        closeReturnModal.addEventListener('click', () => returnModal.classList.remove('show'));
-                    }
-                    if (cancelIssueModal && issueModal) {
-                        cancelIssueModal.addEventListener('click', () => issueModal.classList.remove('show'));
+                        if (issueModal) {
+                            issueModal.addEventListener('click', (e) => {
+                                if (e.target === issueModal) issueModal.classList.remove('show');
+                            });
+                        }
+                        if (returnModal) {
+                            returnModal.addEventListener('click', (e) => {
+                                if (e.target === returnModal) returnModal.classList.remove('show');
+                            });
+                        }
                     }
 
-                    // Close modals when clicking outside
-                    if (issueModal) {
-                        issueModal.addEventListener('click', (e) => {
-                            if (e.target === issueModal) issueModal.classList.remove('show');
-                        });
-                    }
-                    if (returnModal) {
-                        returnModal.addEventListener('click', (e) => {
-                            if (e.target === returnModal) returnModal.classList.remove('show');
-                        });
-                    }
-                }
-
-                // Initialize Search and Filters
-                function initializeSearchAndFilters() {
-                    const inventoryForm = document.getElementById('inventory-filter-form');
-                    if (inventoryForm) {
-                        const inputs = inventoryForm.querySelectorAll('input, select');
-                        inputs.forEach(input => {
-                            const eventType = input.type === 'text' || input.type === 'date' ? 'input' :
-                                'change';
-                            input.addEventListener(eventType, _.debounce(() => {
-                                const queryParams = new URLSearchParams(new FormData(
+                    // Initialize Search and Filters
+                    function initializeSearchAndFilters() {
+                        const inventoryForm = document.getElementById('inventory-filter-form');
+                        if (inventoryForm) {
+                            const inputs = inventoryForm.querySelectorAll('input, select');
+                            inputs.forEach(input => {
+                                const eventType = input.type === 'text' || input.type === 'date' ? 'input' :
+                                    'change';
+                                input.addEventListener(eventType, _.debounce(() => {
+                                    const queryParams = new URLSearchParams(new FormData(
                                     inventoryForm));
-                                queryParams.set('inventory_page', '1');
-                                window.location.href =
-                                    `{{ route('inventory') }}?${queryParams.toString()}`;
-                            }, 300));
-                        });
-                    }
+                                    queryParams.set('inventory_page', '1');
+                                    window.location.href =
+                                        `{{ route('inventory') }}?${queryParams.toString()}`;
+                                }, 300));
+                            });
+                        }
 
-                    const returnSearch = document.getElementById('returnSearch');
-                    const returnDepartmentFilter = document.getElementById('returnDepartmentFilter');
-                    const returnStatusFilter = document.getElementById('returnStatusFilter');
+                        const returnSearch = document.getElementById('returnSearch');
+                        const returnDepartmentFilter = document.getElementById('returnDepartmentFilter');
+                        const returnStatusFilter = document.getElementById('returnStatusFilter');
 
-                    function filterReturnEquipment() {
-                        if (!returnSearch || !returnDepartmentFilter || !returnStatusFilter) return;
-                        const search = returnSearch.value.toLowerCase();
-                        const department = returnDepartmentFilter.value;
-                        const equipmentType = returnStatusFilter.value;
-                        const accordions = document.querySelectorAll('#returnEquipmentContainer .equipment-accordion');
+                        function filterReturnEquipment() {
+                            if (!returnSearch || !returnDepartmentFilter || !returnStatusFilter) return;
+                            const search = returnSearch.value.toLowerCase();
+                            const department = returnDepartmentFilter.value;
+                            const equipmentType = returnStatusFilter.value;
+                            const accordions = document.querySelectorAll('#returnEquipmentContainer .equipment-accordion');
 
-                        $.each(accordions, function() {
-                            const equipment = this.querySelector('h3').textContent.toLowerCase();
-                            const dept = this.querySelector('p').textContent.split(' • ').pop();
-                            const show = (
-                                (search === '' || equipment.includes(search)) &&
-                                (department === '' || dept === department) &&
-                                (equipmentType === '' || equipment.includes(equipmentType.toLowerCase()))
-                            );
-                            this.style.display = show ? '' : 'none';
-                        });
-                    }
+                            $.each(accordions, function() {
+                                const equipment = this.querySelector('h3').textContent.toLowerCase();
+                                const dept = this.querySelector('p').textContent.split(' • ').pop();
+                                const show = (
+                                    (search === '' || equipment.includes(search)) &&
+                                    (department === '' || dept === department) &&
+                                    (equipmentType === '' || equipment.includes(equipmentType.toLowerCase()))
+                                );
+                                this.style.display = show ? '' : 'none';
+                            });
+                        }
 
-                    if (returnSearch) returnSearch.addEventListener('input', filterReturnEquipment);
-                    if (returnDepartmentFilter) returnDepartmentFilter.addEventListener('change',
+                        if (returnSearch) returnSearch.addEventListener('input', filterReturnEquipment);
+                        if (returnDepartmentFilter) returnDepartmentFilter.addEventListener('change',
                         filterReturnEquipment);
-                    if (returnStatusFilter) returnStatusFilter.addEventListener('change', filterReturnEquipment);
-                }
-
-                // Initialize Pagination
-                function initializePagination() {
-                    const inventoryPageJump = document.getElementById('inventoryPageJump');
-                    const returnPageJump = document.getElementById('returnPageJump');
-                    const perPageSelect = document.getElementById('inventory-per-page');
-                    const perPageDisplay = document.getElementById('inventory-per-page-display');
-
-                    if (inventoryPageJump) {
-                        inventoryPageJump.addEventListener('change', function() {
-                            const page = parseInt(this.value);
-                            const maxPage = parseInt(this.max);
-                            if (isNaN(page) || page < 1 || page > maxPage) {
-                                showAlert(`Please enter a page number between 1 and ${maxPage}.`, 'error');
-                                this.value = this.defaultValue;
-                                return;
-                            }
-                            const form = document.getElementById('inventory-filter-form');
-                            const queryParams = new URLSearchParams(new FormData(form));
-                            queryParams.set('inventory_page', page);
-                            window.location.href = `{{ route('inventory') }}?${queryParams.toString()}`;
-                        });
+                        if (returnStatusFilter) returnStatusFilter.addEventListener('change', filterReturnEquipment);
                     }
 
-                    if (returnPageJump) {
-                        returnPageJump.addEventListener('change', function() {
-                            const page = parseInt(this.value);
-                            const maxPage = parseInt(this.max);
-                            if (isNaN(page) || page < 1 || page > maxPage) {
-                                showAlert(`Please enter a page number between 1 and ${maxPage}.`, 'error');
-                                this.value = this.defaultValue;
-                                return;
-                            }
-                            const queryParams = new URLSearchParams(window.location.search);
-                            queryParams.set('issuances_page', page);
-                            const url = `{{ route('inventory') }}?${queryParams.toString()}`;
-                            window.location.href = url;
-                        });
+                    // Initialize Pagination
+                    function initializePagination() {
+                        const inventoryPageJump = document.getElementById('inventoryPageJump');
+                        const returnPageJump = document.getElementById('returnPageJump');
+                        const perPageSelect = document.getElementById('inventory-per-page');
+                        const perPageDisplay = document.getElementById('inventory-per-page-display');
+
+                        if (inventoryPageJump) {
+                            inventoryPageJump.addEventListener('change', function() {
+                                const page = parseInt(this.value);
+                                const maxPage = parseInt(this.max);
+                                if (isNaN(page) || page < 1 || page > maxPage) {
+                                    showAlert(`Please enter a page number between 1 and ${maxPage}.`, 'error');
+                                    this.value = this.defaultValue;
+                                    return;
+                                }
+                                const form = document.getElementById('inventory-filter-form');
+                                const queryParams = new URLSearchParams(new FormData(form));
+                                queryParams.set('inventory_page', page);
+                                window.location.href = `{{ route('inventory') }}?${queryParams.toString()}`;
+                            });
+                        }
+
+                        if (returnPageJump) {
+                            returnPageJump.addEventListener('change', function() {
+                                const page = parseInt(this.value);
+                                const maxPage = parseInt(this.max);
+                                if (isNaN(page) || page < 1 || page > maxPage) {
+                                    showAlert(`Please enter a page number between 1 and ${maxPage}.`, 'error');
+                                    this.value = this.defaultValue;
+                                    return;
+                                }
+                                const queryParams = new URLSearchParams(window.location.search);
+                                queryParams.set('issuances_page', page);
+                                window.location.href = `{{ route('inventory') }}?${queryParams.toString()}`;
+                            });
+                        }
+
+                        if (perPageSelect && perPageDisplay) {
+                            const syncPerPage = () => {
+                                perPageDisplay.value = perPageSelect.value;
+                                const form = document.getElementById('inventory-filter-form');
+                                const queryParams = new URLSearchParams(new FormData(form));
+                                queryParams.set('inventory_page', '1');
+                                queryParams.set('inventory_per_page', perPageSelect.value);
+                                window.location.href = `{{ route('inventory') }}?${queryParams.toString()}`;
+                            };
+                            perPageSelect.addEventListener('change', syncPerPage);
+                            perPageDisplay.addEventListener('change', () => {
+                                perPageSelect.value = perPageDisplay.value;
+                                syncPerPage();
+                            });
+                        }
                     }
 
-                    if (perPageSelect && perPageDisplay) {
-                        const syncPerPage = () => {
-                            perPageDisplay.value = perPageSelect.value;
-                            const form = document.getElementById('inventory-filter-form');
-                            const queryParams = new URLSearchParams(new FormData(form));
-                            queryParams.set('inventory_page', '1');
-                            queryParams.set('inventory_per_page', perPageSelect.value);
-                            window.location.href = `{{ route('inventory') }}?${queryParams.toString()}`;
-                        };
-                        perPageSelect.addEventListener('change', syncPerPage);
-                        perPageDisplay.addEventListener('change', () => {
-                            perPageSelect.value = perPageDisplay.value;
-                            syncPerPage();
-                        });
-                    }
-                }
-
-                // Initialize Delete Functionality
-                function initializeDeleteFunctionality() {
-                    const deleteButtons = document.querySelectorAll('.delete-inventory-btn');
-                    deleteButtons.forEach(btn => {
-                        btn.addEventListener('click', function(e) {
-                            e.preventDefault(); // CRITICAL: Prevent default form submission
-
-                            const form = btn.closest('form');
-                            const equipmentName = btn.closest('.delete-inventory-form').dataset.name;
-                            Swal.fire({
-                                title: 'Delete Inventory Item?',
-                                html: `
+                    // Initialize Delete Functionality
+                    function initializeDeleteFunctionality() {
+                        const deleteButtons = document.querySelectorAll('.delete-inventory-btn');
+                        deleteButtons.forEach(btn => {
+                            btn.addEventListener('click', function(e) {
+                                e.preventDefault();
+                                const form = btn.closest('form');
+                                const equipmentName = btn.closest('.delete-inventory-form').dataset.name;
+                                Swal.fire({
+                                    title: 'Delete Inventory Item?',
+                                    html: `
                             <div class="text-left space-y-3">
                                 <div class="bg-red-50 p-3 rounded-lg border border-red-200">
                                     <div class="flex items-center space-x-2 mb-2">
@@ -1921,107 +1947,107 @@
                                 </div>
                             </div>
                         `,
-                                input: 'text',
-                                inputPlaceholder: 'Type DELETE to confirm',
-                                icon: 'warning',
-                                showCancelButton: true,
-                                confirmButtonColor: '#dc2626',
-                                cancelButtonColor: '#6b7280',
-                                confirmButtonText: '<i class="fas fa-trash mr-2"></i>Yes, Delete',
-                                cancelButtonText: '<i class="fas fa-shield-alt mr-2"></i>Keep Safe',
-                                allowOutsideClick: false,
-                                allowEscapeKey: false,
-                                inputValidator: function(value) {
-                                    if (value !== 'DELETE') {
-                                        return 'Please type "DELETE" exactly to confirm';
+                                    input: 'text',
+                                    inputPlaceholder: 'Type DELETE to confirm',
+                                    icon: 'warning',
+                                    showCancelButton: true,
+                                    confirmButtonColor: '#dc2626',
+                                    cancelButtonColor: '#6b7280',
+                                    confirmButtonText: '<i class="fas fa-trash mr-2"></i>Yes, Delete',
+                                    cancelButtonText: '<i class="fas fa-shield-alt mr-2"></i>Keep Safe',
+                                    allowOutsideClick: false,
+                                    allowEscapeKey: false,
+                                    inputValidator: function(value) {
+                                        if (value !== 'DELETE') {
+                                            return 'Please type "DELETE" exactly to confirm';
+                                        }
+                                    },
+                                    customClass: {
+                                        title: 'text-xs',
+                                        content: 'text-[0.6rem]'
                                     }
-                                },
-                                customClass: {
-                                    title: 'text-xs',
-                                    content: 'text-[0.6rem]'
-                                }
-                            }).then(function(result) {
-                                if (result.isConfirmed) {
-                                    form.submit();
-                                }
+                                }).then(function(result) {
+                                    if (result.isConfirmed) {
+                                        form.submit();
+                                    }
+                                });
                             });
                         });
-                    });
-                }
+                    }
 
-                // Initialize Form Submission
-                function initializeFormSubmission() {
-                    const issueForm = document.getElementById('issueForm');
-                    if (issueForm) {
-                        issueForm.addEventListener('submit', async function(e) {
-                            e.preventDefault();
-                            const formData = new FormData(this);
-                            const payload = Object.fromEntries(formData.entries());
-                            const submitButton = this.querySelector('button[type="submit"]');
+                    // Initialize Form Submission
+                    function initializeFormSubmission() {
+                        const issueForm = document.getElementById('issueForm');
+                        if (issueForm) {
+                            issueForm.addEventListener('submit', async function(e) {
+                                e.preventDefault();
+                                const formData = new FormData(this);
+                                const payload = Object.fromEntries(formData.entries());
+                                const submitButton = this.querySelector('button[type="submit"]');
 
-                            if (!payload.serial_number || !payload.pr_number) {
-                                showAlert('Serial number and PR number are required.', 'error');
-                                return;
-                            }
+                                if (!payload.serial_number || !payload.pr_number) {
+                                    showAlert('Serial number and PR number are required.', 'error');
+                                    return;
+                                }
 
-                            setLoadingState(submitButton, true);
+                                setLoadingState(submitButton, true);
 
-                            try {
-                                const checkResponse = await fetch(window.checkDuplicatesUrl, {
-                                    method: 'POST',
-                                    headers: {
-                                        'Content-Type': 'application/json',
-                                        'X-CSRF-TOKEN': document.querySelector(
-                                            'meta[name="csrf-token"]').content
-                                    },
-                                    body: JSON.stringify({
-                                        serial_number: payload.serial_number,
-                                        pr_number: payload.pr_number
-                                    })
-                                });
+                                try {
+                                    const checkResponse = await fetch(window.checkDuplicatesUrl, {
+                                        method: 'POST',
+                                        headers: {
+                                            'Content-Type': 'application/json',
+                                            'X-CSRF-TOKEN': document.querySelector(
+                                                'meta[name="csrf-token"]').content
+                                        },
+                                        body: JSON.stringify({
+                                            serial_number: payload.serial_number,
+                                            pr_number: payload.pr_number
+                                        })
+                                    });
 
-                                if (!checkResponse.ok) throw new Error(
-                                    `HTTP error! Status: ${checkResponse.status}`);
+                                    if (!checkResponse.ok) throw new Error(
+                                        `HTTP error! Status: ${checkResponse.status}`);
 
-                                const checkData = await checkResponse.json();
-                                if (checkData.serial_exists || checkData.pr_exists) {
-                                    let message = 'Potential duplicates found:<br>';
-                                    if (checkData.serial_exists) message +=
-                                        `• Serial Number "${payload.serial_number}" exists<br>`;
-                                    if (checkData.pr_exists) message +=
-                                        `• PR Number "${payload.pr_number}" exists<br>`;
+                                    const checkData = await checkResponse.json();
+                                    if (checkData.serial_exists || checkData.pr_exists) {
+                                        let message = 'Potential duplicates found:<br>';
+                                        if (checkData.serial_exists) message +=
+                                            `• Serial Number "${payload.serial_number}" exists<br>`;
+                                        if (checkData.pr_exists) message +=
+                                            `• PR Number "${payload.pr_number}" exists<br>`;
 
-                                    const result = await Swal.fire({
-                                        title: 'Duplicate Detected',
-                                        html: `
+                                        const result = await Swal.fire({
+                                            title: 'Duplicate Detected',
+                                            html: `
                                     <div class="text-left space-y-3">
                                         <div class="bg-yellow-50 p-3 rounded-lg border border-yellow-200">
                                             <div class="text-xs text-yellow-700">${message}</div>
                                         </div>
                                     </div>
                                 `,
-                                        icon: 'warning',
-                                        showCancelButton: !checkData.serial_exists,
-                                        confirmButtonColor: '#00553d',
-                                        cancelButtonColor: '#90143c',
-                                        confirmButtonText: checkData.serial_exists ? 'OK' :
-                                            '<i class="fas fa-check mr-2"></i>Proceed Anyway',
-                                        cancelButtonText: '<i class="fas fa-times mr-2"></i>Cancel',
-                                        customClass: {
-                                            title: 'text-xs',
-                                            content: 'text-[0.6rem]'
-                                        }
-                                    });
+                                            icon: 'warning',
+                                            showCancelButton: !checkData.serial_exists,
+                                            confirmButtonColor: '#00553d',
+                                            cancelButtonColor: '#90143c',
+                                            confirmButtonText: checkData.serial_exists ? 'OK' :
+                                                '<i class="fas fa-check mr-2"></i>Proceed Anyway',
+                                            cancelButtonText: '<i class="fas fa-times mr-2"></i>Cancel',
+                                            customClass: {
+                                                title: 'text-xs',
+                                                content: 'text-[0.6rem]'
+                                            }
+                                        });
 
-                                    if (result.isConfirmed && !checkData.serial_exists) {
-                                        issueForm.submit();
+                                        if (result.isConfirmed && !checkData.serial_exists) {
+                                            issueForm.submit();
+                                        } else {
+                                            setLoadingState(submitButton, false);
+                                        }
                                     } else {
-                                        setLoadingState(submitButton, false);
-                                    }
-                                } else {
-                                    const result = await Swal.fire({
-                                        title: 'Issue Equipment?',
-                                        html: `
+                                        const result = await Swal.fire({
+                                            title: 'Issue Equipment?',
+                                            html: `
                                     <div class="text-left space-y-3">
                                         <div class="bg-blue-50 p-3 rounded-lg border border-blue-200">
                                             <div class="font-semibold text-blue-800 mb-2">Issuance Details:</div>
@@ -2050,46 +2076,46 @@
                                         </div>
                                     </div>
                                 `,
-                                        icon: 'question',
-                                        showCancelButton: true,
-                                        confirmButtonColor: '#00553d',
-                                        cancelButtonColor: '#90143c',
-                                        confirmButtonText: '<i class="fas fa-plus mr-2"></i>Issue Equipment',
-                                        cancelButtonText: '<i class="fas fa-times mr-2"></i>Cancel',
-                                        customClass: {
-                                            title: 'text-xs',
-                                            content: 'text-[0.6rem]'
+                                            icon: 'question',
+                                            showCancelButton: true,
+                                            confirmButtonColor: '#00553d',
+                                            cancelButtonColor: '#90143c',
+                                            confirmButtonText: '<i class="fas fa-plus mr-2"></i>Issue Equipment',
+                                            cancelButtonText: '<i class="fas fa-times mr-2"></i>Cancel',
+                                            customClass: {
+                                                title: 'text-xs',
+                                                content: 'text-[0.6rem]'
+                                            }
+                                        });
+
+                                        if (result.isConfirmed) {
+                                            issueForm.submit();
+                                        } else {
+                                            setLoadingState(submitButton, false);
                                         }
-                                    });
-
-                                    if (result.isConfirmed) {
-                                        issueForm.submit();
-                                    } else {
-                                        setLoadingState(submitButton, false);
                                     }
+                                } catch (error) {
+                                    setLoadingState(submitButton, false);
+                                    showAlert('Failed to validate data. Please try again.', 'error');
                                 }
-                            } catch (error) {
-                                setLoadingState(submitButton, false);
-                                showAlert('Failed to validate data. Please try again.', 'error');
-                            }
-                        });
-                    }
+                            });
+                        }
 
-                    const returnForms = document.querySelectorAll('#returnEquipmentContainer form');
-                    returnForms.forEach(form => {
-                        form.addEventListener('submit', function(e) {
-                            e.preventDefault();
-                            const formData = new FormData(this);
-                            const payload = Object.fromEntries(formData.entries());
-                            const submitButton = this.querySelector('button[type="submit"]');
-                            const equipmentName = this.closest('.equipment-accordion').querySelector(
-                                'h3').textContent;
-                            const staffName = this.closest('.equipment-accordion').querySelector('p')
-                                .textContent.split(' • ')[0];
+                        const returnForms = document.querySelectorAll('#returnEquipmentContainer form');
+                        returnForms.forEach(form => {
+                            form.addEventListener('submit', function(e) {
+                                e.preventDefault();
+                                const formData = new FormData(this);
+                                const payload = Object.fromEntries(formData.entries());
+                                const submitButton = this.querySelector('button[type="submit"]');
+                                const equipmentName = this.closest('.equipment-accordion').querySelector(
+                                    'h3').textContent;
+                                const staffName = this.closest('.equipment-accordion').querySelector('p')
+                                    .textContent.split(' • ')[0];
 
-                            Swal.fire({
-                                title: 'Return Equipment?',
-                                html: `
+                                Swal.fire({
+                                    title: 'Return Equipment?',
+                                    html: `
                             <div class="text-left space-y-3">
                                 <div class="bg-blue-50 p-3 rounded-lg border border-blue-200">
                                     <div class="font-semibold text-blue-800 mb-2">Return Details:</div>
@@ -2114,222 +2140,93 @@
                                 </div>
                             </div>
                         `,
-                                icon: 'question',
-                                showCancelButton: true,
-                                confirmButtonColor: '#00553d',
-                                cancelButtonColor: '#90143c',
-                                confirmButtonText: '<i class="fas fa-undo mr-2"></i>Confirm Return',
-                                cancelButtonText: '<i class="fas fa-times mr-2"></i>Cancel',
-                                customClass: {
-                                    title: 'text-xs',
-                                    content: 'text-[0.6rem]'
-                                }
-                            }).then(function(result) {
-                                if (result.isConfirmed) {
-                                    setLoadingState(submitButton, true);
-                                    form.submit();
-                                }
+                                    icon: 'question',
+                                    showCancelButton: true,
+                                    confirmButtonColor: '#00553d',
+                                    cancelButtonColor: '#90143c',
+                                    confirmButtonText: '<i class="fas fa-undo mr-2"></i>Confirm Return',
+                                    cancelButtonText: '<i class="fas fa-times mr-2"></i>Cancel',
+                                    customClass: {
+                                        title: 'text-xs',
+                                        content: 'text-[0.6rem]'
+                                    }
+                                }).then(function(result) {
+                                    if (result.isConfirmed) {
+                                        setLoadingState(submitButton, true);
+                                        form.submit();
+                                    }
+                                });
                             });
                         });
-                    });
-                }
-
-                // Initialize Edit Functionality
-                function initializeEditFunctionality() {
-                    const editButtons = document.querySelectorAll('.edit-inventory-btn');
-                    const editModal = document.getElementById('edit-inventory-modal');
-                    const editForm = document.getElementById('edit-inventory-form');
-                    const editSubmitButton = document.getElementById('edit-inventory-submit');
-
-                    editButtons.forEach(button => {
-                        button.addEventListener('click', async function() {
-                            const itemId = this.dataset.id;
-
-                            try {
-                                // Show loading state
-                                if (editSubmitButton) {
-                                    editSubmitButton.disabled = true;
-                                    editSubmitButton.querySelector('.spinner').classList.remove(
-                                        'hidden');
-                                    editSubmitButton.querySelector('.btn-text').classList.add(
-                                        'hidden');
-                                }
-
-                                const response = await fetch(`/inventory/${itemId}`, {
-                                    method: 'GET',
-                                    headers: {
-                                        'X-CSRF-TOKEN': document.querySelector(
-                                            'meta[name="csrf-token"]').content,
-                                        'Accept': 'application/json'
-                                    }
-                                });
-
-                                if (!response.ok) {
-                                    const error = await response.json().catch(() => ({}));
-                                    throw new Error(error.message ||
-                                        'Failed to fetch equipment data');
-                                }
-
-                                const {
-                                    data,
-                                    departments,
-                                    activeStaff
-                                } = await response.json();
-
-                                // Populate form fields
-                                document.getElementById('edit_equipment_id').value = data.id;
-                                document.getElementById('edit_staff_name').value = data
-                                    .staff_name || '';
-                                document.getElementById('edit_department_id').value = data
-                                    .department_id || '';
-                                document.getElementById('edit_equipment_name').value = data
-                                    .equipment_name || '';
-                                document.getElementById('edit_model_brand').value = data
-                                    .model_brand || '';
-                                document.getElementById('edit_serial_number').value = data
-                                    .serial_number || '';
-                                document.getElementById('edit_pr_number').value = data.pr_number ||
-                                    '';
-                                document.getElementById('edit_date_issued').value = data
-                                    .date_issued ? data.date_issued.split(' ')[0] : '';
-                                document.getElementById('edit_status').value = data.status ||
-                                    'available';
-                                document.getElementById('edit_remarks').value = data.remarks || '';
-
-                                // Show modal
-                                editModal.classList.remove('hidden');
-
-                            } catch (error) {
-                                console.error('Error:', error);
-                                showAlert(`Failed to load equipment data: ${error.message}`,
-                                    'error');
-                            } finally {
-                                // Reset loading state
-                                if (editSubmitButton) {
-                                    editSubmitButton.disabled = false;
-                                    editSubmitButton.querySelector('.spinner').classList.add(
-                                        'hidden');
-                                    editSubmitButton.querySelector('.btn-text').classList.remove(
-                                        'hidden');
-                                }
-                            }
-                        });
-                    });
-
-                    // Form submission handler
-                    if (editForm) {
-                        editForm.addEventListener('submit', async function(e) {
-                            e.preventDefault();
-                            const formData = new FormData(this);
-                            const itemId = formData.get('equipment_id');
-
-                            try {
-                                // Set loading state
-                                editSubmitButton.disabled = true;
-                                editSubmitButton.querySelector('.spinner').classList.remove('hidden');
-                                editSubmitButton.querySelector('.btn-text').classList.add('hidden');
-
-                                const response = await fetch(`/inventory/${itemId}`, {
-                                    method: 'PUT',
-                                    headers: {
-                                        'X-CSRF-TOKEN': document.querySelector(
-                                            'meta[name="csrf-token"]').content,
-                                    },
-                                    body: formData
-                                });
-
-                                if (!response.ok) {
-                                    const error = await response.json().catch(() => ({}));
-                                    throw new Error(error.message || 'Failed to update equipment');
-                                }
-
-                                const result = await response.json();
-                                showAlert('Equipment updated successfully!', 'success');
-                                editModal.classList.add('hidden');
-
-                                // Refresh the page after 1 second
-                                setTimeout(() => window.location.reload(), 1000);
-
-                            } catch (error) {
-                                console.error('Error:', error);
-                                showAlert(`Failed to update equipment: ${error.message}`, 'error');
-                            } finally {
-                                // Reset loading state
-                                editSubmitButton.disabled = false;
-                                editSubmitButton.querySelector('.spinner').classList.add('hidden');
-                                editSubmitButton.querySelector('.btn-text').classList.remove('hidden');
-                            }
-                        });
                     }
-                }
 
-                // Initialize Export Functionality
-                function initializeExportFunctionality() {
-                    const exportButton = document.getElementById('inventory-export-btn');
-                    if (exportButton) {
-                        exportButton.addEventListener('click', function() {
-                            const form = document.getElementById('inventory-filter-form');
-                            const queryParams = new URLSearchParams(new FormData(form));
-                            queryParams.set('export', 'csv');
-                            setLoadingState(exportButton, true);
+                    // Initialize Export Functionality
+                    function initializeExportFunctionality() {
+                        const exportButton = document.getElementById('inventory-export-btn');
+                        if (exportButton) {
+                            exportButton.addEventListener('click', function() {
+                                const form = document.getElementById('inventory-filter-form');
+                                const queryParams = new URLSearchParams(new FormData(form));
+                                queryParams.set('export', 'csv');
+                                setLoadingState(exportButton, true);
 
-                            fetch(`{{ route('inventory') }}?${queryParams.toString()}`, {
-                                    method: 'GET',
-                                    headers: {
-                                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')
-                                            .content
-                                    }
-                                })
-                                .then(response => {
-                                    if (!response.ok) throw new Error(
-                                        `HTTP error! Status: ${response.status}`);
-                                    return response.blob();
-                                })
-                                .then(blob => {
-                                    const url = window.URL.createObjectURL(blob);
-                                    const a = document.createElement('a');
-                                    a.href = url;
-                                    a.download =
-                                        `inventory_export_${new Date().toISOString().split('T')[0]}.csv`;
-                                    document.body.appendChild(a);
-                                    a.click();
-                                    a.remove();
-                                    window.URL.revokeObjectURL(url);
-                                    showAlert('Inventory exported successfully.', 'success');
-                                })
-                                .catch(error => {
-                                    console.error('Error exporting inventory:', error);
-                                    showAlert('Failed to export inventory. Please try again.', 'error');
-                                })
-                                .finally(() => {
-                                    setLoadingState(exportButton, false);
-                                });
-                        });
+                                fetch(`{{ route('inventory') }}?${queryParams.toString()}`, {
+                                        method: 'GET',
+                                        headers: {
+                                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')
+                                                .content
+                                        }
+                                    })
+                                    .then(response => {
+                                        if (!response.ok) throw new Error(
+                                            `HTTP error! Status: ${response.status}`);
+                                        return response.blob();
+                                    })
+                                    .then(blob => {
+                                        const url = window.URL.createObjectURL(blob);
+                                        const a = document.createElement('a');
+                                        a.href = url;
+                                        a.download =
+                                            `inventory_export_${new Date().toISOString().split('T')[0]}.csv`;
+                                        document.body.appendChild(a);
+                                        a.click();
+                                        a.remove();
+                                        window.URL.revokeObjectURL(url);
+                                        showAlert('Inventory exported successfully.', 'success');
+                                    })
+                                    .catch(error => {
+                                        console.error('Error exporting inventory:', error);
+                                        showAlert('Failed to export inventory. Please try again.', 'error');
+                                    })
+                                    .finally(() => {
+                                        setLoadingState(exportButton, false);
+                                    });
+                            });
+                        }
                     }
-                }
 
-                // Initialize All
-                initializeChart();
-                initializeAccordions();
-                initializeEquipmentToggles();
-                initializeEquipmentDetailsModal(); 
-                initializeModals();
-                initializeSearchAndFilters();
-                initializePagination();
-                initializeDeleteFunctionality();
-                initializeFormSubmission();
-                initializeEditFunctionality();
-                initializeExportFunctionality();
+                    // Initialize All
+                    initializeChart();
+                    initializeAccordions();
+                    initializeEquipmentToggles();
+                    initializeEquipmentDetailsModal();
+                    initializeModals();
+                    initializeSearchAndFilters();
+                    initializePagination();
+                    initializeDeleteFunctionality();
+                    initializeFormSubmission();
+                    initializeEditFunctionality();
+                    initializeExportFunctionality();
 
-                // Handle Laravel Session Messages
-                @if (session('success'))
-                    showAlert('{{ session('success') }}', 'success');
-                @endif
-                @if (session('error'))
-                    showAlert('{{ session('error') }}', 'error');
-                @endif
-            });
-        </script>
+                    // Handle Laravel Session Messages
+                    @if (session('success'))
+                        showAlert('{{ session('success') }}', 'success');
+                    @endif
+                    @if (session('error'))
+                        showAlert('{{ session('error') }}', 'error');
+                    @endif
+                });
+            </script>
 
-        <x-auth-footer />
+            <x-auth-footer />
 </x-app-layout>
