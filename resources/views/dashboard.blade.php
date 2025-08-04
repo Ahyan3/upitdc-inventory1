@@ -178,40 +178,84 @@
             <div id="alert-container" class="mb-4"></div>
 
             <!-- Overview Stats -->
-            <div class="bg-white rounded-lg shadow-md overflow-hidden setting-card border border-[#ffcc34] slide-up p-4 mb-8">
-                <h3 class="text-xs font-bold text-[#00553d] mb-3 flex items-center">
-                    <div class="p-1.5 bg-gradient-to-br from-[#90143c] to-[#b01a47] rounded-md mr-2">
-                        <i class="fas fa-chart-bar text-white text-xs"></i>
-                    </div>
-                    System Overview
-                </h3>
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
-                    <div class="bg-white p-2 rounded-md shadow-sm border border-[#ffcc34]/30">
-                        <div class="text-base font-bold text-[#90143c]">{{ $totalStaff ?? 0 }}</div>
-                        <div class="text-xs text-gray-600">Total Staff</div>
-                        <a href="{{ route('staff.index') }}"
-                            class="text-[0.6rem] text-[#00553d] hover:text-[#007a52] mt-1 block">View Details</a>
-                    </div>
-                    <div class="bg-white p-2 rounded-md shadow-sm border border-[#ffcc34]/30">
-                        <div class="text-base font-bold text-[#90143c]">{{ $totalIssuedEquipment ?? 0 }}</div>
-                        <div class="text-xs text-gray-600">Issued Equipment</div>
-                        <a href="{{ route('inventory') }}"
-                            class="text-[0.6rem] text-[#00553d] hover:text-[#007a52] mt-1 block">View Details</a>
-                    </div>
-                    <div class="bg-white p-2 rounded-md shadow-sm border border-[#ffcc34]/30">
-                        <div class="text-base font-bold text-[#90143c]">{{ $totalReturnedEquipment ?? 0 }}</div>
-                        <div class="text-xs text-gray-600">Returned Equipment</div>
-                        <a href="{{ route('inventory') }}"
-                            class="text-[0.6rem] text-[#00553d] hover:text-[#007a52] mt-1 block">View Details</a>
-                    </div>
-                    <div class="bg-white p-2 rounded-md shadow-sm border border-[#ffcc34]/30">
-                        <div class="text-base font-bold text-[#90143c]">{{ $totalEquipment ?? 0 }}</div>
-                        <div class="text-xs text-gray-600">Total Equipment</div>
-                        <a href="{{ route('inventory') }}"
-                            class="text-[0.6rem] text-[#00553d] hover:text-[#007a52] mt-1 block">View Details</a>
-                    </div>
-                </div>
-            </div>
+            <!-- System Overview Section -->
+<div class="bg-white rounded-lg shadow-md border border-[#ffcc34] slide-up p-4 mb-8">
+    <h3 class="text-xs font-bold text-[#00553d] mb-3 flex items-center">
+        <div class="p-1.5 bg-gradient-to-br from-[#90143c] to-[#b01a47] rounded-md mr-2">
+            <i class="fas fa-chart-bar text-white text-xs"></i>
+        </div>
+        System Overview
+    </h3>
+
+    {{-- Row 1 --}}
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-3 mb-4">
+        <div class="p-3 border border-[#ffcc34]/30 rounded bg-white shadow-sm">
+            <div class="text-base font-bold text-[#90143c]">{{ $totalEquipment ?? 0 }}</div>
+            <div class="text-xs text-gray-600">Total Equipment</div>
+            <a href="{{ route('inventory') }}" class="text-[0.6rem] text-[#00553d] hover:text-[#007a52] block mt-1">View Details</a>
+        </div>
+        <div class="p-3 border border-[#ffcc34]/30 rounded bg-white shadow-sm">
+            <div class="text-base font-bold text-[#90143c]">{{ $totalIssuedEquipment ?? 0 }}</div>
+            <div class="text-xs text-gray-600">Issued Equipment</div>
+            <a href="{{ route('inventory') }}" class="text-[0.6rem] text-[#00553d] hover:text-[#007a52] block mt-1">View Details</a>
+        </div>
+        <div class="p-3 border border-[#ffcc34]/30 rounded bg-white shadow-sm">
+            <div class="text-base font-bold text-[#90143c]">{{ $totalReturnedEquipment ?? 0 }}</div>
+            <div class="text-xs text-gray-600">Returned Equipment</div>
+            <a href="{{ route('inventory') }}" class="text-[0.6rem] text-[#00553d] hover:text-[#007a52] block mt-1">View Details</a>
+        </div>
+        <div class="p-3 border border-[#ffcc34]/30 rounded bg-white shadow-sm">
+            <div class="text-base font-bold text-[#90143c]">{{ $departmentsWithItems ?? 0 }}</div>
+            <div class="text-xs text-gray-600">Departments with Item</div>
+            <a href="{{ route('inventory') }}" class="text-[0.6rem] text-[#00553d] hover:text-[#007a52] block mt-1">View Details</a>
+        </div>
+    </div>
+
+    {{-- Row 2 --}}
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-3 mb-4">
+        <div class="p-3 border border-[#ffcc34]/30 rounded bg-white shadow-sm">
+            <div class="text-base font-bold text-[#90143c]">{{ $inUse ?? 0 }}</div>
+            <div class="text-xs text-gray-600">In Use Equipment</div>
+        </div>
+        <div class="p-3 border border-[#ffcc34]/30 rounded bg-white shadow-sm">
+            <div class="text-base font-bold text-[#90143c]">{{ $available ?? 0 }}</div>
+            <div class="text-xs text-gray-600">Available Equipment</div>
+        </div>
+        <div class="p-3 border border-[#ffcc34]/30 rounded bg-white shadow-sm">
+            <div class="text-base font-bold text-[#90143c]">{{ $maintenance ?? 0 }}</div>
+            <div class="text-xs text-gray-600">Under Maintenance</div>
+        </div>
+        <div class="p-3 border border-[#ffcc34]/30 rounded bg-white shadow-sm">
+            <div class="text-base font-bold text-[#90143c]">{{ $damaged ?? 0 }}</div>
+            <div class="text-xs text-gray-600">Damaged Equipment</div>
+        </div>
+    </div>
+
+    {{-- Row 3 --}}
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+        <div class="p-3 border border-[#ffcc34]/30 rounded bg-white shadow-sm">
+            <div class="text-base font-bold text-[#90143c]">{{ $totalDepartments ?? 0 }}</div>
+            <div class="text-xs text-gray-600">Total Departments</div>
+            <a href="{{ route('settings') }}" class="text-[0.6rem] text-[#00553d] hover:text-[#007a52] block mt-1">View Details</a>
+        </div>
+        <div class="p-3 border border-[#ffcc34]/30 rounded bg-white shadow-sm">
+            <div class="text-base font-bold text-[#90143c]">{{ $totalStaff ?? 0 }}</div>
+            <div class="text-xs text-gray-600">Total Staff</div>
+            <a href="{{ route('staff.index') }}" class="text-[0.6rem] text-[#00553d] hover:text-[#007a52] block mt-1">View Details</a>
+        </div>
+        <div class="p-3 border border-[#ffcc34]/30 rounded bg-white shadow-sm">
+            <div class="text-base font-bold text-[#90143c]">{{ $activeStaff ?? 0 }}</div>
+            <div class="text-xs text-gray-600">Active Staff</div>
+            <a href="{{ route('staff.index', ['status' => 'Active']) }}" class="text-[0.6rem] text-[#00553d] hover:text-[#007a52] block mt-1">View Details</a>
+        </div>
+        <div class="p-3 border border-[#ffcc34]/30 rounded bg-white shadow-sm">
+            <div class="text-base font-bold text-[#90143c]">{{ $resignedStaff ?? 0 }}</div>
+            <div class="text-xs text-gray-600">Resigned Staff</div>
+            <a href="{{ route('staff.index', ['status' => 'Resigned']) }}" class="text-[0.6rem] text-[#00553d] hover:text-[#007a52] block mt-1">View Details</a>
+        </div>
+    </div>
+</div>
+
 
             <div class="space-y-4">
                 <!-- Inventory Log Section -->
@@ -254,27 +298,27 @@
                                     <input type="text" name="inventory_search"
                                         value="{{ request('inventory_search') }}" placeholder="Search inventory..."
                                         class="px-3 py-3 rounded-lg text-xs border border-[#ffcc34] focus:outline-none focus:ring-2 focus:ring-[#00553d] w-full sm:w-64">
-                                    {{--  <select name="inventory_status"
-                                        class="px-3 py-3 rounded-lg text-xs border border-[#ffcc34] focus:outline-none focus:ring-2 focus:ring-[#00553d] w-full sm:w-36">
-                                        <option value="all"
-                                            {{ request('inventory_status') == 'all' ? 'selected' : '' }}>All Status
-                                        </option>
-                                        <option value="available"
-                                            {{ request('inventory_status') == 'available' ? 'selected' : '' }}>
-                                            Available</option>
-                                        <option value="not_working"
-                                            {{ request('inventory_status') == 'not_working' ? 'selected' : '' }}>Not
-                                            Working</option>
-                                        <option value="working"
-                                            {{ request('inventory_status') == 'working' ? 'selected' : '' }}>Working
-                                        </option>
-                                        <option value="not_returned"
-                                            {{ request('inventory_status') == 'not_returned' ? 'selected' : '' }}>Not
-                                            Returned</option>
-                                        <option value="returned"
-                                            {{ request('inventory_status') == 'returned' ? 'selected' : '' }}>Returned
-                                        </option>
-                                    </select>  --}}
+                                        {{--  <select name="inventory_status"
+                                            class="px-3 py-3 rounded-lg text-xs border border-[#ffcc34] focus:outline-none focus:ring-2 focus:ring-[#00553d] w-full sm:w-36">
+                                            <option value="all"
+                                                {{ request('inventory_status') == 'all' ? 'selected' : '' }}>All Status
+                                            </option>
+                                            <option value="available"
+                                                {{ request('inventory_status') == 'available' ? 'selected' : '' }}>
+                                                Available</option>
+                                            <option value="not_working"
+                                                {{ request('inventory_status') == 'not_working' ? 'selected' : '' }}>Not
+                                                Working</option>
+                                            <option value="working"
+                                                {{ request('inventory_status') == 'working' ? 'selected' : '' }}>Working
+                                            </option>
+                                            <option value="not_returned"
+                                                {{ request('inventory_status') == 'not_returned' ? 'selected' : '' }}>Not
+                                                Returned</option>
+                                            <option value="returned"
+                                                {{ request('inventory_status') == 'returned' ? 'selected' : '' }}>Returned
+                                            </option>
+                                        </select>  --}}
                                     <button type="submit"
                                         class="gradient-btn px-6 py-3 text-white font-semibold rounded-lg text-xs border border-[#ffcc34] shadow-md hover:shadow-lg flex items-center transition-all duration-300">
                                         <i class="spinner fas fa-spinner fa-spin mr-2"></i>

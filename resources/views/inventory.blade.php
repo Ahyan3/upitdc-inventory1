@@ -1054,13 +1054,13 @@
                                     <tr>
                                         <th scope="col"
                                             class="px-4 py-2 text-left text-xs font-medium text-[#00553d] uppercase tracking-wider min-w-[200px]">
+                                            Equipment</th>
+                                        <th scope="col"
+                                            class="px-4 py-2 text-left text-xs font-medium text-[#00553d] uppercase tracking-wider min-w-[200px]">
                                             Staff Name</th>
                                         <th scope="col"
                                             class="px-4 py-2 text-left text-xs font-medium text-[#00553d] uppercase tracking-wider min-w-[150px]">
                                             Department</th>
-                                        <th scope="col"
-                                            class="px-4 py-2 text-left text-xs font-medium text-[#00553d] uppercase tracking-wider min-w-[200px]">
-                                            Equipment</th>
                                         <th scope="col"
                                             class="px-4 py-2 text-left text-xs font-medium text-[#00553d] uppercase tracking-wider min-w-[150px]">
                                             Model/Brand</th>
@@ -1100,14 +1100,13 @@
                                         @foreach ($inventory as $item)
                                             <tr class="hover:bg-gray-50 transition-colors slide-up">
                                                 <td class="px-4 py-3 whitespace-nowrap text-xs text-black min-w-[200px] truncate max-w-xs"
+                                                    title="{{ $item->equipment_name }}">{{ $item->equipment_name }}</td>
+                                                <td class="px-4 py-3 whitespace-nowrap text-xs text-black min-w-[200px] truncate max-w-xs"
                                                     title="{{ $item->staff_name ?? 'N/A' }}">
                                                     {{ $item->staff_name ?? 'N/A' }}</td>
                                                 <td
                                                     class="px-4 py-3 whitespace-nowrap text-xs text-black min-w-[150px]">
                                                     {{ $item->department->name ?? 'N/A' }}</td>
-                                                <td class="px-4 py-3 whitespace-nowrap text-xs text-black min-w-[200px] truncate max-w-xs"
-                                                    title="{{ $item->equipment_name }}">{{ $item->equipment_name }}
-                                                </td>
                                                 <td class="px-4 py-3 whitespace-nowrap text-xs text-black min-w-[150px] truncate max-w-xs"
                                                     title="{{ $item->model_brand ?? 'N/A' }}">
                                                     {{ $item->model_brand ?? 'N/A' }}</td>
