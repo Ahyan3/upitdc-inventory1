@@ -18,6 +18,9 @@ class HistoryLog extends Model
     protected $fillable = [
         'staff_id',
         'user_id',
+        'equipment_id',
+        'equipment_name',
+        'status',
         'action',
         'action_date',
         'model_brand',
@@ -41,6 +44,11 @@ class HistoryLog extends Model
         return $this->belongsTo(User::class, 'user_id');
     }
 
+    public function equipment() 
+    { 
+        return $this->belongsTo(Equipment::class, 'model_id', 'id'); 
+    }
+
     public function scopeSearch($query, $search)
     {
         if ($search) {
@@ -54,4 +62,5 @@ class HistoryLog extends Model
     {
         return $action !== 'all' ? $query->where('action', $action) : $query;
     }
+
 }

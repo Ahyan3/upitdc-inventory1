@@ -214,7 +214,7 @@
     {{-- Row 2 --}}
     <div class="grid grid-cols-1 md:grid-cols-4 gap-3 mb-4">
         <div class="p-3 border border-[#ffcc34]/30 rounded bg-white shadow-sm">
-            <div class="text-base font-bold text-[#90143c]">{{ $inUse ?? 0 }}</div>
+            <div class="text-base font-bold text-[#90143c]">{{ $in_use ?? 0 }}</div>
             <div class="text-xs text-gray-600">In Use Equipment</div>
         </div>
         <div class="p-3 border border-[#ffcc34]/30 rounded bg-white shadow-sm">

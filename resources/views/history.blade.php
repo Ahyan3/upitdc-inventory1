@@ -265,6 +265,18 @@
                                         placeholder="Search description..."
                                         class="border border-[#ffcc34] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00553d] w-full sm:w-56"
                                         value="{{ request('log_search') }}">
+
+                                    <select name="log_user" id="log-user-filter"
+                                        class="bg-white border border-[#ffcc34] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00553d]">
+                                        <option value="all" {{ request('log_user') == 'all' ? 'selected' : '' }}>All
+                                            Users</option>
+                                        @foreach ($users as $user)
+                                            <option value="{{ $user->id }}"
+                                                {{ request('log_user') == $user->id ? 'selected' : '' }}>
+                                                {{ $user->name }}</option>
+                                        @endforeach
+                                    </select>
+
                                     <select name="log_action" id="log-action-filter"
                                         class="bg-white border border-[#ffcc34] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00553d]">
                                         <option value="all" {{ request('log_action') == 'all' ? 'selected' : '' }}>
@@ -281,16 +293,34 @@
                                             {{ request('log_action') == 'returned' ? 'selected' : '' }}>Returned
                                         </option>
                                     </select>
-                                    <select name="log_user" id="log-user-filter"
+
+                                    <select name="log_equipment" id="log_equipment"
                                         class="bg-white border border-[#ffcc34] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00553d]">
-                                        <option value="all" {{ request('log_user') == 'all' ? 'selected' : '' }}>All
-                                            Users</option>
-                                        @foreach ($users as $user)
-                                            <option value="{{ $user->id }}"
-                                                {{ request('log_user') == $user->id ? 'selected' : '' }}>
-                                                {{ $user->name }}</option>
+                                        <option value="all">All Equipment</option>
+                                        @foreach (\App\Models\Equipment::select('equipment_name')->distinct()->orderBy('equipment_name')->get() as $equipment)
+                                            <option value="{{ $equipment->equipment_name }}"
+                                                {{ request('log_equipment') == $equipment->equipment_name ? 'selected' : '' }}>
+                                                {{ $equipment->equipment_name }}
+                                            </option>
                                         @endforeach
                                     </select>
+
+                                    <select name="log_status" id="log-status-filter"
+                                        class="bg-white border border-[#ffcc34] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00553d]">
+                                        <option value="all" {{ request('log_status') == 'all' ? 'selected' : '' }}>
+                                            All Status</option>
+                                        <option value="available"
+                                            {{ request('log_status') == 'available' ? 'selected' : '' }}>Available
+                                        </option>
+                                        <option value="in_use"
+                                            {{ request('log_status') == 'in_use' ? 'selected' : '' }}>In Use</option>
+                                        <option value="maintenance"
+                                            {{ request('log_status') == 'maintenance' ? 'selected' : '' }}>Maintenance
+                                        </option>
+                                        <option value="damaged"
+                                            {{ request('log_status') == 'damaged' ? 'selected' : '' }}>Damaged</option>
+                                    </select>
+
                                     <input type="date" name="log_date_from" id="log-date-from"
                                         placeholder="Action Date From"
                                         class="border border-[#ffcc34] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00553d] w-full sm:w-32"

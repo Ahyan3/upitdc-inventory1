@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\HistoryLog;
 use App\Models\Equipment;
 use App\Models\User;
+use App\Models\Staff;
 use App\Models\Department;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -26,19 +27,35 @@ class HistoryController extends Controller
         });
 
         // History Logs Query
-        $historyQuery = HistoryLog::query()->with('user');
+        $historyQuery = HistoryLog::query()->with(['staff', 'equipment']);
 
         // Apply filters
         if ($request->filled('log_search')) {
             $historyQuery->where('description', 'like', '%' . $request->log_search . '%');
         }
 
+        if ($request->filled('log_user') && $request->log_user !== 'all') {
+            $historyQuery->where('staff_id', $request->log_user);
+            Log::info('Applied user filter', [
+                'staff_id' => $request->log_user,
+                'matching_logs_count' => $historyQuery->count(),
+            ]);
+        }
+
         if ($request->filled('log_action') && $request->log_action !== 'all') {
             $historyQuery->where('action', $request->log_action);
         }
 
-        if ($request->filled('log_user') && $request->log_user !== 'all') {
-            $historyQuery->where('user_id', $request->log_user);
+        if ($request->filled('log_status') && $request->log_status !== 'all') {
+            $historyQuery->whereHas('equipment', function ($q) use ($request) {
+                $q->where('status', $request->log_status);
+            });
+        }
+
+        if ($request->filled('log_equipment') && $request->log_equipment !== 'all') {
+            $historyQuery->whereHas('equipment', function ($q) use ($request) {
+                $q->where('equipment_name', $request->log_equipment);
+            });
         }
 
         if ($request->filled('log_date_from')) {
@@ -56,7 +73,7 @@ class HistoryController extends Controller
 
         // Apply pagination
         $perPage = $request->input('per_page', 20);
-        
+
         if (!in_array($perPage, [20, 50, 100])) {
             $perPage = 20;
         }
@@ -99,7 +116,7 @@ class HistoryController extends Controller
         $inventory = $inventoryQuery->paginate($inventoryPerPage, ['*'], 'inventory_page')->appends($request->except('inventory_page'));
 
         // Fetch users and departments for filters
-        $users = User::orderBy('name')->get();
+        $users = Staff::orderBy('name')->get();
         $departments = Department::orderBy('name')->get();
 
         return view('history', [
@@ -119,12 +136,11 @@ class HistoryController extends Controller
     public function exportHistoryCsv(Request $request)
     {
         try {
-            $query = HistoryLog::query()->with('user');
-
             Log::info('Export CSV request received', $request->all());
 
-            $query = HistoryLog::query()->with('user');
+            $query = HistoryLog::with('user');
 
+            // Apply filters
             if ($request->filled('log_search')) {
                 $query->where('description', 'like', '%' . $request->log_search . '%');
             }
@@ -137,6 +153,14 @@ class HistoryController extends Controller
                 $query->where('user_id', $request->log_user);
             }
 
+            if ($request->filled('log_status') && $request->log_status !== 'all') {
+                $query->where('status', $request->log_status);
+            }
+
+            if ($request->filled('log_equipment') && $request->log_equipment !== 'all') {
+                $query->where('equipment_name', $request->log_equipment);
+            }
+
             if ($request->filled('log_date_from')) {
                 $query->whereDate('action_date', '>=', $request->log_date_from);
             }
@@ -146,7 +170,6 @@ class HistoryController extends Controller
             }
 
             $query->latest('action_date');
-
             $logs = $query->get();
 
             Log::info('Exporting ' . $logs->count() . ' logs');
@@ -159,13 +182,15 @@ class HistoryController extends Controller
 
             $callback = function () use ($logs) {
                 $file = fopen('php://output', 'w');
-                fputcsv($file, ['Staff Name', 'Action', 'Model/Brand', 'Description', 'Action Date']);
+                fputcsv($file, ['Staff Name', 'Action', 'Status', 'Equipment Name', 'Model/Brand', 'Description', 'Action Date']);
 
                 foreach ($logs as $log) {
                     fputcsv($file, [
                         $log->user->name ?? 'N/A',
                         ucfirst($log->action),
-                        $log->model_brand . ' (ID: ' . $log->model_id . ')',
+                        $log->equipment->status ?? 'N/A',
+                        $log->equipment->equipment_name ?? 'N/A',
+                        ($log->model_brand ?? 'N/A') . ' (ID: ' . ($log->model_id ?? 'N/A') . ')',
                         $log->description ?? 'N/A',
                         optional($log->action_date)->format('Y-m-d H:i:s'),
                     ]);
@@ -180,6 +205,7 @@ class HistoryController extends Controller
             return response()->json(['message' => 'Export failed.', 'error' => $e->getMessage()], 500);
         }
     }
+
 
     public function exportInventoryCsv(Request $request)
     {

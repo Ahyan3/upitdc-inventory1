@@ -25,7 +25,7 @@ class DashboardController extends Controller
                 'inventory_search' => 'nullable|string|max:255',
                 'time_filter' => 'nullable|in:all,day,week,month,year',
                 'type_filter' => 'nullable|in:total,active,returned,overdue,lost',
-                
+
             ]);
 
             // Stats
@@ -42,7 +42,7 @@ class DashboardController extends Controller
                 'pendingRequests' => Issuance::where('status', 'overdue')->count(),
                 'activeIssuances' => Issuance::where('status', 'active')->count(),
                 'departmentsWithItems' => Department::whereHas('equipment')->count(),
-                'inUse' => Equipment::where('status', 'In Use')->count(),
+                'in_use' => Equipment::where('status', 'In Use')->count(),
                 'available' => Equipment::where('status', 'Available')->count(),
                 'maintenance' => Equipment::where('status', 'Maintenance')->count(),
                 'damaged' => Equipment::where('status', 'Damaged')->count(),
@@ -99,41 +99,41 @@ class DashboardController extends Controller
         }
     }
 
-public function getCounts()
-{
-    try {
-        $stats = Cache::remember('dashboard_counts', now()->addSeconds(30), function () {
-            return [
-                'totalEquipment' => Equipment::count(),
-                'totalIssuedEquipment' => Issuance::where('status', 'in_used')->count(),
-                'totalReturnedEquipment' => Issuance::where('status', 'returned')->count(),
-                'departmentsWithItems' => Department::whereHas('equipment')->count(),
+    public function getCounts()
+    {
+        try {
+            $stats = Cache::remember('dashboard_counts', now()->addSeconds(30), function () {
+                return [
+                    'totalEquipment' => Equipment::count(),
+                    'totalIssuedEquipment' => Issuance::where('status', 'in_used')->count(),
+                    'totalReturnedEquipment' => Issuance::where('status', 'returned')->count(),
+                    'departmentsWithItems' => Department::whereHas('equipment')->count(),
 
-                'inUse' => Equipment::where('status', 'In Use')->count(),
-                'available' => Equipment::where('status', 'Available')->count(),
-                'maintenance' => Equipment::where('status', 'Maintenance')->count(),
-                'damaged' => Equipment::where('status', 'Damaged')->count(),
+                    'in_use' => Equipment::where('status', 'In Use')->count(),
+                    'available' => Equipment::where('status', 'Available')->count(),
+                    'maintenance' => Equipment::where('status', 'Maintenance')->count(),
+                    'damaged' => Equipment::where('status', 'Damaged')->count(),
 
-                'totalDepartments' => Department::count(),
-                'totalStaff' => Staff::count(),
-                'activeStaff' => Staff::where('status', 'Active')->count(),
-                'resignedStaff' => Staff::where('status', 'Resigned')->count(),
+                    'totalDepartments' => Department::count(),
+                    'totalStaff' => Staff::count(),
+                    'activeStaff' => Staff::where('status', 'Active')->count(),
+                    'resignedStaff' => Staff::where('status', 'Resigned')->count(),
 
-                'recentStaffLogs' => HistoryLog::where('category', 'staff')
-                    ->latest()
-                    ->take(5)
-                    ->get(),
+                    'recentStaffLogs' => HistoryLog::where('category', 'staff')
+                        ->latest()
+                        ->take(5)
+                        ->get(),
 
-                'lastUpdated' => now()->toIso8601String(),
-            ];
-        });
+                    'lastUpdated' => now()->toIso8601String(),
+                ];
+            });
 
-        return response()->json($stats);
-    } catch (\Exception $e) {
-        Log::error('DashboardController: Failed to fetch counts', ['error' => $e->getMessage()]);
-        return response()->json(['status' => 'error', 'message' => 'Failed to fetch counts'], 500);
+            return response()->json($stats);
+        } catch (\Exception $e) {
+            Log::error('DashboardController: Failed to fetch counts', ['error' => $e->getMessage()]);
+            return response()->json(['status' => 'error', 'message' => 'Failed to fetch counts'], 500);
+        }
     }
-}
 
     public function exportCsv(Request $request)
     {
