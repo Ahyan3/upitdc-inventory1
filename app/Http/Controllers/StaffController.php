@@ -35,7 +35,7 @@ class StaffController extends Controller
             $perPage = in_array($request->query('per_page'), [20, 50, 100]) ? $request->query('per_page') : 20;
             $cacheKey = 'staff_' . md5(json_encode($request->query()));
 
-            $staff = Cache::remember($cacheKey, now()->addMinutes(5), function () use ($validated, $perPage, $request) {
+            $staff = Cache::remember($cacheKey, now()->addMinutes(1), function () use ($validated, $perPage, $request) {
                 $query = Staff::query()->whereNull('deleted_at');
 
                 if ($search = $validated['search'] ?? null) {
@@ -65,8 +65,8 @@ class StaffController extends Controller
 
             $departments = Department::orderBy('name')->get();
 
-            $active_staff = Cache::remember('active_staff_count', now()->addMinutes(5), fn() => Staff::whereNull('deleted_at')->where('status', 'Active')->count());
-            $resigned_staff = Cache::remember('resigned_staff_count', now()->addMinutes(5), fn() => Staff::whereNull('deleted_at')->where('status', 'Resigned')->count());
+            $active_staff = Cache::remember('active_staff_count', now()->addMinutes(1), fn() => Staff::whereNull('deleted_at')->where('status', 'Active')->count());
+            $resigned_staff = Cache::remember('resigned_staff_count', now()->addMinutes(1), fn() => Staff::whereNull('deleted_at')->where('status', 'Resigned')->count());
 
             Log::info('StaffController: Staff loaded successfully', [
                 'total' => $staff->total(),
@@ -100,7 +100,7 @@ class StaffController extends Controller
     public function getActiveStaff(Request $request)
     {
         try {
-            $activeStaff = Cache::remember('active_staff_list', now()->addMinutes(5), fn() => Staff::whereNull('deleted_at')->where('status', 'Active')->get());
+            $activeStaff = Cache::remember('active_staff_list', now()->addMinutes(1), fn() => Staff::whereNull('deleted_at')->where('status', 'Active')->get());
             return response()->json(['status' => 'success', 'data' => $activeStaff]);
         } catch (\Exception $e) {
             Log::error('StaffController: Failed to load active staff', [
@@ -114,7 +114,7 @@ class StaffController extends Controller
     public function getInactiveStaff(Request $request)
     {
         try {
-            $inactiveStaff = Cache::remember('inactive_staff_list', now()->addMinutes(5), fn() => Staff::whereNull('deleted_at')->where('status', 'Resigned')->get());
+            $inactiveStaff = Cache::remember('inactive_staff_list', now()->addMinutes(1), fn() => Staff::whereNull('deleted_at')->where('status', 'Resigned')->get());
             return response()->json(['status' => 'success', 'data' => $inactiveStaff]);
         } catch (\Exception $e) {
             Log::error('StaffController: Failed to load inactive staff', [

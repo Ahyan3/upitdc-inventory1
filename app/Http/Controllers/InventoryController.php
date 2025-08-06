@@ -9,12 +9,15 @@ use App\Models\Staff;
 use App\Models\User;
 use App\Models\Settings;
 use App\Models\Department;
+use App\Http\Controllers\Exception;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class InventoryController extends Controller
 {
@@ -24,7 +27,7 @@ class InventoryController extends Controller
             $users = User::select('id', 'name')->get();
             $departments = Department::all();
 
-            $activeStaff = Cache::remember('active_staff_for_inventory', now()->addMinutes(10), function () {
+            $activeStaff = Cache::remember('active_staff_for_inventory', now()->addMinutes(1), function () {
                 return Staff::withoutTrashed()
                     ->where('status', 'Active')
                     ->orderBy('name')
@@ -74,7 +77,7 @@ class InventoryController extends Controller
             if ($request->filled('inventory_date_from')) {
                 $query->whereDate('date_issued', '>=', $request->input('inventory_date_from'));
             }
-        
+
             // Apply filters...
             if ($request->filled('inventory_date_to')) {
                 $query->whereDate('action_date', '<=', $request->inventory_date_to);
@@ -124,7 +127,7 @@ class InventoryController extends Controller
     {
         try {
             // Get active staff and departments for the form
-            $activeStaff = Cache::remember('active_staff_for_inventory', now()->addMinutes(10), function () {
+            $activeStaff = Cache::remember('active_staff_for_inventory', now()->addMinutes(1), function () {
                 return Staff::withoutTrashed()
                     ->where('status', 'Active')
                     ->orderBy('name')
@@ -499,7 +502,7 @@ class InventoryController extends Controller
     public function show($id)
     {
         try {
-            $equipment = Equipment::with('department')->findOrFail($id);    
+            $equipment = Equipment::with('department')->findOrFail($id);
             return response()->json([
                 'data' => [
                     'id' => $equipment->id,
@@ -507,7 +510,7 @@ class InventoryController extends Controller
                     'model_brand' => $equipment->model_brand,
                     'serial_number' => $equipment->serial_number,
                     'pr_number' => $equipment->pr_number,
-                    'date_issued' => $equipment->date_issued ? $equipment->date_issued->format('Y-m-d') : null,
+                    'date_issued' => $equipment->date_issued ? $equipment->date_issued->format('Y-m-d H:i:s') : null,
                     'status' => $equipment->status,
                     'staff_name' => $equipment->staff_name,
                     'department_id' => $equipment->department_id,
@@ -549,7 +552,7 @@ class InventoryController extends Controller
             'equipment_name' => 'required|string|max:255',
             'model_brand' => 'required|string|max:255',
             'serial_number' => 'required|string|max:255|unique:equipment,serial_number,' . $equipment->id,
-            'date_issued' => 'nullable|date',
+            'date_issued' => 'nullable|date_format:Y-m-d\TH:i',
             'pr_number' => 'required|string|max:255',
             'status' => 'required|string|in:available,in_use,maintenance,damaged',
             'remarks' => 'nullable|string|max:255',
@@ -715,17 +718,17 @@ class InventoryController extends Controller
 
 
     public function details($id)
-{
-    try {
-        $equipment = Equipment::with('department')->findOrFail($id);
+    {
+        try {
+            $equipment = Equipment::with('department')->findOrFail($id);
 
-        // Use raw DB query for logs if you don't have a model
-        $logs = DB::table('equipment_logs')
-            ->where('equipment_id', $id)
-            ->orderByDesc('created_at')
-            ->get();
+            // Use raw DB query for logs if you don't have a model
+            $logs = DB::table('equipment_logs')
+                ->where('equipment_id', $id)
+                ->orderByDesc('created_at')
+                ->get();
 
-        $html = '
+            $html = '
         <div class="space-y-6">
             <div class="border border-gray-200 rounded-lg p-5 shadow-sm bg-white">
                 <h2 class="text-lg font-semibold text-[#00553d] mb-4 flex items-center gap-2">
@@ -739,7 +742,7 @@ class InventoryController extends Controller
                     <div><strong>Date Issued:</strong> ' . $equipment->date_issued->format('F d, Y') . '</div>
                     <div><strong>Status:</strong> 
                         <span class="inline-block px-2 py-1 rounded text-white text-xs ' . $this->statusColor($equipment->status) . '">' .
-                            ucfirst(str_replace('_', ' ', $equipment->status)) . '
+                ucfirst(str_replace('_', ' ', $equipment->status)) . '
                         </span>
                     </div>
                     <div><strong>Assigned Staff:</strong> ' . e($equipment->staff_name ?? 'N/A') . '</div>
@@ -753,31 +756,134 @@ class InventoryController extends Controller
                     <i class="fas fa-history text-[#ffcc34]"></i> Equipment Logs
                 </h2>';
 
-        if ($logs->isEmpty()) {
-            $html .= '<div class="text-gray-500 italic text-sm">No logs available for this equipment.</div>';
-        } else {
-            $html .= '<ul class="space-y-3 text-sm text-gray-800">';
-            foreach ($logs as $log) {
-                $html .= '<li class="border-b pb-2">
+            if ($logs->isEmpty()) {
+                $html .= '<div class="text-gray-500 italic text-sm">No logs available for this equipment.</div>';
+            } else {
+                $html .= '<ul class="space-y-3 text-sm text-gray-800">';
+                foreach ($logs as $log) {
+                    $html .= '<li class="border-b pb-2">
                             <span class="block font-medium">' . ucfirst($log->action) . '</span>
                             <span class="text-xs text-gray-500">' . date('F d, Y h:i A', strtotime($log->created_at)) . ' by ' . e($log->performed_by ?? 'System') . '</span>';
-                if ($log->notes) {
-                    $html .= '<div class="text-gray-600 mt-1 italic">“' . e($log->notes) . '”</div>';
+                    if ($log->notes) {
+                        $html .= '<div class="text-gray-600 mt-1 italic">“' . e($log->notes) . '”</div>';
+                    }
+                    $html .= '</li>';
                 }
-                $html .= '</li>';
+                $html .= '</ul>';
             }
-            $html .= '</ul>';
+
+            $html .= '</div></div>';
+
+            return response($html);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response('<div class="text-red-500">Equipment not found.</div>', 404);
+        } catch (\Exception $e) {
+            return response('<div class="text-red-500">Something went wrong. Please try again later.</div>', 500);
         }
-
-        $html .= '</div></div>';
-
-        return response($html);
-    } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-        return response('<div class="text-red-500">Equipment not found.</div>', 404);
-    } catch (\Exception $e) {
-        return response('<div class="text-red-500">Something went wrong. Please try again later.</div>', 500);
     }
-}
+
+    public function equipmentLogs(Request $request, $equipment)
+    {
+        try {
+            // First, let's find the equipment
+            $equipmentModel = DB::table('equipment')->where('id', $equipment)->first();
+
+            if (!$equipmentModel) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Equipment not found'
+                ], 404);
+            }
+
+            // Check if there are ANY logs in the table
+            $totalLogs = DB::table('history_logs')->count();
+
+            if ($totalLogs === 0) {
+                // No logs exist at all - create a sample log for this equipment
+                DB::table('history_logs')->insert([
+                    'action' => 'created',
+                    'action_date' => $equipmentModel->created_at ?? now(),
+                    'model_brand' => 'equipment',
+                    'model_id' => $equipment,
+                    'old_values' => null,
+                    'new_values' => json_encode([
+                        'equipment_name' => $equipmentModel->equipment_name,
+                        'serial_number' => $equipmentModel->serial_number,
+                        'status' => $equipmentModel->status
+                    ]),
+                    'description' => 'Equipment created',
+                    'created_at' => now(),
+                    'updated_at' => now()
+                ]);
+
+                // If equipment has been updated, create update log
+                if ($equipmentModel->updated_at !== $equipmentModel->created_at) {
+                    DB::table('history_logs')->insert([
+                        'action' => 'updated',
+                        'action_date' => $equipmentModel->updated_at,
+                        'model_brand' => 'equipment',
+                        'model_id' => $equipment,
+                        'old_values' => json_encode(['status' => 'available']),
+                        'new_values' => json_encode(['status' => $equipmentModel->status]),
+                        'description' => 'Equipment status updated',
+                        'created_at' => now(),
+                        'updated_at' => now()
+                    ]);
+                }
+            }
+
+            // Get all logs for this equipment (try different model_brand values)
+            $logs = DB::table('history_logs')
+                ->where('model_id', $equipment)
+                ->whereIn('model_brand', ['equipment', 'Equipment', 'laptop', 'Laptop', 'printer', 'Printer'])
+                ->orderBy('action_date', 'desc')
+                ->get();
+
+            // If still no logs, get logs regardless of model_brand
+            if ($logs->isEmpty()) {
+                $logs = DB::table('history_logs')
+                    ->where('model_id', $equipment)
+                    ->orderBy('action_date', 'desc')
+                    ->get();
+            }
+
+            return response()->json([
+                'status' => 'success',
+                'equipment_name' => $equipmentModel->equipment_name ?? $equipmentModel->serial_number ?? 'Unknown Equipment',
+                'logs' => $logs->map(function ($log) {
+                    // Ensure old_values and new_values are properly parsed
+                    $oldValues = null;
+                    $newValues = null;
+
+                    if ($log->old_values) {
+                        $oldValues = is_string($log->old_values) ? json_decode($log->old_values, true) : $log->old_values;
+                    }
+
+                    if ($log->new_values) {
+                        $newValues = is_string($log->new_values) ? json_decode($log->new_values, true) : $log->new_values;
+                    }
+
+                    return [
+                        'id' => $log->id,
+                        'action_date' => $log->action_date,
+                        'action' => $log->action,
+                        'model_brand' => $log->model_brand,
+                        'model_id' => $log->model_id,
+                        'old_values' => $oldValues,
+                        'new_values' => $newValues,
+                        'description' => $log->description ?? 'No description',
+                        'created_at' => $log->created_at,
+                        'updated_at' => $log->updated_at,
+                    ];
+                })
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to retrieve equipment logs: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 
 
 
@@ -785,7 +891,7 @@ class InventoryController extends Controller
     public function exportCsv()
     {
         try {
-            $equipment = Equipment::with('department')->get();
+            $equipment = Equipment::with('department')->whereNull('deleted_at')->get();
             $headers = [
                 'Content-Type' => 'text/csv',
                 'Content-Disposition' => 'attachment; filename="inventory_export.csv"',
@@ -793,18 +899,23 @@ class InventoryController extends Controller
 
             $callback = function () use ($equipment) {
                 $file = fopen('php://output', 'w');
-                fputcsv($file, ['Staff Name', 'Department', 'Equipment Name', 'Model/Brand', 'Date Issued', 'Serial Number', 'PR Number', 'Status']);
+                fputcsv($file, ['Staff Name', 'Department', 'Equipment Name', 'Model/Brand', 'Date Issued', 'Serial Number', 'PR Number', 'Status', 'Returned Condition', 'Remarks', 'Created At', 'Updated_At']);
 
                 foreach ($equipment as $item) {
                     fputcsv($file, [
+                        $item->id,
+                        $item->equipment_name,
                         $item->staff_name ?? 'N/A',
                         $item->department->name ?? 'N/A',
-                        $item->equipment_name,
                         $item->model_brand,
-                        $item->date_issued instanceof \Carbon\Carbon ? $item->date_issued->format('Y-m-d') : ($item->date_issued ?? 'N/A'),
+                        $item->date_issued instanceof \Carbon\Carbon ? $item->date_issued->format('Y-m-d H:i:s') : ($item->date_issued ?? 'N/A'),
                         $item->serial_number,
                         $item->pr_number,
                         ucfirst(str_replace('_', ' ', $item->status)),
+                        $item->returned_condition,
+                        $item->remarks ?? 'N/A',
+                        $item->created_at,
+                        $item->updated_at,
                     ]);
                 }
 
@@ -817,6 +928,147 @@ class InventoryController extends Controller
             return redirect()->back()->with('error', 'Failed to export inventory: ' . $e->getMessage());
         }
     }
+
+
+
+    public function exportEquipmentLogs(Request $request, $equipment)
+    {
+        try {
+            // Get the equipment and logs (reuse the logic from equipmentLogs method)
+            $equipmentModel = DB::table('equipment')->where('id', $equipment)->first();
+
+            if (!$equipmentModel) {
+                return response()->json(['error' => 'Equipment not found'], 404);
+            }
+
+            $logs = DB::table('history_logs')
+                ->where('model_id', $equipment)
+                ->whereIn('model_brand', ['equipment', 'Equipment', 'laptop', 'Laptop', 'printer', 'Printer'])
+                ->orderBy('action_date', 'desc')
+                ->get();
+
+            if ($logs->isEmpty()) {
+                $logs = DB::table('history_logs')
+                    ->where('model_id', $equipment)
+                    ->orderBy('action_date', 'desc')
+                    ->get();
+            }
+
+            // Generate CSV content
+            $csvData = [];
+
+            // CSV Headers
+            $csvData[] = [
+                'Date',
+                'Action',
+                'Model Brand',
+                'Model ID',
+                'Changes',
+                'Description',
+                'Created At',
+                'Updated At'
+            ];
+
+            // Process each log
+            foreach ($logs as $log) {
+                $changes = '-';
+
+                try {
+                    $oldValues = [];
+                    $newValues = [];
+
+                    // Properly decode JSON strings to arrays
+                    if ($log->old_values) {
+                        $decoded = json_decode($log->old_values, true);
+                        $oldValues = is_array($decoded) ? $decoded : [];
+                    }
+
+                    if ($log->new_values) {
+                        $decoded = json_decode($log->new_values, true);
+                        $newValues = is_array($decoded) ? $decoded : [];
+                    }
+
+                    $changesList = [];
+                    $allKeys = array_unique(array_merge(array_keys($oldValues), array_keys($newValues)));
+
+                    foreach ($allKeys as $key) {
+                        $oldVal = $oldValues[$key] ?? 'none';
+                        $newVal = $newValues[$key] ?? 'none';
+
+                        if (
+                            in_array($key, [
+                                'equipment_name',
+                                'model_brand',
+                                'serial_number',
+                                'pr_number',
+                                'status',
+                                'returned_condition',
+                                'location',
+                                'date_issued'
+                            ]) &&
+                            $oldVal !== $newVal
+                        ) {
+                            $fieldName = ucwords(str_replace('_', ' ', $key));
+                            $changesList[] = "{$fieldName}: {$oldVal} → {$newVal}";
+                        }
+                    }
+
+                    if (!empty($changesList)) {
+                        $changes = implode('; ', $changesList);
+                    } else {
+                        $changes = match ($log->action) {
+                            'created' => 'Equipment created',
+                            'updated' => 'Equipment updated',
+                            'deleted' => 'Equipment deleted',
+                            'issued' => 'Equipment issued',
+                            'returned' => 'Equipment returned',
+                            default => 'Equipment action performed'
+                        };
+                    }
+                } catch (\Exception $e) {
+                    $changes = 'Equipment action (details unavailable)';
+                }
+
+                $csvData[] = [
+                    $log->action_date ?? '-',
+                    $log->action ?? '-',
+                    $log->model_brand ?? '-',
+                    $log->model_id ?? '-',
+                    $changes,
+                    $log->description ?? '-',
+                    $log->created_at ?? '-',
+                    $log->updated_at ?? '-'
+                ];
+            }
+
+            // Create CSV content
+            $output = fopen('php://temp', 'w');
+            foreach ($csvData as $row) {
+                fputcsv($output, $row);
+            }
+            rewind($output);
+            $csvContent = stream_get_contents($output);
+            fclose($output);
+
+            // Generate filename
+            $equipmentName = $equipmentModel->equipment_name ?? $equipmentModel->serial_number ?? 'Equipment';
+            $filename = "{$equipmentName}_History_Logs_" . date('Y-m-d') . '.csv';
+
+            // Return CSV download response
+            return response($csvContent)
+                ->header('Content-Type', 'text/csv')
+                ->header('Content-Disposition', 'attachment; filename="' . $filename . '"')
+                ->header('Cache-Control', 'no-cache, no-store, must-revalidate')
+                ->header('Pragma', 'no-cache')
+                ->header('Expires', '0');
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Failed to export logs: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+
 
     public function chartData(Request $request)
     {

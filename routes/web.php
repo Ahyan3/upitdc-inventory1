@@ -26,21 +26,18 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/issue', [InventoryController::class, 'create'])->name('inventory.create');
         Route::post('/issue', [InventoryController::class, 'issue'])->name('inventory.issue');
         Route::post('/check-duplicates', [InventoryController::class, 'checkDuplicates'])->name('inventory.check-duplicates');
-        Route::get('/{id}', [InventoryController::class, 'show'])->name('inventory.show');
         Route::get('/{id}/details', [InventoryController::class, 'details'])->name('inventory.details');
-        // Route::get('/{id}/edit', [InventoryController::class, 'edit'])->name('inventory.edit');
-        // Route::put('/{id}', [InventoryController::class, 'update'])->name('inventory.update');
-        // Route::put('/{id}/edit', [InventoryController::class, 'show'])->name('inventory.edit.form'); 
+        Route::get('/inventory/equipment/{equipment}/logs', [InventoryController::class, 'equipmentLogs'])->name('inventory.logs');
         Route::put('/{id}/update', [InventoryController::class, 'apiUpdate'])->name('inventory.apiUpdate');
         Route::delete('/{id}', [InventoryController::class, 'destroy'])->name('inventory.destroy');
         Route::get('/export/csv', [InventoryController::class, 'exportCsv'])->name('inventory.export');
         Route::get('/chart-data', [InventoryController::class, 'chartData'])->name('inventory.chart-data');
         Route::delete('/{equipment}', [InventoryController::class, 'delete'])->name('inventory.delete');
-            // Route::get('inventory/{equipment}', [InventoryController::class, 'show'])->name('inventory.show');
         Route::get('/inventory/history', [InventoryController::class, 'historyLogs'])->name('inventory.history');
         Route::post('/inventory/update-status', [InventoryController::class, 'updateStatus'])->name('inventory.update-status');
-        Route::post('/inventory/issue-out', [InventoryController::class, 'issueOut'])->name('inventory.issue-out');
         Route::post('/return/{issuance}', [InventoryController::class, 'return'])->name('inventory.return');
+        Route::get('/{id}', [InventoryController::class, 'show'])->name('inventory.show');
+        Route::get('/{equipment}/logs/export', [InventoryController::class, 'exportEquipmentLogs'])->name('export-equipment-logs-btn');
     });
 
     Route::prefix('')->group(function () {

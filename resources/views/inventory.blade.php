@@ -748,15 +748,6 @@
                                         @endforeach
                                     </select>
                                 </div>
-                                {{--  <div>
-                                    <select id="returnStatusFilter"
-                                        class="w-full px-3 py-2 border border-[#ffcc34] rounded-lg focus:ring-2 focus:ring-[#00553d] text-xs">
-                                        <option value="">All Equipment</option>
-                                        <option value="laptop">Laptops</option>
-                                        <option value="desktop">Desktops</option>
-                                        <option value="monitor">Monitors</option>
-                                    </select>
-                                </div>  --}}
                             </div>
                             <div class="space-y-4" id="returnEquipmentContainer">
 
@@ -1100,7 +1091,8 @@
                                         @foreach ($inventory as $item)
                                             <tr class="hover:bg-gray-50 transition-colors slide-up">
                                                 <td class="px-4 py-3 whitespace-nowrap text-xs text-black min-w-[200px] truncate max-w-xs"
-                                                    title="{{ $item->equipment_name }}">{{ $item->equipment_name }}</td>
+                                                    title="{{ $item->equipment_name }}">{{ $item->equipment_name }}
+                                                </td>
                                                 <td class="px-4 py-3 whitespace-nowrap text-xs text-black min-w-[200px] truncate max-w-xs"
                                                     title="{{ $item->staff_name ?? 'N/A' }}">
                                                     {{ $item->staff_name ?? 'N/A' }}</td>
@@ -1134,11 +1126,16 @@
                                                         class="px-2 py-1 inline-flex text-xs leading-5 font-bold rounded-full {{ $item->status == 'available' ? 'bg-green-100 text-green-800' : ($item->status == 'in_use' ? 'bg-blue-100 text-blue-800' : ($item->status == 'maintenance' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800')) }}">{{ ucfirst(str_replace('_', ' ', $item->status)) }}</span>
                                                 </td>
                                                 <td class="px-4 py-3 whitespace-nowrap flex space-x-2">
-                                                    {{--  <a href="{{ route('inventory.details', $item->id) }}"
-                                                        class="text-[#00553d] hover:text-[#007a52] px-2 py-1 rounded-md hover:bg-blue-50 transition-all duration-200 text-[0.6rem] font-semibold border border-blue-200 hover:border-blue-300"
-                                                        title="View Details">
-                                                        <i class="fas fa-eye"></i>
-                                                    </a>  --}}
+
+                                                    <button
+                                                        class="view-btn text-[#00553d] hover:text-[#007a52] px-2 py-1 rounded-md hover:bg-blue-50 transition-all duration-200 text-[0.6rem] font-semibold border border-blue-200 hover:border-blue-300"
+                                                        data-id="{{ $item->id }}"
+                                                        data-name="{{ $item->equipment_name }}" data-type="equipment"
+                                                        aria-label="View logs for {{ $item->equipment_name }}">
+                                                        <i class="fas fa-view mr-1"></i>
+                                                    </button>
+
+
                                                     <button data-id="{{ $item->id }}"
                                                         class="edit-inventory-btn text-[#00553d] hover:text-[#007a52] px-2 py-1 rounded-md hover:bg-blue-50 transition-all duration-200 text-[0.6rem] font-semibold border border-blue-200 hover:border-blue-300"
                                                         title="Edit">
@@ -1226,6 +1223,42 @@
                 </div>
             </div>
 
+            <!-- History Logs Modal -->
+            <div id="history-logs-modal"
+                class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden flex items-center justify-center z-50"
+                role="dialog" aria-labelledby="history-logs-title" aria-modal="true">
+                <div
+                    class="bg-white rounded-xl shadow-lg max-w-6xl w-full mx-4 max-h-[80vh] flex flex-col border border-[#ffcc34]">
+                    <div
+                        class="bg-gradient-to-r from-[#90143c] to-[#b01a47] px-5 py-3 rounded-t-xl flex justify-between items-center">
+                        <h2 id="history-logs-title" class="text-xs font-semibold text-white">History Logs</h2>
+                        <div class="flex items-center space-x-2">
+                            <button id="export-equipment-logs-btn"
+                                class="gradient-btn px-4 py-2 text-white font-semibold rounded-lg text-xs border border-[#ffcc34] shadow-md hover:shadow-lg flex items-center transition-all duration-300 hidden"
+                                data-equipment-id="" aria-label="Export equipment history logs as CSV">
+                                <i class="fas fa-file-export mr-2"></i>Export CSV
+                            </button>
+                            <button type="button" class="close-logs-btn text-white hover:text-gray-200"
+                                aria-label="Close history logs modal">
+                                <i class="fas fa-times text-sm"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="p-5 overflow-y-auto overflow-x-hidden flex-1">
+                        <div id="history-logs-content" class="w-full">
+                            <!-- Table will be injected here -->
+                        </div>
+                    </div>
+                    <div class="px-5 py-3 bg-gray-50 rounded-b-xl border-t border-[#ffcc34]">
+                        <button type="button"
+                            class="close-logs-btn bg-gray-600 hover:bg-gray-700 text-white font-medium py-1.5 px-3 rounded-lg text-xs transition-all duration-200 border border-[#ffcc34] shadow-sm">
+                            Close
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+
             <!-- Edit Inventory Modal -->
             <div id="edit-inventory-modal"
                 class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
@@ -1297,7 +1330,8 @@
                             <div class="relative group">
                                 <label for="edit_date_issued"
                                     class="block text-[0.65rem] font-medium text-[#00553d] mb-1">Date Issued *</label>
-                                <input type="date" name="date_issued" id="edit_date_issued" required
+                                <input type="datetime-local" name="date_issued" id="edit_date_issued"
+                                    value="{{ now()->format('Y-m-d\TH:i') }}" required
                                     class="w-full px-3 py-2 border border-[#ffcc34] rounded-lg text-xs focus:ring-2 focus:ring-[#00553d] group-hover:shadow-md transition-all duration-300">
                             </div>
                             <div>
@@ -1538,6 +1572,238 @@
                             }
                         }
                     });
+
+
+                    // Unified history log viewer for staff and equipment
+                    document.querySelectorAll('.view-btn').forEach(btn => {
+                        btn.addEventListener('click', async (e) => {
+                            e.preventDefault();
+
+                            const id = btn.dataset.id;
+                            const name = btn.dataset.name;
+                            const type = btn.dataset.type; // 'staff' or 'equipment'
+                            const modal = document.getElementById('history-logs-modal');
+                            const content = document.getElementById('history-logs-content');
+
+                            if (!content) {
+                                console.error('Missing #history-logs-content element in DOM');
+                                return;
+                            }
+
+                            const exportLogsBtn = document.getElementById('export-equipment-logs-btn');
+
+                            console.log('View button clicked:', {
+                                id,
+                                name,
+                                type
+                            });
+
+                            // Set the correct ID for export (if needed)
+                            if (exportLogsBtn) {
+                                if (type === 'equipment') {
+                                    exportLogsBtn.dataset.equipmentId = id;
+                                    exportLogsBtn.classList.remove('hidden');
+                                } else {
+                                    exportLogsBtn.classList.add('hidden');
+                                }
+                            }
+
+                            // Show loading
+                            content.innerHTML = `
+            <div class="text-center py-4">
+                <i class="fas fa-spinner fa-spin text-xl text-[#00553d]"></i>
+                <p class="mt-2 text-xs text-[#00553d]">Loading history...</p>
+            </div>
+        `;
+                            modal.classList.remove('hidden');
+                            modal.classList.add('flex');
+                            document.body.classList.add('modal-open');
+
+                            try {
+                                const endpoint = type === 'equipment' ?
+                                    equipmentLogEndpointTemplate.replace('__ID__', id) :
+                                    `/staff/${id}/history-logs`;
+
+                                const response = await fetch(endpoint, {
+                                    headers: {
+                                        'Accept': 'application/json',
+                                        'Cache-Control': 'no-cache'
+                                    }
+                                });
+
+                                const data = await response.json();
+
+                                if (!response.ok || data.status === 'error') {
+                                    throw new Error(data.message || 'Failed to load logs');
+                                }
+
+                                if (data.logs && data.logs.length > 0) {
+                                    let html = `
+                    <div class="mb-4">
+                        <h3 class="text-xs font-semibold text-[#00553d]">
+                            ${type === 'equipment' ? 'Equipment' : 'Staff'}: ${type === 'equipment' ? data.equipment_name : data.staff_name}
+                        </h3>
+                        <p class="text-[0.6rem] text-[#666]">Total logs: ${data.logs.length}</p>
+                    </div>
+                    <div class="w-full">
+                        <table class="table-auto w-full divide-y divide-[#ffcc34]">
+                            <thead class="bg-gradient-to-br from-[#90143c] to-[#b01a47]">
+                                <tr>
+                                    <th class="px-5 py-2 text-left text-[0.65rem] font-medium uppercase tracking-wider text-white">Date</th>
+                                    <th class="px-5 py-2 text-left text-[0.65rem] font-medium uppercase tracking-wider text-white">Action</th>
+                                    <th class="px-5 py-2 text-left text-[0.65rem] font-medium uppercase tracking-wider text-white">Model</th>
+                                    <th class="px-5 py-2 text-left text-[0.65rem] font-medium uppercase tracking-wider text-white">Changes</th>
+                                    <th class="px-5 py-2 text-left text-[0.65rem] font-medium uppercase tracking-wider text-white">Description</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-[#ffcc34]">
+                `;
+
+                                    data.logs.forEach(log => {
+                                        let changes = '-';
+                                        try {
+                                            // Parse old_values and new_values properly
+                                            let oldValues = {};
+                                            let newValues = {};
+
+                                            // Handle old_values
+                                            if (log.old_values) {
+                                                if (typeof log.old_values === 'string') {
+                                                    oldValues = JSON.parse(log.old_values);
+                                                } else if (typeof log.old_values === 'object' &&
+                                                    log.old_values !== null) {
+                                                    oldValues = log.old_values;
+                                                }
+                                            }
+
+                                            // Handle new_values
+                                            if (log.new_values) {
+                                                if (typeof log.new_values === 'string') {
+                                                    newValues = JSON.parse(log.new_values);
+                                                } else if (typeof log.new_values === 'object' &&
+                                                    log.new_values !== null) {
+                                                    newValues = log.new_values;
+                                                }
+                                            }
+
+                                            // Create changes array
+                                            let changesList = [];
+
+                                            // Get all unique keys from both old and new values
+                                            const allKeys = [...new Set([...Object.keys(
+                                                oldValues), ...Object.keys(
+                                                newValues)])];
+
+                                            allKeys.forEach(key => {
+                                                const oldVal = oldValues[key] || 'none';
+                                                const newVal = newValues[key] || 'none';
+
+                                                // Only show relevant fields for equipment and only if values are different
+                                                if (['equipment_name', 'model_brand',
+                                                        'serial_number', 'pr_number',
+                                                        'status', 'returned_condition',
+                                                        'location', 'date_issued'
+                                                    ].includes(key) &&
+                                                    oldVal !== newVal) {
+                                                    const fieldName = key.replace(/_/g,
+                                                        ' ').replace(/\b\w/g, l => l
+                                                        .toUpperCase());
+                                                    changesList.push(
+                                                        `${fieldName}: ${oldVal} → ${newVal}`
+                                                        );
+                                                }
+                                            });
+
+                                            // Set changes display
+                                            if (changesList.length > 0) {
+                                                changes = changesList.join('<br>');
+                                            } else {
+                                                // Fallback for when we can't parse the changes
+                                                changes = log.action === 'created' ?
+                                                    'Equipment created' :
+                                                    log.action === 'updated' ?
+                                                    'Equipment updated' :
+                                                    log.action === 'deleted' ?
+                                                    'Equipment deleted' :
+                                                    log.action === 'issued' ?
+                                                    'Equipment issued' :
+                                                    log.action === 'returned' ?
+                                                    'Equipment returned' :
+                                                    'Equipment action performed';
+                                            }
+
+                                        } catch (e) {
+                                            console.error('Error parsing changes:', e, log);
+                                            changes = log.action === 'created' ?
+                                                'Equipment created' :
+                                                log.action === 'updated' ? 'Equipment updated' :
+                                                log.action === 'deleted' ? 'Equipment deleted' :
+                                                'Equipment action (details unavailable)';
+                                        }
+
+                                        html += `
+                        <tr>
+                            <td class="px-5 py-3 text-xs text-black">${log.action_date || '-'}</td>
+                            <td class="px-5 py-3 text-xs text-black">${log.action || '-'}</td>
+                            <td class="px-5 py-3 text-xs text-black">${log.model_brand || '-'} (ID: ${log.model_id || '-'})</td>
+                            <td class="px-5 py-3 text-xs text-black break-words" style="max-width: 200px;">${changes}</td>
+                            <td class="px-5 py-3 text-xs text-black">${log.description || '-'}</td>
+                        </tr>
+                    `;
+                                    });
+
+                                    html += `
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+                                    content.innerHTML = html;
+                                } else {
+                                    content.innerHTML = `
+                    <div class="text-center py-8">
+                        <p class="text-xs text-gray-500">No history logs found for this ${type}.</p>
+                    </div>
+                `;
+                                }
+                            } catch (error) {
+                                console.error('Error loading logs:', error);
+                                showAlert(`Error loading logs: ${error.message}`, 'error');
+                                content.innerHTML = `
+                <div class="text-center py-8">
+                    <p class="text-xs text-red-600">Failed to load logs. Please try again.</p>
+                </div>
+            `;
+                            }
+                        });
+                    });
+
+                    // Make sure this script tag is also included
+                    const equipmentLogEndpointTemplate = @json(route('inventory.logs', ['equipment' => '__ID__']));
+
+
+
+
+
+
+                    document.addEventListener('click', async (e) => {
+                        // Close modal buttons
+                        if (e.target.closest('.close-logs-btn')) {
+                            const modal = document.getElementById('history-logs-modal');
+                            modal.classList.add('hidden');
+                            modal.classList.remove('flex');
+                            document.body.classList.remove('modal-open');
+                        }
+
+                        // Equipment logs export button
+                        if (e.target.closest('#export-equipment-logs-btn')) {
+                            const button = document.getElementById('export-equipment-logs-btn');
+                            const equipmentId = button.dataset.equipmentId;
+                            if (!equipmentId) return;
+                            window.location.href = `/inventory/${equipmentId}/logs/export`;
+                        }
+                    });
+
+
 
 
                     // Initialize Chart
@@ -2198,6 +2464,9 @@
                         });
                     }
 
+
+
+
                     // Initialize Export Functionality
                     function initializeExportFunctionality() {
                         const exportButton = document.getElementById('inventory-export-btn');
@@ -2241,6 +2510,215 @@
                                     });
                             });
                         }
+                    }
+
+
+                    // Export button event listener for client-side export
+                    document.addEventListener('DOMContentLoaded', function() {
+                        const exportBtn = document.getElementById('export-equipment-logs-btn');
+
+                        if (exportBtn) {
+                            exportBtn.addEventListener('click', async function() {
+                                const equipmentId = this.dataset.equipmentId;
+
+                                if (!equipmentId) {
+                                    showAlert('No equipment selected for export', 'error');
+                                    return;
+                                }
+
+                                // Show loading state
+                                const originalText = this.innerHTML;
+                                this.innerHTML =
+                                    '<i class="fas fa-spinner fa-spin mr-2"></i>Exporting...';
+                                this.disabled = true;
+
+                                try {
+                                    // Use your existing working route
+                                    const endpoint = `/inventory/equipment/${equipmentId}/logs`;
+                                    const response = await fetch(endpoint, {
+                                        headers: {
+                                            'Accept': 'application/json',
+                                            'Cache-Control': 'no-cache'
+                                        }
+                                    });
+
+                                    const data = await response.json();
+
+                                    if (!response.ok || data.status === 'error') {
+                                        throw new Error(data.message || 'Failed to load logs');
+                                    }
+
+                                    // Generate CSV content using the same logic as your display
+                                    const csvContent = generateEquipmentCSV(data);
+
+                                    // Download the CSV file
+                                    const equipmentName = data.equipment_name || 'Equipment';
+                                    const filename =
+                                        `${equipmentName}_History_Logs_${new Date().toISOString().split('T')[0]}.csv`;
+                                    downloadCSV(csvContent, filename);
+
+                                    showAlert('CSV exported successfully!', 'success');
+
+                                } catch (error) {
+                                    console.error('Error exporting CSV:', error);
+                                    showAlert(`Error exporting CSV: ${error.message}`, 'error');
+                                } finally {
+                                    // Reset button state
+                                    this.innerHTML = originalText;
+                                    this.disabled = false;
+                                }
+                            });
+                        }
+                    });
+
+                    // Function to generate CSV content from equipment logs data
+                    function generateEquipmentCSV(data) {
+                        const headers = [
+                            'Date',
+                            'Action',
+                            'Model Brand',
+                            'Model ID',
+                            'Changes',
+                            'Description'
+                        ];
+
+                        let csvContent = headers.join(',') + '\n';
+
+                        if (data.logs && data.logs.length > 0) {
+                            data.logs.forEach(log => {
+                                let changes = '-';
+
+                                try {
+                                    // Use the EXACT same logic as your display code
+                                    let oldValues = {};
+                                    let newValues = {};
+
+                                    // Handle old_values
+                                    if (log.old_values) {
+                                        if (typeof log.old_values === 'string') {
+                                            oldValues = JSON.parse(log.old_values);
+                                        } else if (typeof log.old_values === 'object' && log.old_values !== null) {
+                                            oldValues = log.old_values;
+                                        }
+                                    }
+
+                                    // Handle new_values
+                                    if (log.new_values) {
+                                        if (typeof log.new_values === 'string') {
+                                            newValues = JSON.parse(log.new_values);
+                                        } else if (typeof log.new_values === 'object' && log.new_values !== null) {
+                                            newValues = log.new_values;
+                                        }
+                                    }
+
+                                    // Create changes array - SAME as display
+                                    let changesList = [];
+                                    const allKeys = [...new Set([...Object.keys(oldValues), ...Object.keys(
+                                        newValues)])];
+
+                                    allKeys.forEach(key => {
+                                        const oldVal = oldValues[key] || 'none';
+                                        const newVal = newValues[key] || 'none';
+
+                                        if (['equipment_name', 'model_brand', 'serial_number', 'pr_number',
+                                                'status', 'returned_condition', 'location', 'date_issued'
+                                            ].includes(key) &&
+                                            oldVal !== newVal) {
+                                            const fieldName = key.replace(/_/g, ' ').replace(/\b\w/g, l => l
+                                                .toUpperCase());
+                                            changesList.push(`${fieldName}: ${oldVal} → ${newVal}`);
+                                        }
+                                    });
+
+                                    if (changesList.length > 0) {
+                                        changes = changesList.join('; '); // Use semicolon for CSV
+                                    } else {
+                                        changes = log.action === 'created' ? 'Equipment created' :
+                                            log.action === 'updated' ? 'Equipment updated' :
+                                            log.action === 'deleted' ? 'Equipment deleted' :
+                                            log.action === 'issued' ? 'Equipment issued' :
+                                            log.action === 'returned' ? 'Equipment returned' :
+                                            'Equipment action performed';
+                                    }
+
+                                } catch (e) {
+                                    changes = 'Equipment action (details unavailable)';
+                                }
+
+                                // Create CSV row with proper escaping
+                                const row = [
+                                    escapeCSVField(log.action_date || '-'),
+                                    escapeCSVField(log.action || '-'),
+                                    escapeCSVField(log.model_brand || '-'),
+                                    escapeCSVField(`${log.model_brand || '-'} (ID: ${log.model_id || '-'})`),
+                                    escapeCSVField(changes),
+                                    escapeCSVField(log.description || '-')
+                                ];
+
+                                csvContent += row.join(',') + '\n';
+                            });
+                        } else {
+                            // No logs found
+                            csvContent += '"No history logs found for this equipment."\n';
+                        }
+
+                        return csvContent;
+                    }
+
+                    // CSV field escaping function
+                    function escapeCSVField(field) {
+                        if (field === null || field === undefined) {
+                            return '';
+                        }
+
+                        const stringField = String(field);
+
+                        // If field contains commas, quotes, or newlines, wrap in quotes and escape quotes
+                        if (stringField.includes(',') || stringField.includes('"') || stringField.includes('\n') ||
+                            stringField.includes('\r')) {
+                            return '"' + stringField.replace(/"/g, '""') + '"';
+                        }
+
+                        return stringField;
+                    }
+
+                    // CSV download function
+                    function downloadCSV(csvContent, filename) {
+                        const blob = new Blob([csvContent], {
+                            type: 'text/csv;charset=utf-8;'
+                        });
+                        const link = document.createElement('a');
+
+                        if (link.download !== undefined) {
+                            const url = URL.createObjectURL(blob);
+                            link.setAttribute('href', url);
+                            link.setAttribute('download', filename);
+                            link.style.visibility = 'hidden';
+                            document.body.appendChild(link);
+                            link.click();
+                            document.body.removeChild(link);
+                            URL.revokeObjectURL(url);
+                        }
+                    }
+
+                    // Alert function (adjust based on your existing system)
+                    function showAlert(message, type) {
+                        // Simple toast notification
+                        const toast = document.createElement('div');
+                        toast.className =
+                            `fixed top-4 right-4 px-4 py-2 rounded text-white z-50 transition-opacity duration-300 ${type === 'success' ? 'bg-green-500' : 'bg-red-500'}`;
+                        toast.textContent = message;
+                        document.body.appendChild(toast);
+
+                        // Fade out and remove
+                        setTimeout(() => {
+                            toast.style.opacity = '0';
+                            setTimeout(() => {
+                                if (document.body.contains(toast)) {
+                                    document.body.removeChild(toast);
+                                }
+                            }, 300);
+                        }, 3000);
                     }
 
                     // Initialize All
