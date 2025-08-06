@@ -15,6 +15,7 @@ class Equipment extends Model
         'staff_name',
         'department_id',
         'equipment_name',
+        'equipment',
         'model_brand',
         'serial_number',
         'pr_number',

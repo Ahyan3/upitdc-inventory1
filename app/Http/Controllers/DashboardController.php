@@ -42,7 +42,7 @@ class DashboardController extends Controller
                 'pendingRequests' => Issuance::where('status', 'overdue')->count(),
                 'activeIssuances' => Issuance::where('status', 'active')->count(),
                 'departmentsWithItems' => Department::whereHas('equipment')->count(),
-                'in_use' => Equipment::where('status', 'In Use')->count(),
+                'in_use' => Issuance::where('status', 'in_use')->count(),
                 'available' => Equipment::where('status', 'Available')->count(),
                 'maintenance' => Equipment::where('status', 'Maintenance')->count(),
                 'damaged' => Equipment::where('status', 'Damaged')->count(),
@@ -109,7 +109,7 @@ class DashboardController extends Controller
                     'totalReturnedEquipment' => Issuance::where('status', 'returned')->count(),
                     'departmentsWithItems' => Department::whereHas('equipment')->count(),
 
-                    'in_use' => Equipment::where('status', 'In Use')->count(),
+                    'in_use' => Issuance::where('status', 'in_use')->count(),
                     'available' => Equipment::where('status', 'Available')->count(),
                     'maintenance' => Equipment::where('status', 'Maintenance')->count(),
                     'damaged' => Equipment::where('status', 'Damaged')->count(),

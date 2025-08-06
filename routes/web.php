@@ -74,7 +74,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // History Route
     Route::get('/history', [HistoryController::class, 'index'])->name('history');
     Route::get('/history/export/csv', [HistoryController::class, 'exportHistoryCsv'])->name('history.export.csv');
-
+    Route::post('/history/delete-selected', [HistoryController::class, 'deleteSelected'])->name('history.deleteSelected');
+    Route::delete('/history/logs/bulk-delete', [HistoryController::class, 'bulkDelete'])->name('history.logs.bulkDelete');
 
 
     // Issuance Routes

@@ -23,6 +23,11 @@
                 <th scope="col"
                     class="px-4 py-2 text-left text-xs font-medium text-[#00553d] uppercase tracking-wider min-w-[120px]">
                     Action Date</th>
+                <th class="text-center px-4 py-2">
+                    <input type="checkbox" id="select-all-logs" title="Select All Logs"
+                        class="form-checkbox h-4 w-4 text-[#00553d]">
+                </th>
+
             </tr>
         </thead>
         <tbody id="historyTableBody" class="bg-white divide-y divide-[#ffcc34]">
@@ -55,26 +60,29 @@
                             {{ $log->equipment?->equipment_name ?? 'N/A' }}
                         </td>
 
-                        <!-- Equipment Status -->
+                       <!-- Equipment Status -->
                         <td class="px-4 py-3 whitespace-nowrap min-w-[100px]">
-                            @if ($log->equipment)
+                            @if ($log->action === 'Created' || !$log->equipment)
+                                <span class="text-gray-500 text-sm italic">N/A</span>
+                            @else
                                 <span
-                                    class="status-indicator {{ $log->equipment->status == 'available' ? 'status-active' : ($log->equipment->status == 'in_use' ? 'status-warning' : ($log->equipment->status == 'maintenance' ? 'status-warning' : 'status-inactive')) }}"></span>
+                                    class="status-indicator {{ $log->equipment->status == 'available' ? 'status-active' : ($log->equipment->status == 'in_use' ? 'status-warning' : ($log->equipment->status == 'maintenance' ? 'status-warning' : ($log->equipment->status == 'damaged' ? 'status-warning' : 'status-inactive'))) }}"></span>
                                 <span
                                     class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full
-                {{ $log->equipment->status == 'available'
-                    ? 'bg-green-100 text-green-800'
-                    : ($log->equipment->status == 'in_use'
-                        ? 'bg-blue-100 text-blue-800'
-                        : ($log->equipment->status == 'maintenance'
-                            ? 'bg-yellow-100 text-yellow-800'
-                            : 'bg-red-100 text-red-800')) }}">
+                                    {{ $log->equipment->status == 'available'
+                                        ? 'bg-green-100 text-green-800'
+                                        : ($log->equipment->status == 'in_use'
+                                            ? 'bg-blue-100 text-blue-800'
+                                            : ($log->equipment->status == 'maintenance'
+                                                ? 'bg-yellow-100 text-yellow-800'
+                                                : ($log->equipment->status == 'damaged'
+                                                    ? 'bg-red-100 text-red-800'
+                                                    : 'bg-gray-100 text-gray-800'))) }}">
                                     {{ ucfirst(str_replace('_', ' ', $log->equipment->status)) }}
                                 </span>
-                            @else
-                                N/A
                             @endif
                         </td>
+
 
                         <td class="px-4 py-3 whitespace-nowrap text-xs text-black min-w-[120px]">{{ $log->model_brand }}
                             (ID: {{ $log->model_id }})
@@ -90,6 +98,10 @@
                             @else
                                 N/A
                             @endif
+                        </td>
+                        <td class="text-center">
+                            <input type="checkbox" name="selected_logs[]" value="{{ $log->id }}"
+                                class="log-checkbox">
                         </td>
                     </tr>
                 @endforeach

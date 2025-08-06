@@ -268,8 +268,7 @@
 
                                     <select name="log_user" id="log-user-filter"
                                         class="bg-white border border-[#ffcc34] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00553d]">
-                                        <option value="all" {{ request('log_user') == 'all' ? 'selected' : '' }}>All
-                                            Users</option>
+                                        <option value="all" {{ request('log_user') == 'all' ? 'selected' : '' }}>All Users</option>
                                         @foreach ($users as $user)
                                             <option value="{{ $user->id }}"
                                                 {{ request('log_user') == $user->id ? 'selected' : '' }}>
@@ -351,14 +350,28 @@
                                     </a>
 
                                 </form>
-                                <div class="w-full sm:w-auto flex justify-end">
+                                <div class="w-full sm:w-auto flex justify-end space-x-2">
                                     <button type="button" id="log-export-btn"
                                         class="bg-[#00553d] hover:bg-[#007a5a] text-white text-sm font-medium px-4 py-2 rounded-lg border border-[#ffcc34] shadow-sm hover:shadow-md transition-all duration-200 flex items-center gap-2">
                                         <i class="fas fa-spinner fa-spin hidden" id="export-spinner"></i>
                                         <i class="fas fa-download"></i>
                                         <span>Export CSV</span>
                                     </button>
+
+                                    <form id="delete-logs-form" method="POST"
+                                        action="{{ route('history.logs.bulkDelete') }}">
+                                        @csrf
+                                        @method('DELETE')
+                                        <input type="hidden" name="log_ids" id="selected-log-ids">
+
+                                        <button type="submit"
+                                            class="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-lg shadow"
+                                            title="Delete Selected">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                    </form>
                                 </div>
+
                             </div>
                             @include('partials.history_logs')
                         </div>
@@ -597,6 +610,48 @@
             </div>
         </div>
     </div>
+
+    <!-- No Logs Selected Modal -->
+    <div id="noLogsModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 hidden">
+        <div id="modal-content"
+            class="bg-white rounded-lg p-6 w-full max-w-md shadow-lg border border-[#ffcc34] transform transition-all duration-300 scale-95 opacity-0">
+            <div class="flex justify-between items-start">
+                <h3 class="text-lg font-semibold text-[#90143c]">Action Required</h3>
+                <button onclick="closeNoLogsModal()" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <p class="mt-4 text-sm text-gray-700">Please select at least one log to delete.</p>
+            <div class="mt-6 flex justify-end">
+                <button onclick="closeNoLogsModal()"
+                    class="bg-[#90143c] hover:bg-[#6b102d] text-white px-4 py-2 rounded-lg">Okay</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirm Delete Modal -->
+    <div id="confirmDeleteModal"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 hidden">
+        <div id="modal-content"
+            class="bg-white rounded-lg p-6 w-full max-w-md shadow-lg border border-[#ffcc34] transform transition-all duration-300 scale-95 opacity-0">
+            <div class="flex justify-between items-start">
+                <h3 class="text-lg font-semibold text-[#90143c]">Confirm Deletion</h3>
+                <button onclick="closeConfirmDeleteModal()" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <p class="mt-4 text-sm text-gray-700">
+                Are you sure you want to delete the selected logs? This action cannot be undone.
+            </p>
+            <div class="mt-6 flex justify-end space-x-2">
+                <button onclick="closeConfirmDeleteModal()"
+                    class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded-lg">Cancel</button>
+                <button onclick="submitDeleteForm()"
+                    class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg">Delete</button>
+            </div>
+        </div>
+    </div>
+
     </div>
 
     <meta name="csrf-token" content="{{ csrf_token() }}">
@@ -875,6 +930,80 @@
             @if (session('error'))
                 showAlert('{{ session('error') }}', 'error');
             @endif
+        });
+    </script>
+
+    <script>
+        let selectedLogIds = [];
+
+        function showModal(modalId) {
+            const modal = document.getElementById(modalId);
+            const content = modal.querySelector('#modal-content');
+
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                content.classList.remove('scale-95', 'opacity-0');
+                content.classList.add('scale-100', 'opacity-100');
+            }, 10); // delay ensures transition
+        }
+
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            const content = modal.querySelector('#modal-content');
+
+            content.classList.remove('scale-100', 'opacity-100');
+            content.classList.add('scale-95', 'opacity-0');
+
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300); // wait for animation
+        }
+
+        function showNoLogsModal() {
+            showModal('noLogsModal');
+        }
+
+        function closeNoLogsModal() {
+            closeModal('noLogsModal');
+        }
+
+        function showConfirmDeleteModal() {
+            showModal('confirmDeleteModal');
+        }
+
+        function closeConfirmDeleteModal() {
+            closeModal('confirmDeleteModal');
+        }
+
+        function submitDeleteForm() {
+            document.getElementById('selected-log-ids').value = selectedLogIds.join(',');
+            document.getElementById('delete-logs-form').submit();
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const selectAllCheckbox = document.getElementById('select-all-logs');
+            const logCheckboxes = document.querySelectorAll('.log-checkbox');
+
+            if (selectAllCheckbox) {
+                selectAllCheckbox.addEventListener('change', function() {
+                    logCheckboxes.forEach(cb => cb.checked = this.checked);
+                });
+            }
+
+            const deleteForm = document.getElementById('delete-logs-form');
+            deleteForm.addEventListener('submit', function(e) {
+                e.preventDefault(); // Prevent form
+
+                selectedLogIds = Array.from(document.querySelectorAll('.log-checkbox:checked')).map(cb => cb
+                    .value);
+
+                if (selectedLogIds.length === 0) {
+                    showNoLogsModal();
+                    return;
+                }
+
+                showConfirmDeleteModal();
+            });
         });
     </script>
 

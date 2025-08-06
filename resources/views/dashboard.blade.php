@@ -360,7 +360,14 @@
                                         @forelse ($inventory as $item)
                                             <tr class="hover:bg-gray-50 slide-up">
                                                 <td class="px-4 py-2 text-xs text-[#00553d]">
-                                                    {{ $item->issuances->first()->staff->name ?? ($item->issuances->isEmpty() ? 'N/A' : 'Unknown') }}
+                                                    @php
+    $firstIssuance = $item->issuances->first();
+@endphp
+
+{{ $firstIssuance
+    ? ($firstIssuance->staff->name ?? 'Unknown Staff')
+    : 'N/A' }}
+
                                                 </td>
                                                 <td class="px-4 py-2 text-xs text-[#00553d]">
                                                     {{ $item->department->name ?? 'N/A' }}</td>

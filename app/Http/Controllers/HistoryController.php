@@ -14,123 +14,152 @@ use Illuminate\Support\Facades\Cache;
 class HistoryController extends Controller
 {
     public function index(Request $request)
-    {
-        // Cache overview stats for 10 minutes
-        $overviewStats = Cache::remember('overview_stats', 600, function () {
-            return [
-                ['label' => 'Total Logs', 'value' => HistoryLog::count()],
-                ['label' => 'Inventory Items', 'value' => Equipment::count()],
-                ['label' => 'Recent Actions', 'value' => HistoryLog::where('action_date', '>=', now()->subDays(7))->count()],
-                ['label' => 'Active Users', 'value' => User::whereHas('historyLogs')->count()],
-                ['label' => 'Departments with Items', 'value' => Department::whereHas('equipment')->count()],
-            ];
-        });
+{
+    // Cache overview stats for 10 minutes
+    $overviewStats = Cache::remember('overview_stats', 600, function () {
+        return [
+            ['label' => 'Total Logs', 'value' => HistoryLog::count()],
+            ['label' => 'Inventory Items', 'value' => Equipment::count()],
+            ['label' => 'Recent Actions', 'value' => HistoryLog::where('action_date', '>=', now()->subDays(7))->count()],
+            ['label' => 'Active Users', 'value' => User::whereHas('historyLogs')->count()],
+            ['label' => 'Departments with Items', 'value' => Department::whereHas('equipment')->count()],
+        ];
+    });
 
-        // History Logs Query
-        $historyQuery = HistoryLog::query()->with(['staff', 'equipment']);
+    // History Logs Query
+    $historyQuery = HistoryLog::query()->with(['staff', 'equipment']);
 
-        // Apply filters
-        if ($request->filled('log_search')) {
-            $historyQuery->where('description', 'like', '%' . $request->log_search . '%');
-        }
+    // Apply filters
+    if ($request->filled('log_search')) {
+        $historyQuery->where('description', 'like', '%' . $request->log_search . '%');
+    }
 
-        if ($request->filled('log_user') && $request->log_user !== 'all') {
-            $historyQuery->where('staff_id', $request->log_user);
-            Log::info('Applied user filter', [
-                'staff_id' => $request->log_user,
-                'matching_logs_count' => $historyQuery->count(),
-            ]);
-        }
-
-        if ($request->filled('log_action') && $request->log_action !== 'all') {
-            $historyQuery->where('action', $request->log_action);
-        }
-
-        if ($request->filled('log_status') && $request->log_status !== 'all') {
-            $historyQuery->whereHas('equipment', function ($q) use ($request) {
-                $q->where('status', $request->log_status);
-            });
-        }
-
-        if ($request->filled('log_equipment') && $request->log_equipment !== 'all') {
-            $historyQuery->whereHas('equipment', function ($q) use ($request) {
-                $q->where('equipment_name', $request->log_equipment);
-            });
-        }
-
-        if ($request->filled('log_date_from')) {
-            $historyQuery->whereDate('action_date', '>=', $request->log_date_from);
-        }
-
-        // Apply filters...
-        if ($request->filled('log_date_to')) {
-            $historyQuery->whereDate('action_date', '<=', $request->log_date_to);
-        }
-
-        // Sort Order (default: desc)
-        $order = $request->query('order', 'desc');
-        $historyQuery->orderBy('action_date', $order);
-
-        // Apply pagination
-        $perPage = $request->input('per_page', 20);
-
-        if (!in_array($perPage, [20, 50, 100])) {
-            $perPage = 20;
-        }
-        $history_logs = $historyQuery->paginate($perPage, ['*'], 'history_page')->appends($request->except('history_page'));
-
-        // Inventory Logs Query
-        $inventoryQuery = Equipment::query()->with('department');
-
-        if ($request->filled('inventory_search')) {
-            $inventoryQuery->where(function ($query) use ($request) {
-                $query->where('staff_name', 'like', '%' . $request->inventory_search . '%')
-                    ->orWhere('equipment_name', 'like', '%' . $request->inventory_search . '%');
-            });
-        }
-
-        if ($request->filled('inventory_status') && $request->inventory_status !== 'all') {
-            $inventoryQuery->where('status', $request->inventory_status);
-        }
-
-        if ($request->filled('inventory_department') && $request->inventory_department !== 'all') {
-            $inventoryQuery->where('department_id', $request->inventory_department);
-        }
-
-        if ($request->filled('inventory_date_from')) {
-            $inventoryQuery->whereDate('date_issued', '>=', $request->inventory_date_from);
-        }
-
-        if ($request->filled('inventory_date_to')) {
-            $inventoryQuery->whereDate('date_issued', '<=', $request->inventory_date_to);
-        }
-
-        $order = $request->query('order', 'desc');
-        $inventoryQuery->orderBy('updated_at', $order);
-
-        // Apply pagination for inventory
-        $inventoryPerPage = $request->input('inventory_per_page', 20);
-        if (!in_array($inventoryPerPage, [20, 50, 100])) {
-            $inventoryPerPage = 20;
-        }
-        $inventory = $inventoryQuery->paginate($inventoryPerPage, ['*'], 'inventory_page')->appends($request->except('inventory_page'));
-
-        // Fetch users and departments for filters
-        $users = Staff::orderBy('name')->get();
-        $departments = Department::orderBy('name')->get();
-
-        return view('history', [
-            'pageTitle' => 'History Dashboard',
-            'headerIcon' => 'fa-history',
-            'overviewStats' => $overviewStats,
-            'history_logs' => $history_logs,
-            'inventory' => $inventory,
-            'users' => $users,
-            'departments' => $departments,
-            'perPage' => $perPage,
-            'inventoryPerPage' => $inventoryPerPage,
+    if ($request->filled('log_user') && $request->log_user !== 'all') {
+        $historyQuery->where('staff_id', $request->log_user);
+        Log::info('Applied user filter', [
+            'staff_id' => $request->log_user,
+            'matching_logs_count' => $historyQuery->count(),
         ]);
     }
+
+    if ($request->filled('log_action') && $request->log_action !== 'all') {
+        $historyQuery->where('action', $request->log_action);
+    }
+
+    if ($request->filled('log_status') && $request->log_status !== 'all') {
+        $historyQuery->whereHas('equipment', function ($q) use ($request) {
+            $q->where('status', $request->log_status);
+        });
+    }
+
+    if ($request->filled('log_equipment') && $request->log_equipment !== 'all') {
+        $historyQuery->where('equipment_name', $request->log_equipment);
+        Log::info('Applied user filter', [
+            'equipment_id' => $request->log_equipment,
+            'matching_logs_count' => $historyQuery->count(),
+        ]);
+    }
+
+    if ($request->filled('log_date_from')) {
+        $historyQuery->whereDate('action_date', '>=', $request->log_date_from);
+    }
+
+    if ($request->filled('log_date_to')) {
+        $historyQuery->whereDate('action_date', '<=', $request->log_date_to);
+    }
+
+    // Sort Order (default: desc)
+    $order = $request->query('order', 'desc');
+    $historyQuery->orderBy('action_date', $order);
+
+    // Pagination
+    $perPage = $request->input('per_page', 20);
+    if (!in_array($perPage, [20, 50, 100])) {
+        $perPage = 20;
+    }
+
+    $history_logs = $historyQuery
+        ->paginate($perPage, ['*'], 'history_page')
+        ->appends($request->except('history_page'));
+
+    $historyCollection = collect($history_logs->items()); 
+
+    // Dropdown options (only if logs exist)
+    $logUserOptions = $history_logs->total() > 0
+        ? Staff::whereIn('id', $historyCollection->pluck('staff_id'))->orderBy('name')->get()
+        : collect();
+
+    $logEquipmentOptions = $history_logs->total() > 0
+        ? Equipment::whereIn('id', $historyCollection->pluck('equipment_id'))->orderBy('equipment_name')->get()
+        : collect();
+
+    // Filters
+    $filteredStaffIds = $historyCollection->pluck('staff_id')->unique()->filter();
+
+    $filteredUsers = Staff::whereIn('id', $filteredStaffIds)->orderBy('name')->get();
+
+    $filteredEquipments = $historyCollection
+        ->pluck('equipment.equipment_name')
+        ->filter()
+        ->unique()
+        ->sort()
+        ->values();
+
+    $inventoryQuery = Equipment::query()->with('department');
+
+    if ($request->filled('inventory_search')) {
+        $inventoryQuery->where(function ($query) use ($request) {
+            $query->where('staff_name', 'like', '%' . $request->inventory_search . '%')
+                ->orWhere('equipment_name', 'like', '%' . $request->inventory_search . '%');
+        });
+    }
+
+    if ($request->filled('inventory_status') && $request->inventory_status !== 'all') {
+        $inventoryQuery->where('status', $request->inventory_status);
+    }
+
+    if ($request->filled('inventory_department') && $request->inventory_department !== 'all') {
+        $inventoryQuery->where('department_id', $request->inventory_department);
+    }
+
+    if ($request->filled('inventory_date_from')) {
+        $inventoryQuery->whereDate('date_issued', '>=', $request->inventory_date_from);
+    }
+
+    if ($request->filled('inventory_date_to')) {
+        $inventoryQuery->whereDate('date_issued', '<=', $request->inventory_date_to);
+    }
+
+    $order = $request->query('order', 'desc');
+    $inventoryQuery->orderBy('updated_at', $order);
+
+    $inventoryPerPage = $request->input('inventory_per_page', 20);
+    if (!in_array($inventoryPerPage, [20, 50, 100])) {
+        $inventoryPerPage = 20;
+    }
+
+    $inventory = $inventoryQuery
+        ->paginate($inventoryPerPage, ['*'], 'inventory_page')
+        ->appends($request->except('inventory_page'));
+
+    $departments = Department::orderBy('name')->get();
+
+    return view('history', [
+        'pageTitle' => 'History Dashboard',
+        'headerIcon' => 'fa-history',
+        'overviewStats' => $overviewStats,
+        'equipmentNames' => $filteredEquipments,
+        'logUserOptions' => $logUserOptions,
+        'logEquipmentOptions' => $logEquipmentOptions,
+        'history_logs' => $history_logs,
+        'inventory' => $inventory,
+        'users' => $filteredUsers,
+        'departments' => $departments,
+        'perPage' => $perPage,
+        'inventoryPerPage' => $inventoryPerPage,
+    ]);
+}
+
 
 
     public function exportHistoryCsv(Request $request)
@@ -263,5 +292,33 @@ class HistoryController extends Controller
         };
 
         return response()->stream($callback, 200, $headers);
+    }
+
+    public function deleteSelected(Request $request)
+    {
+        $logIds = $request->input('selected_logs', []);
+
+        if (empty($logIds)) {
+            return redirect()->back()->with('error', 'No logs selected for deletion.');
+        }
+
+        $deletedCount = HistoryLog::whereIn('id', $logIds)->delete();
+
+        return redirect()->back()->with('success', "$deletedCount log(s) deleted successfully.");
+    }
+
+
+    public function bulkDelete(Request $request)
+    {
+        try {
+            $ids = explode(',', $request->log_ids);
+
+            HistoryLog::whereIn('id', $ids)->delete();
+
+            return redirect()->back()->with('success', 'Selected logs deleted successfully.');
+        } catch (\Exception $e) {
+            Log::error('Bulk delete failed: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'An error occurred while deleting logs.');
+        }
     }
 }
