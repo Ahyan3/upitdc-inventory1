@@ -116,6 +116,11 @@
                     background-color: #ef4444;
                 }
 
+                .status-condemned {
+                    background-color: grey;
+                    color: #333;
+                }
+
                 @keyframes pulse {
 
                     0%,
@@ -410,7 +415,7 @@
                 }
 
                 .status-available {
-                    background-color: #e8f5e8;
+                    background-color: #2d5a2d;
                     color: #2d5a2d;
                 }
 
@@ -532,12 +537,14 @@
                     $availableItems = isset($inventory) ? $inventory->where('status', 'available')->count() : 0;
                     $maintenanceItems = isset($inventory) ? $inventory->where('status', 'maintenance')->count() : 0;
                     $damagedItems = isset($inventory) ? $inventory->where('status', 'damaged')->count() : 0;
+                    $condemnedItems = isset($inventory) ? $inventory->where('status', 'condemned')->count() : 0;
                     $overviewStats = [
                         ['label' => 'Total Items', 'value' => $totalItems],
                         ['label' => 'In Use', 'value' => $inUseItems],
                         ['label' => 'Available', 'value' => $availableItems],
                         ['label' => 'Maintenance', 'value' => $maintenanceItems],
                         ['label' => 'Damaged', 'value' => $damagedItems],
+                        ['label' => 'Condemned', 'value' => $condemnedItems],
                     ];
                 @endphp
                 @foreach ($overviewStats as $index => $stat)
@@ -593,7 +600,8 @@
                             <i class="fas fa-times"></i>
                         </button>
                     </div>
-                    <form id="issueForm" action="{{ route('inventory.issue') }}" method="POST" class="space-y-3">
+                    <form id="issueForm" action="{{ route('inventory.issue') }}" method="POST"
+                        enctype="multipart/form-data" class="space-y-3">
                         @csrf
                         <div class="modal-grid">
                             <div class="relative group">
@@ -615,7 +623,6 @@
                                     class="block text-[0.65rem] font-medium text-[#00553d] mb-1">Department *</label>
                                 <select name="department_id" id="department_id" required
                                     class="w-full px-3 py-2 border border-[#ffcc34] rounded-lg focus:ring-2 focus:ring-[#00553d] text-xs">
-
                                     <option value="">Select Department</option>
                                     @foreach ($departments as $department)
                                         <option value="{{ $department->id }}">{{ $department->name }}</option>
@@ -679,16 +686,31 @@
                                     <option value="available">Available</option>
                                     <option value="maintenance">Maintenance</option>
                                     <option value="damaged">Damaged</option>
+                                    <option value="condemned">Condemned</option>
                                 </select>
-                                {{--  <small class="form-text text-muted">
-                                 Note: Only equipment marked as "In Use" will appear in the Return Equipment section.
-                                </small>  --}}
                             </div>
                             <div class="col-span-2">
                                 <label for="remarks"
                                     class="block text-[0.65rem] font-medium text-[#00553d] mb-1">Remarks</label>
                                 <textarea name="remarks" id="remarks"
                                     class="w-full px-3 py-2 border border-[#ffcc34] rounded-lg focus:ring-2 focus:ring-[#00553d] text-xs"></textarea>
+                            </div>
+                            <div class="col-span-2 relative group">
+                                <label for="image" class="block text-[0.65rem] font-medium text-[#00553d] mb-1">
+                                    Equipment Image
+                                </label>
+                                <input type="file" name="image" id="image" accept="image/*"
+                                    class="w-full px-3 py-2 border border-[#ffcc34] rounded-lg focus:ring-2 focus:ring-[#00553d] text-xs group-hover:shadow-md transition-all duration-300">
+                                <div
+                                    class="absolute right-3 top-7 text-gray-400 group-hover:text-[#00553d] transition-colors cursor-pointer">
+                                    <i class="fas fa-image text-xs"></i>
+                                </div>
+                                <img id="previewImage" src="#" alt="Preview"
+                                    class="mt-2 hidden cursor-pointer rounded shadow-md max-h-32 border border-gray-300"
+                                    onclick="openImageModal()" />
+                                @error('image')
+                                    <p class="text-red-500 text-[0.6rem] mt-1">{{ $message }}</p>
+                                @enderror
                             </div>
                         </div>
                         <div class="flex justify-end gap-2 mt-4">
@@ -800,9 +822,9 @@
                                                             <label for="date_returned_{{ $issuance->id }}"
                                                                 class="block text-[0.65rem] font-medium text-[#00553d] mb-1">Date
                                                                 Returned *</label>
-                                                            <input type="datetime-local" name="date_returned"
+                                                            <input type="datetime" name="date_returned"
                                                                 id="date_returned_{{ $issuance->id }}"
-                                                                value="{{ now()->format('Y-m-d\TH:i:s') }}" required
+                                                                value="{{ now()->format('Y-m-d\TH:i') }}" required
                                                                 class="w-full px-3 py-2 border border-[#ffcc34] rounded-lg focus:ring-2 focus:ring-[#00553d] text-xs group-hover:shadow-md transition-all duration-300">
                                                             <div
                                                                 class="absolute right-3 top-7 text-gray-400 group-hover:text-[#00553d] transition-colors">
@@ -827,6 +849,9 @@
                                                                 <option value="lost"
                                                                     {{ old('returned_condition') == 'lost' ? 'selected' : '' }}>
                                                                     Lost</option>
+                                                                <option value="condemned"
+                                                                    {{ old('returned_condition') == 'condemned' ? 'selected' : '' }}>
+                                                                    Condemned</option>
                                                             </select>
 
                                                         </div>
@@ -944,17 +969,18 @@
                                         {{ request('inventory_status') == 'all' ? 'selected' : '' }}>All Status
                                     </option>
                                     <option value="in_use"
-                                        {{ request('inventory_status') == 'in_use' ? 'selected' : '' }}>In Use
-                                    </option>
+                                        {{ request('inventory_status') == 'in_use' ? 'selected' : '' }}>In Use</option>
                                     <option value="available"
                                         {{ request('inventory_status') == 'available' ? 'selected' : '' }}>Available
                                     </option>
                                     <option value="maintenance"
                                         {{ request('inventory_status') == 'maintenance' ? 'selected' : '' }}>
-                                        Maintenance
-                                    </option>
+                                        Maintenance</option>
                                     <option value="damaged"
                                         {{ request('inventory_status') == 'damaged' ? 'selected' : '' }}>Damaged
+                                    </option>
+                                    <option value="condemned"
+                                        {{ request('inventory_status') == 'condemned' ? 'selected' : '' }}>Condemned
                                     </option>
                                 </select>
                                 <select name="equipment_name" id="equipment-name-filter"
@@ -974,7 +1000,6 @@
                                         </option>
                                     @endforeach
                                 </select>
-
                                 <select name="inventory_department" id="inventory-department-filter"
                                     class="bg-white border border-[#ffcc34] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00553d]">
                                     <option value="all"
@@ -1002,19 +1027,16 @@
                                         @endforeach
                                     @endif
                                 </select>
-
                                 <input type="date" name="inventory_date_from" id="inventory-date-from"
                                     placeholder="Date Issued"
                                     class="border border-[#ffcc34] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00553d] w-full sm:w-32"
                                     value="{{ request('inventory_date_from') }}">
-
                                 <input type="date" name="inventory_date_to" id="inventory-date-to"
                                     placeholder="Date Issued"
                                     class="border border-[#ffcc34] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00553d] w-full sm:w-32"
                                     value="{{ request('inventory_date_to') }}">
-
                                 <select name="order" id="inventory-order"
-                                    class="bg-white border border-[#ffcc34] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00553d] ">
+                                    class="bg-white border border-[#ffcc34] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00553d]">
                                     <option value="desc" {{ request('order') == 'desc' ? 'selected' : '' }}>Newest
                                         First</option>
                                     <option value="asc" {{ request('order') == 'asc' ? 'selected' : '' }}>Oldest
@@ -1025,24 +1047,29 @@
                                     <i class="fas fa-rotate-left"></i>
                                     <span>Reset Filters</span>
                                 </a>
-
                             </form>
-
                             <div class="w-full sm:w-auto flex justify-end">
+                                <button type="button" id="export-equipments-pdf"
+                                    class="bg-[#90143c] hover:bg-[#007a5a] text-white text-sm font-medium px-4 py-2 rounded-lg border border-[#ffcc34] shadow-sm hover:shadow-md transition-all duration-200 flex items-center gap-2">
+                                    <i class="fas fa-file-pdf"></i>
+                                    <span>PDF</span>
+                                </button>
                                 <button type="button" id="inventory-export-btn"
-                                    class="bg-[#00553d] hover:bg-[#007a5a] text-white text-sm font-medium px-4 py-2 rounded-lg border border-[#ffcc34] shadow-sm hover:shadow-md transition-all duration-200 flex items-center gap-2">
+                                    class="bg-[#00553d] hover:bg-[#90143c] px-4 py-2 text-white font-semibold rounded-lg text-xs border border-[#ffcc34] shadow-md hover:shadow-lg flex items-center transition-all duration-300">
                                     <i class="fas fa-spinner fa-spin hidden" id="export-spinner"></i>
-                                    <i class="fas fa-download"></i>
-                                    <span>Export CSV</span>
+                                    <i class="fas fa-file-csv"></i>
+                                    <span>CSV</span>
                                 </button>
                             </div>
-
                         </div>
                         <div class="overflow-x-auto">
                             <table class="min-w-full table-auto divide-y divide-[#ffcc34]"
                                 aria-label="Inventory Logs">
                                 <thead class="table-header">
                                     <tr>
+                                        <th scope="col"
+                                            class="px-4 py-2 text-left text-xs font-medium text-[#00553d] uppercase tracking-wider min-w-[100px]">
+                                            Image</th>
                                         <th scope="col"
                                             class="px-4 py-2 text-left text-xs font-medium text-[#00553d] uppercase tracking-wider min-w-[200px]">
                                             Equipment</th>
@@ -1075,7 +1102,7 @@
                                 <tbody id="inventoryTableBody" class="bg-white divide-y divide-[#ffcc34]">
                                     @if (!isset($inventory) || $inventory->isEmpty())
                                         <tr>
-                                            <td colspan="9"
+                                            <td colspan="10"
                                                 class="px-4 py-4 text-center text-xs text-black bg-gradient-to-br from-gray-50 to-white rounded-lg border-2 border-dashed border-gray-300">
                                                 <div
                                                     class="w-16 h-16 bg-gradient-to-br from-gray-200 to-gray-300 rounded-full flex items-center justify-center mx-auto mb-3">
@@ -1090,6 +1117,20 @@
                                     @else
                                         @foreach ($inventory as $item)
                                             <tr class="hover:bg-gray-50 transition-colors slide-up">
+                                                <td
+                                                    class="px-4 py-3 whitespace-nowrap text-xs text-black min-w-[100px]">
+                                                    @if ($item->image_path && file_exists(storage_path('app/public/' . $item->image_path)))
+                                                        <button class="view-image-btn"
+                                                            data-image="{{ Storage::url($item->image_path) }}"
+                                                            data-name="{{ $item->equipment_name }}">
+                                                            <img src="{{ Storage::url($item->image_path) }}"
+                                                                alt="{{ $item->equipment_name }}"
+                                                                class="w-10 h-10 object-cover rounded-md border border-[#ffcc34] hover:shadow-md transition-all duration-200">
+                                                        </button>
+                                                    @else
+                                                        <span class="text-gray-400 text-[0.6rem]">No Image</span>
+                                                    @endif
+                                                </td>
                                                 <td class="px-4 py-3 whitespace-nowrap text-xs text-black min-w-[200px] truncate max-w-xs"
                                                     title="{{ $item->equipment_name }}">{{ $item->equipment_name }}
                                                 </td>
@@ -1126,16 +1167,14 @@
                                                         class="px-2 py-1 inline-flex text-xs leading-5 font-bold rounded-full {{ $item->status == 'available' ? 'bg-green-100 text-green-800' : ($item->status == 'in_use' ? 'bg-blue-100 text-blue-800' : ($item->status == 'maintenance' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800')) }}">{{ ucfirst(str_replace('_', ' ', $item->status)) }}</span>
                                                 </td>
                                                 <td class="px-4 py-3 whitespace-nowrap flex space-x-2">
-
                                                     <button
                                                         class="view-btn text-[#00553d] hover:text-[#007a52] px-2 py-1 rounded-md hover:bg-blue-50 transition-all duration-200 text-[0.6rem] font-semibold border border-blue-200 hover:border-blue-300"
                                                         data-id="{{ $item->id }}"
-                                                        data-name="{{ $item->equipment_name }}" data-type="equipment"
+                                                        data-name="{{ $item->equipment_name }}"
+                                                        data-type="equipment"
                                                         aria-label="View logs for {{ $item->equipment_name }}">
-                                                        <i class="fas fa-view mr-1"></i>
+                                                        <i class="fas fa-eye mr-1"></i>
                                                     </button>
-
-
                                                     <button data-id="{{ $item->id }}"
                                                         class="edit-inventory-btn text-[#00553d] hover:text-[#007a52] px-2 py-1 rounded-md hover:bg-blue-50 transition-all duration-200 text-[0.6rem] font-semibold border border-blue-200 hover:border-blue-300"
                                                         title="Edit">
@@ -1160,12 +1199,6 @@
                             </table>
                         </div>
                         <div id="inventoryPagination" class="pagination-container mt-4">
-                            {{--  <select id="inventory-per-page-display" 
-                                class="bg-white border border-[#ffcc34] rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-[#00553d] mr-2">
-                                <option value="20" {{ $inventoryPerPage == 20 ? 'selected' : '' }}>20</option>
-                                <option value="50" {{ $inventoryPerPage == 50 ? 'selected' : '' }}>50</option>
-                                <option value="100" {{ $inventoryPerPage == 100 ? 'selected' : '' }}>100</option>
-                            </select>  --}}
                             <span class="pagination-info">
                                 Page {{ isset($inventory) ? $inventory->currentPage() : 1 }} to
                                 {{ isset($inventory) ? $inventory->currentPage() : 1 }} of
@@ -1233,11 +1266,22 @@
                         class="bg-gradient-to-r from-[#90143c] to-[#b01a47] px-5 py-3 rounded-t-xl flex justify-between items-center">
                         <h2 id="history-logs-title" class="text-xs font-semibold text-white">History Logs</h2>
                         <div class="flex items-center space-x-2">
+
+                            @if(isset($item) && $item)
+                            <button id="export-equipment-logs-pdf"
+                                class="gradient-btn px-4 py-2 text-white font-semihold rounded-lg text-xs border border-[#ffcc34] shadow-md hover:shadow-lg flex items-center transition-all duration-300"
+                                data-equipment-id="{{ $item->id }}"
+                                aria-label="Export equipment history logs as PDF">
+                                <i class="fas fa-file-pdf mr-2"></i>Export PDF
+                            </button>
+                            @endif
+
                             <button id="export-equipment-logs-btn"
                                 class="gradient-btn px-4 py-2 text-white font-semibold rounded-lg text-xs border border-[#ffcc34] shadow-md hover:shadow-lg flex items-center transition-all duration-300 hidden"
                                 data-equipment-id="" aria-label="Export equipment history logs as CSV">
-                                <i class="fas fa-file-export mr-2"></i>Export CSV
+                                <i class="fas fa-file-csv mr-2"></i>Export CSV
                             </button>
+
                             <button type="button" class="close-logs-btn text-white hover:text-gray-200"
                                 aria-label="Close history logs modal">
                                 <i class="fas fa-times text-sm"></i>
@@ -1258,6 +1302,26 @@
                 </div>
             </div>
 
+            <!-- Modal for full image preview -->
+            <div id="imageModal" class="fixed inset-0 z-50 bg-black bg-opacity-60 hidden justify-center items-center">
+                <div class="relative bg-white p-4 rounded-lg shadow-lg max-w-[50%] max-h-[80%] overflow-auto">
+                    <button onclick="closeImageModal()"
+                        class="absolute top-2 right-2 text-gray-600 hover:text-red-500 text-lg font-bold">&times;</button>
+                    <img id="modalImage" src="#" alt="Full Preview" class="w-full h-auto rounded" />
+                </div>
+            </div>
+
+            <!-- Image View Modal -->
+            <div id="imageViewModal"
+                class="fixed inset-0 z-50 hidden items-center justify-center bg-black bg-opacity-70">
+                <div class="relative bg-white rounded-lg shadow-lg max-w-[50%] w-full max-h-[80%] overflow-auto p-4">
+                    <button onclick="closeImageViewModal()"
+                        class="absolute top-2 right-2 text-gray-600 hover:text-red-500 text-lg font-bold">&times;</button>
+                    <h2 id="imageTitle" class="text-sm font-semibold text-[#00553d] mb-2"></h2>
+                    <img id="modalImageView" src="#" alt="Preview"
+                        class="w-full h-auto rounded border border-[#ffcc34]">
+                </div>
+            </div>
 
             <!-- Edit Inventory Modal -->
             <div id="edit-inventory-modal"
@@ -1275,16 +1339,19 @@
                             <i class="fas fa-times"></i>
                         </button>
                     </div>
-                    <form id="edit-inventory-form" action="" method="POST">
+                    <form id="edit-inventory-form" action="" method="POST" enctype="multipart/form-data">
                         @csrf
                         @method('PUT')
                         <input type="hidden" name="equipment_id" id="edit_equipment_id">
-                        <div class="mb-4 space-y-3">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                             <div class="relative group">
                                 <label for="edit_staff_name"
                                     class="block text-[0.65rem] font-medium text-[#00553d] mb-1">Staff Name</label>
                                 <input type="text" name="staff_name" id="edit_staff_name" readonly
                                     class="w-full px-3 py-2 border border-[#ffcc34] rounded-lg text-xs bg-gray-100 text-gray-500 cursor-not-allowed">
+                                @error('staff_name')
+                                    <p class="text-red-500 text-[0.6rem] mt-1">{{ $message }}</p>
+                                @enderror
                             </div>
                             <div class="relative group">
                                 <label for="edit_department_id"
@@ -1292,6 +1359,9 @@
                                 <input type="text" name="department_name" id="edit_department_name" readonly
                                     class="w-full px-3 py-2 border border-[#ffcc34] rounded-lg text-xs bg-gray-100 text-gray-500 cursor-not-allowed">
                                 <input type="hidden" name="department_id" id="edit_department_id">
+                                @error('department_id')
+                                    <p class="text-red-500 text-[0.6rem] mt-1">{{ $message }}</p>
+                                @enderror
                             </div>
                             <div class="relative group">
                                 <label for="edit_equipment_name"
@@ -1303,6 +1373,9 @@
                                     class="absolute right-3 top-7 text-gray-400 group-hover:text-[#00553d] transition-colors">
                                     <i class="fas fa-box text-xs"></i>
                                 </div>
+                                @error('equipment_name')
+                                    <p class="text-red-500 text-[0.6rem] mt-1">{{ $message }}</p>
+                                @enderror
                             </div>
                             <div class="relative group">
                                 <label for="edit_model_brand"
@@ -1313,6 +1386,9 @@
                                     class="absolute right-3 top-7 text-gray-400 group-hover:text-[#00553d] transition-colors">
                                     <i class="fas fa-tag text-xs"></i>
                                 </div>
+                                @error('model_brand')
+                                    <p class="text-red-500 text-[0.6rem] mt-1">{{ $message }}</p>
+                                @enderror
                             </div>
                             <div class="relative group">
                                 <label for="edit_serial_number"
@@ -1320,19 +1396,27 @@
                                     *</label>
                                 <input type="text" name="serial_number" id="edit_serial_number" readonly
                                     class="w-full px-3 py-2 border border-[#ffcc34] rounded-lg text-xs bg-gray-100 text-gray-500 cursor-not-allowed">
+                                @error('serial_number')
+                                    <p class="text-red-500 text-[0.6rem] mt-1">{{ $message }}</p>
+                                @enderror
                             </div>
                             <div class="relative group">
                                 <label for="edit_pr_number"
                                     class="block text-[0.65rem] font-medium text-[#00553d] mb-1">PR Number *</label>
                                 <input type="text" name="pr_number" id="edit_pr_number" readonly
                                     class="w-full px-3 py-2 border border-[#ffcc34] rounded-lg text-xs bg-gray-100 text-gray-500 cursor-not-allowed">
+                                @error('pr_number')
+                                    <p class="text-red-500 text-[0.6rem] mt-1">{{ $message }}</p>
+                                @enderror
                             </div>
                             <div class="relative group">
                                 <label for="edit_date_issued"
                                     class="block text-[0.65rem] font-medium text-[#00553d] mb-1">Date Issued *</label>
-                                <input type="datetime-local" name="date_issued" id="edit_date_issued"
-                                    value="{{ now()->format('Y-m-d\TH:i') }}" required
+                                <input type="datetime-local" name="date_issued" id="edit_date_issued" required
                                     class="w-full px-3 py-2 border border-[#ffcc34] rounded-lg text-xs focus:ring-2 focus:ring-[#00553d] group-hover:shadow-md transition-all duration-300">
+                                @error('date_issued')
+                                    <p class="text-red-500 text-[0.6rem] mt-1">{{ $message }}</p>
+                                @enderror
                             </div>
                             <div>
                                 <label for="edit_status"
@@ -1343,13 +1427,38 @@
                                     <option value="available">Available</option>
                                     <option value="maintenance">Maintenance</option>
                                     <option value="damaged">Damaged</option>
+                                    <option value="condemned">Condemned</option>
                                 </select>
+                                @error('status')
+                                    <p class="text-red-500 text-[0.6rem] mt-1">{{ $message }}</p>
+                                @enderror
                             </div>
                             <div class="relative group">
                                 <label for="edit_remarks"
                                     class="block text-[0.65rem] font-medium text-[#00553d] mb-1">Remarks</label>
                                 <textarea name="remarks" id="edit_remarks"
                                     class="w-full px-3 py-2 border border-[#ffcc34] rounded-lg text-xs focus:ring-2 focus:ring-[#00553d] group-hover:shadow-md transition-all duration-300"></textarea>
+                                @error('remarks')
+                                    <p class="text-red-500 text-[0.6rem] mt-1">{{ $message }}</p>
+                                @enderror
+                            </div>
+                            <div class="relative group">
+                                <label for="edit_image"
+                                    class="block text-[0.65rem] font-medium text-[#00553d] mb-1">Equipment
+                                    Image</label>
+                                <div id="edit_image_preview" class="mb-2 hidden">
+                                    <img src="" alt="Equipment Image"
+                                        class="w-24 h-24 object-cover rounded-md border border-[#ffcc34]">
+                                </div>
+                                <input type="file" name="image" id="edit_image" accept="image/*"
+                                    class="w-full px-3 py-2 border border-[#ffcc34] rounded-lg text-xs focus:ring-2 focus:ring-[#00553d] group-hover:shadow-md transition-all duration-300">
+                                <div
+                                    class="absolute right-3 top-7 text-gray-400 group-hover:text-[#00553d] transition-colors">
+                                    <i class="fas fa-image text-xs"></i>
+                                </div>
+                                @error('image')
+                                    <p class="text-red-500 text-[0.6rem] mt-1">{{ $message }}</p>
+                                @enderror
                             </div>
                         </div>
                         <div class="flex justify-end gap-2">
@@ -1366,6 +1475,10 @@
                 </div>
             </div>
 
+
+
+
+
             <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
             <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
             <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -1378,6 +1491,71 @@
                 });
             </script>
 
+            <script>
+                // Upload image preview modal
+                const imageInput = document.getElementById('image');
+                const previewImage = document.getElementById('previewImage');
+                const uploadModal = document.getElementById('imageModal');
+                const uploadModalImage = document.getElementById('modalImage');
+
+                // View image from table
+                const viewModal = document.getElementById('imageViewModal');
+                const viewModalImage = document.getElementById('modalImageView');
+                const imageTitle = document.getElementById('imageTitle');
+
+                // Upload preview handler
+                imageInput?.addEventListener('change', function(event) {
+                    const file = event.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            previewImage.src = e.target.result;
+                            uploadModalImage.src = e.target.result;
+                            previewImage.classList.remove('hidden');
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+
+                // Table image view handler
+                document.querySelectorAll('.view-image-btn').forEach(button => {
+                    button.addEventListener('click', () => {
+                        const imageUrl = button.getAttribute('data-image');
+                        const imageName = button.getAttribute('data-name');
+                        viewModalImage.src = imageUrl;
+                        imageTitle.textContent = imageName;
+                        viewModal.classList.remove('hidden');
+                        viewModal.classList.add('flex');
+                    });
+                });
+
+                document.getElementById('edit_image').addEventListener('change', function () {
+    const file = this.files[0];
+
+    if (file && file.size > 2 * 1024 * 1024) { // 2MB in bytes
+        alert('🚫 The selected image is too large. Please upload an image smaller than 2MB.');
+        this.value = ''; // Reset file input
+    }
+});
+
+                // Functions for closing modals
+                function openImageModal() {
+                    uploadModal.classList.remove('hidden');
+                    uploadModal.classList.add('flex');
+                }
+
+                function closeImageModal() {
+                    uploadModal.classList.add('hidden');
+                    uploadModal.classList.remove('flex');
+                }
+
+                function closeImageViewModal() {
+                    viewModal.classList.add('hidden');
+                    viewModal.classList.remove('flex');
+                    viewModalImage.src = '';
+                    imageTitle.textContent = '';
+                }
+            </script>
 
             <script>
                 window.checkDuplicatesUrl = "{{ route('inventory.check-duplicates') }}";
@@ -1412,11 +1590,12 @@
                         }, 3000);
                     }
 
-                    // Initialize Edit Functionality
                     function initializeEditFunctionality() {
                         const editButtons = document.querySelectorAll('.edit-inventory-btn');
                         const editModal = document.getElementById('edit-inventory-modal');
                         const editForm = document.getElementById('edit-inventory-form');
+                        const imagePreviewDiv = document.getElementById('edit_image_preview');
+                        const imagePreviewImg = imagePreviewDiv ? imagePreviewDiv.querySelector('img') : null;
 
                         editButtons.forEach(button => {
                             button.addEventListener('click', async function() {
@@ -1449,7 +1628,7 @@
                                         const errorData = await response.json().catch(() => ({}));
                                         throw new Error(errorData.error ||
                                             `Failed to fetch equipment data (Status: ${response.status})`
-                                        );
+                                            );
                                     }
 
                                     const {
@@ -1470,8 +1649,22 @@
                                         .serial_number || '';
                                     document.getElementById('edit_pr_number').value = data.pr_number ||
                                         '';
-                                    document.getElementById('edit_date_issued').value = data
-                                        .date_issued ? data.date_issued.split(' ')[0] : '';
+                                    if (data.date_issued) {
+    const utcDate = new Date(data.date_issued);
+
+    // Convert to Manila timezone (UTC+8)
+    const offset = 8 * 60; // 8 hours in minutes
+    const manilaTime = new Date(utcDate.getTime() + offset * 60000);
+
+    // Format for datetime-local input: "YYYY-MM-DDTHH:MM"
+    const localDatetime = manilaTime.toISOString().slice(0, 16);
+
+    document.getElementById('edit_date_issued').value = localDatetime;
+} else {
+    document.getElementById('edit_date_issued').value = '';
+}
+
+
                                     document.getElementById('edit_status').value = data.status ||
                                         'available';
                                     document.getElementById('edit_staff_name').value = data
@@ -1481,6 +1674,20 @@
                                     document.getElementById('edit_department_name').value = data
                                         .department_name || '';
                                     document.getElementById('edit_remarks').value = data.remarks || '';
+
+                                    // Populate image preview
+                                    if (data.image_path && imagePreviewDiv && imagePreviewImg) {
+                                        imagePreviewImg.src = data.image_path;
+                                        imagePreviewImg.alt = data.equipment_name || 'Equipment Image';
+                                        imagePreviewDiv.classList.remove('hidden');
+                                    } else if (imagePreviewDiv) {
+                                        imagePreviewDiv.classList.add('hidden');
+                                        imagePreviewImg.src = '';
+                                        imagePreviewImg.alt = 'Equipment Image';
+                                    }
+
+                                    // Update form action
+                                    editForm.action = `/inventory/${data.id}`;
 
                                     // Show modal
                                     editModal.classList.remove('hidden');
@@ -1710,7 +1917,7 @@
                                                         .toUpperCase());
                                                     changesList.push(
                                                         `${fieldName}: ${oldVal} → ${newVal}`
-                                                        );
+                                                    );
                                                 }
                                             });
 
@@ -1745,9 +1952,9 @@
                         <tr>
                             <td class="px-5 py-3 text-xs text-black">${log.action_date || '-'}</td>
                             <td class="px-5 py-3 text-xs text-black">${log.action || '-'}</td>
-                            <td class="px-5 py-3 text-xs text-black">${log.model_brand || '-'} (ID: ${log.model_id || '-'})</td>
-                            <td class="px-5 py-3 text-xs text-black break-words" style="max-width: 200px;">${changes}</td>
-                            <td class="px-5 py-3 text-xs text-black">${log.description || '-'}</td>
+                            <td class="px-5 py-3 text-xs text-black">${log.model_brand || '-'}</td>
+                            <td class="px-5 py-3 text-xs text-black break-words" style="max-width: 1200px;">${changes}</td>
+                            <td class="px-5 py-3 text-xs text-black break-words">${log.description || '-'}</td>
                         </tr>
                     `;
                                     });
@@ -1779,11 +1986,6 @@
 
                     // Make sure this script tag is also included
                     const equipmentLogEndpointTemplate = @json(route('inventory.logs', ['equipment' => '__ID__']));
-
-
-
-
-
 
                     document.addEventListener('click', async (e) => {
                         // Close modal buttons
@@ -1931,6 +2133,106 @@
                             ctx.style.display = 'none';
                         }
                     }
+
+
+                    function initializePDFExportFunctionality() {
+                        function handlePDFExport(button, route) {
+                            const originalContent = button.innerHTML;
+                            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>Generating PDF...</span>';
+                            button.disabled = true;
+                            window.location.href = route;
+                            setTimeout(() => {
+                                button.innerHTML = originalContent;
+                                button.disabled = false;
+                            }, 3000);
+                        }
+
+                        const equipmentsPDFButton = document.getElementById('export-equipments-pdf');
+                        if (equipmentsPDFButton) {
+                            equipmentsPDFButton.addEventListener('click', function() {
+                                handlePDFExport(this, '{{ route('inventory.export.pdf') }}');
+                            });
+                        }
+
+                        const equipmentLogsPDFButton = document.getElementById('export-equipment-logs-pdf');
+                        if (equipmentLogsPDFButton) {
+                            equipmentLogsPDFButton.addEventListener('click', function() {
+                                const equipmentId = this.getAttribute('data-equipment-id');
+                                const route = `{{ route('equipment.logs.export', ':id') }}`.replace(':id',
+                                    equipmentId);
+                                handlePDFExport(this, route);
+                            });
+                        }
+                    }
+
+                    function initializeImagePreview() {
+                        const imageModal = document.getElementById('image-preview-modal');
+                        const closeBtn = document.getElementById('close-image-preview-modal');
+
+                        if (closeBtn && imageModal) {
+                            closeBtn.addEventListener('click', () => {
+                                imageModal.classList.add('hidden');
+                                document.getElementById('image-preview').src = '';
+                            });
+                        }
+                    }
+
+                    function initializeEquipmentLogsModal() {
+                        const modal = document.getElementById('equipment-logs-modal');
+                        const equipmentNameSpan = document.getElementById('equipment-name');
+                        const logsTable = document.getElementById('equipment-logs-table');
+                        const exportButton = document.getElementById('export-equipment-logs-pdf');
+                        const closeButton = document.querySelector('.close-logs-btn');
+
+                        document.querySelectorAll('.view-logs-btn').forEach(button => {
+                            button.addEventListener('click', function() {
+                                const equipmentId = this.getAttribute('data-equipment-id');
+                                const equipmentName = this.getAttribute('data-equipment-name');
+
+                                equipmentNameSpan.textContent = equipmentName;
+                                exportButton.setAttribute('data-equipment-id', equipmentId);
+
+                                // Fetch logs
+                                fetch(`/inventory/equipment/${equipmentId}/logs`)
+                                    .then(response => response.json())
+                                    .then(data => {
+                                        logsTable.innerHTML = '';
+                                        if (data.status === 'success' && data.data.length > 0) {
+                                            data.data.forEach(log => {
+                                                const row = `
+                                <tr>
+                                    <td>${log.staff?.name || 'N/A'}</td>
+                                    <td>${log.action || 'N/A'}</td>
+                                    <td>${log.equipment_name || 'N/A'}</td>
+                                    <td>${log.status || 'N/A'}</td>
+                                    <td>${log.model_brand || 'N/A'}</td>
+                                    <td>${log.description || 'N/A'}</td>
+                                    <td>${log.action_date ? new Date(log.action_date).toLocaleString('en-PH', { timeZone: 'Asia/Manila' }) : 'N/A'}</td>
+
+                                </tr>`;
+                                                logsTable.insertAdjacentHTML('beforeend', row);
+                                            });
+                                        } else {
+                                            logsTable.innerHTML =
+                                                '<tr><td colspan="7">No logs available.</td></tr>';
+                                        }
+                                    })
+                                    .catch(error => {
+                                        console.error('Error fetching logs:', error);
+                                        logsTable.innerHTML =
+                                            '<tr><td colspan="7">Failed to load logs.</td></tr>';
+                                    });
+
+                                modal.classList.remove('hidden');
+                            });
+                        });
+
+                        closeButton?.addEventListener('click', () => {
+                            modal.classList.add('hidden');
+                            logsTable.innerHTML = '';
+                        });
+                    }
+
 
                     // Chart Filter Logic
                     const chartFilter = document.getElementById('chart-time-filter');
@@ -2512,6 +2814,7 @@
                         }
                     }
 
+                    
 
                     // Export button event listener for client-side export
                     document.addEventListener('DOMContentLoaded', function() {
@@ -2733,6 +3036,8 @@
                     initializeFormSubmission();
                     initializeEditFunctionality();
                     initializeExportFunctionality();
+                    initializePDFExportFunctionality()
+
 
                     // Handle Laravel Session Messages
                     @if (session('success'))

@@ -30,6 +30,11 @@ class Staff extends Model
         return $this->hasOne(User::class, 'email', 'email');
     }
 
+    public function department()
+    {
+        return $this->belongsTo(Department::class);
+    }
+
      public function scopeActive($query)
     {
         return $query->where('status', 'Active');

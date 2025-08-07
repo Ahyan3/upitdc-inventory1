@@ -219,7 +219,7 @@ class HistoryController extends Controller
                         ucfirst($log->action),
                         $log->equipment->status ?? 'N/A',
                         $log->equipment->equipment_name ?? 'N/A',
-                        ($log->model_brand ?? 'N/A') . ' (ID: ' . ($log->model_id ?? 'N/A') . ')',
+                        $log->model_brand ?? 'N/A',
                         $log->description ?? 'N/A',
                         optional($log->action_date)->format('Y-m-d H:i:s'),
                     ]);

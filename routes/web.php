@@ -9,6 +9,7 @@ use App\Http\Controllers\HistoryController;
 use App\Http\Controllers\IssuanceController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\PDFController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -100,6 +101,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::patch('/', [ProfileController::class, 'update'])->name('profile.update');
         Route::delete('/', [ProfileController::class, 'destroy'])->name('profile.destroy');
     });
+
+    // Equipment-related PDF exports
+    Route::get('/export/pdf', [InventoryController::class, 'exportEquipmentsPDF'])->name('inventory.export.pdf');
+    Route::get('/equipment/{equipments}/logs/export', [InventoryController::class, 'exportEquipmentLogsPDF'])->name('equipment.logs.export');
+    // History log PDF export
+    Route::get('/history-logs/export', [PDFController::class, 'exportHistoryLogsPDF'])->name('history.logs.export');
+
+    // Staff-related PDF exports
+    Route::get('/staff/{staff}/logs/export', [StaffController::class, 'exportStaffLogsPDF'])->name('staff.logs.export');
+    Route::get('/staff/export-all', [StaffController::class, 'exportAllStaffPDF'])->name('staff.export.all');
 });
 
 require __DIR__ . '/auth.php';

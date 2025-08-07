@@ -335,22 +335,31 @@
                         </div>
 
                         <!-- Staff List -->
-                        <div
-                            class="bg-white rounded-lg shadow-md overflow-hidden staff-card border border-[#ffcc34] slide-up">
-                            <div class="p-4">
-                                <div class="flex items-center justify-between mb-4">
-                                    <h3 class="text-xs font-bold text-[#00553d] flex items-center">
-                                        <div
-                                            class="p-1.5 bg-gradient-to-br from-[#00553d] to-[#007a52] rounded-md mr-2">
-                                            <i class="fas fa-list text-white text-xs"></i>
+                            <div class="bg-white rounded-lg shadow-md overflow-hidden staff-card border border-[#ffcc34] slide-up">
+                                <div class="p-4">
+                                    <div class="flex items-center justify-between mb-4">
+                                        <!-- Title -->
+                                        <h3 class="text-xs font-bold text-[#00553d] flex items-center">
+                                            <div class="p-1.5 bg-gradient-to-br from-[#00553d] to-[#007a52] rounded-md mr-2">
+                                                <i class="fas fa-list text-white text-xs"></i>
+                                            </div>
+                                            Staff List
+                                        </h3>
+
+                                        <!-- Export Buttons -->
+                                        <div class="flex gap-2">
+                                            <button id="export-btn-pdf"
+                                                class="bg-[#90143c] hover:bg-[#007a5a] text-white text-sm font-medium px-4 py-2 rounded-lg border border-[#ffcc34] shadow-sm hover:shadow-md transition-all duration-200 flex items-center gap-2">
+                                                <i class="fas fa-file-pdf mr-2"></i>PDF
+                                            </button>
+
+                                            <button id="export-btn"
+                                                class="bg-[#00553d] hover:bg-[#90143c] px-4 py-2 text-white font-semibold rounded-lg text-xs border border-[#ffcc34] shadow-md hover:shadow-lg flex items-center transition-all duration-300">
+                                                <i class="fas fa-file-csv mr-2"></i>CSV
+                                            </button>
                                         </div>
-                                        Staff List
-                                    </h3>
-                                    <button id="export-btn"
-                                        class="bg-[#00553d] hover:bg-[#007a5a] px-4 py-2 text-white font-semibold rounded-lg text-xs border border-[#ffcc34] shadow-md hover:shadow-lg flex items-center transition-all duration-300">
-                                        <i class="fas fa-file-export mr-2"></i>Export CSV
-                                    </button>
-                                </div>
+                                    </div>
+
 
                                 <!-- Filter Form -->
                                 <form id="filter-form" action="{{ route('staff.index') }}" method="GET"
@@ -541,11 +550,19 @@
                                 class="bg-gradient-to-r from-[#90143c] to-[#b01a47] px-5 py-3 rounded-t-xl flex justify-between items-center">
                                 <h2 id="history-logs-title" class="text-xs font-semibold text-white">History Logs</h2>
                                 <div class="flex items-center space-x-2">
+
+                                    <button id="export-btn-logs-pdf"
+                                        class="gradient-btn px-4 py-2 text-white font-semihold rounded-lg text-xs border border-[#ffcc34] shadow-md hover:shadow-lg flex items-center transition-all duration-300"
+                                        data-equipment-id="??" aria-label="Export staff history logs as PDF">
+                                        <i class="fas fa-file-pdf mr-2"></i>Export PDF
+                                    </button>
+
                                     <button id="export-logs-btn"
                                         class="gradient-btn px-4 py-2 text-white font-semibold rounded-lg text-xs border border-[#ffcc34] shadow-md hover:shadow-lg flex items-center transition-all duration-300"
                                         data-staff-id="" aria-label="Export history logs as CSV">
-                                        <i class="fas fa-file-export mr-2"></i>Export CSV
+                                        <i class="fas fa-file-csv mr-2"></i>Export CSV
                                     </button>
+
                                     <button type="button" class="close-logs-btn text-white hover:text-gray-200"
                                         aria-label="Close history logs modal">
                                         <i class="fas fa-times text-sm"></i>
@@ -1039,6 +1056,8 @@
                                     const modal = document.getElementById('history-logs-modal');
                                     const content = document.getElementById('history-logs-content');
                                     const exportBtn = document.getElementById('export-logs-btn');
+                                    const pdfExportBtn = document.getElementById('export-btn-logs-pdf');
+                                    pdfExportBtn.dataset.staffId = btn.dataset.id; // Set staff ID for PDF export
                                     exportBtn.dataset.staffId = btn.dataset.id; // Set staff ID for export
                                     content.innerHTML = `
                                         <div class="text-center py-4">
@@ -1059,6 +1078,7 @@
                                         });
                                         const data = await response.json();
                                         console.log('History logs response:', data);
+                                        
                                         if (!response.ok || data.status === 'error') {
                                             throw new Error(data.message || 'Failed to load history logs');
                                         }
@@ -1121,7 +1141,7 @@
                                                     <tr>
                                                         <td class="px-5 py-3 text-xs text-black">${log.action_date || '-'}</td>
                                                         <td class="px-5 py-3 text-xs text-black">${log.action || '-'}</td>
-                                                        <td class="px-5 py-3 text-xs text-black">${log.model_brand || '-'} (ID: ${log.model_id || '-'})</td>
+                                                        <td class="px-5 py-3 text-xs text-black">${log.model_brand || '-'}</td>
                                                         <td class="px-5 py-3 text-xs text-black break-words">${changes}</td>
                                                         <td class="px-5 py-3 text-xs text-black">${log.description || '-'}</td>
                                                     </tr>
@@ -1163,6 +1183,13 @@
                                 });
                             });
 
+
+
+
+
+
+                            
+
                             // Export History Logs CSV
                             document.getElementById('export-logs-btn').addEventListener('click', async () => {
                                 const staffId = document.getElementById('export-logs-btn').dataset.staffId;
@@ -1184,6 +1211,47 @@
                                 });
                             });
 
+                function initializePDFExportFunctionality() {
+    // Helper function to handle PDF button clicks
+    function handlePDFExport(button, route) {
+        const originalContent = button.innerHTML;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>Generating PDF...</span>';
+        button.disabled = true;
+
+        window.location.href = route;
+
+        setTimeout(() => {
+            button.innerHTML = originalContent;
+            button.disabled = false;
+        }, 3000);
+    }
+
+    // All Staff PDF
+    const staffPDFButton = document.getElementById('export-btn-pdf');
+    if (staffPDFButton) {
+        staffPDFButton.addEventListener('click', function () {
+            handlePDFExport(this, '{{ route("staff.export.all") }}');
+        });
+    }
+
+    // Staff Logs PDF (DYNAMIC - uses data-staff-id)
+    const staffLogsPDFButton = document.getElementById('export-btn-logs-pdf');
+    if (staffLogsPDFButton) {
+        staffLogsPDFButton.addEventListener('click', function () {
+            const staffId = this.getAttribute('data-staff-id');
+
+            if (!staffId) {
+                alert("Staff ID not found.");
+                return;
+            }
+
+            const route = `/staff/${staffId}/logs/export`; // dynamically construct the route
+            handlePDFExport(this, route);
+        });
+    }
+}
+
+
                             // Export Staff CSV
                             document.getElementById('export-btn').addEventListener('click', async () => {
                                 const staffId = document.getElementById('export-btn').dataset.staffId;
@@ -1203,6 +1271,17 @@
                                     }
                                 });
                             });
+
+                            initializePDFExportFunctionality()
+
+                                    // Handle Laravel Session Messages
+                            @if (session('success'))
+                                showAlert('{{ session('success') }}', 'success');
+                            @endif
+                            @if (session('error'))
+                                showAlert('{{ session('error') }}', 'error');
+                            @endif
+                                    
                         });
                     </script>
                 </div>

@@ -22,6 +22,7 @@ class Equipment extends Model
         'date_issued',
         'status',
         'remarks',
+        'image_path',
         'returned_condition',
         'returned_at',
         'location',
@@ -31,7 +32,7 @@ class Equipment extends Model
 
     protected $casts = [
         'status' => 'string',
-        'date_issued' => 'datetime',
+        'date_issued' => 'datetime:Y-m-d\TH:i:s',
     ];
 
     public function department()
@@ -42,6 +43,11 @@ class Equipment extends Model
     public function issuances()
     {
         return $this->hasMany(Issuance::class);
+    }
+
+    public function logs()
+    {
+        return $this->hasMany(HistoryLog::class, 'model_id');
     }
 
     public function currentIssuance()

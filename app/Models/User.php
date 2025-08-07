@@ -22,6 +22,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role',
     ];
 
     /**
@@ -43,6 +44,42 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
+
+    // Automatically create staff record when user is created
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::created(function ($user) {
+            // Only create staff if one doesn't already exist
+            Staff::firstOrCreate(
+                ['email' => $user->email], // Check by email
+                [
+                    'name' => $user->name,
+                    'department' => 'Admin', 
+                    'status' => 'Active',
+                ]
+            );
+        });
+
+        // Optional: Update staff when user is updated
+        static::updated(function ($user) {
+            Staff::where('email', $user->email)->update([
+                'name' => $user->name,
+            ]);
+        });
+
+        // Optional: Delete staff when user is deleted
+        static::deleted(function ($user) {
+            Staff::where('email', $user->email)->delete();
+        });
+    }
+
+    // Relationship to staff
+    public function staff()
+    {
+        return $this->hasOne(Staff::class, 'email', 'email');
+    }
 
     /**
      * Get the history logs for the user.

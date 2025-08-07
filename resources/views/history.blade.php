@@ -318,6 +318,8 @@
                                         </option>
                                         <option value="damaged"
                                             {{ request('log_status') == 'damaged' ? 'selected' : '' }}>Damaged</option>
+                                        <option value="condemned"
+                                            {{ request('log_status') == 'condemned' ? 'selected' : '' }}>Condemned</option>
                                     </select>
 
                                     <input type="date" name="log_date_from" id="log-date-from"
@@ -350,12 +352,21 @@
                                     </a>
 
                                 </form>
+
                                 <div class="w-full sm:w-auto flex justify-end space-x-2">
-                                    <button type="button" id="log-export-btn"
-                                        class="bg-[#00553d] hover:bg-[#007a5a] text-white text-sm font-medium px-4 py-2 rounded-lg border border-[#ffcc34] shadow-sm hover:shadow-md transition-all duration-200 flex items-center gap-2">
+
+                                    <button type="button" id="export-history-logs-pdf"
+                                        class="bg-[#90143c] hover:bg-[#007a5a] text-white text-sm font-medium px-4 py-2 rounded-lg border border-[#ffcc34] shadow-sm hover:shadow-md transition-all duration-200 flex items-center gap-2">
                                         <i class="fas fa-spinner fa-spin hidden" id="export-spinner"></i>
-                                        <i class="fas fa-download"></i>
-                                        <span>Export CSV</span>
+                                        <i class="fas fa-file-pdf"></i>
+                                        <span>PDF</span>
+                                    </button>
+
+                                    <button type="button" id="log-export-btn"
+                                        class="bg-[#00553d] hover:bg-[#90143c] px-4 py-2 text-white font-semibold rounded-lg text-xs border border-[#ffcc34] shadow-md hover:shadow-lg flex items-center transition-all duration-300">
+                                        <i class="fas fa-spinner fa-spin hidden" id="export-spinner"></i>
+                                        <i class="fas fa-file-csv"></i>
+                                        <span>CSV</span>
                                     </button>
 
                                     <form id="delete-logs-form" method="POST"
@@ -430,6 +441,8 @@
                                             Maintenance</option>
                                         <option value="damaged"
                                             {{ request('inventory_status') == 'damaged' ? 'selected' : '' }}>Damaged
+                                        <option value="condemned"
+                                            {{ request('inventory_status') == 'condemned' ? 'selected' : '' }}>Condemned</option>
                                         </option>
                                     </select>
 
@@ -844,6 +857,33 @@
                 }
             }
 
+            document.addEventListener('DOMContentLoaded', function () {
+    initializeHistoryPDFExport();
+});
+
+function initializeHistoryPDFExport() {
+    function handlePDFExport(button, route) {
+        const originalContent = button.innerHTML;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>Generating PDF...</span>';
+        button.disabled = true;
+
+        window.location.href = route;
+
+        setTimeout(() => {
+            button.innerHTML = originalContent;
+            button.disabled = false;
+        }, 3000);
+    }
+
+    const historyLogsPDFButton = document.getElementById('export-history-logs-pdf');
+    if (historyLogsPDFButton) {
+        historyLogsPDFButton.addEventListener('click', function () {
+            handlePDFExport(this, '{{ route("history.logs.export") }}');
+        });
+    }
+}
+
+
             // Export Functionality
             function initializeExportFunctionality() {
                 const logExportBtn = document.getElementById('log-export-btn');
@@ -922,6 +962,7 @@
             initializePagination();
             initializeLiveFiltering();
             initializeExportFunctionality();
+            initializeHistoryPDFExport();
 
             // Handle session messages
             @if (session('success'))

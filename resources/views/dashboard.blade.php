@@ -108,7 +108,7 @@
         }
 
         .pagination-container {
-            display Alt="display: flex;
+            display: flex;
             justify-content: center;
             align-items: center;
             gap: 0.5rem;
@@ -152,6 +152,70 @@
             border-color: #00553d;
             box-shadow: 0 0 0 2px rgba(0, 85, 61, 0.2);
         }
+
+        /* Card Icon Styles */
+        .card-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 1.5rem;
+            height: 1.5rem;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #90143c, #b01a47);
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .overview-card {
+            transition: all 0.3s ease;
+        }
+
+        .overview-card:hover {
+            transform: scale(1.02);
+            background: linear-gradient(135deg, rgba(255, 204, 52, 0.05), rgba(0, 85, 61, 0.05));
+        }
+
+        .overview-card a:hover {
+            text-decoration: underline;
+        }
+
+        .card-content {
+            flex: 1;
+            text-align: left;
+        }
+
+        .card-number {
+            margin-bottom: 0.5rem;
+        }
+
+        /* System Overview Gradient Background */
+        .system-overview {
+            background: linear-gradient(135deg, #ffcc34, #00553d, #90143c);
+        }
+
+        @media (max-width: 768px) {
+            .overview-card {
+                text-align: center;
+            }
+
+            .overview-card .flex {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .card-content {
+                text-align: center;
+                margin-bottom: 0.5rem;
+            }
+
+            .card-icon {
+                margin-top: 0.5rem;
+            }
+
+            .card-number {
+                margin-bottom: 0.5rem;
+            }
+        }
     </style>
 
     <div class="flex min-h-screen bg-gray-50">
@@ -177,85 +241,167 @@
 
             <div id="alert-container" class="mb-4"></div>
 
-            <!-- Overview Stats -->
             <!-- System Overview Section -->
-<div class="bg-white rounded-lg shadow-md border border-[#ffcc34] slide-up p-4 mb-8">
-    <h3 class="text-xs font-bold text-[#00553d] mb-3 flex items-center">
-        <div class="p-1.5 bg-gradient-to-br from-[#90143c] to-[#b01a47] rounded-md mr-2">
-            <i class="fas fa-chart-bar text-white text-xs"></i>
-        </div>
-        System Overview
-    </h3>
+            <div class="system-overview rounded-lg shadow-md border border-[#ffcc34] slide-up p-4 mb-8">
+                <h3 class="text-xs font-bold text-white mb-3 flex items-center">
+                    <div class="p-1.5 bg-gradient-to-br from-[#90143c] to-[#b01a47] rounded-md mr-2">
+                        <i class="fas fa-chart-bar text-white text-xs"></i>
+                    </div>
+                    System Overview
+                </h3>
 
-    {{-- Row 1 --}}
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-3 mb-4">
-        <div class="p-3 border border-[#ffcc34]/30 rounded bg-white shadow-sm">
-            <div class="text-base font-bold text-[#90143c]">{{ $totalEquipment ?? 0 }}</div>
-            <div class="text-xs text-gray-600">Total Equipment</div>
-            <a href="{{ route('inventory') }}" class="text-[0.6rem] text-[#00553d] hover:text-[#007a52] block mt-1">View Details</a>
-        </div>
-        <div class="p-3 border border-[#ffcc34]/30 rounded bg-white shadow-sm">
-            <div class="text-base font-bold text-[#90143c]">{{ $totalIssuedEquipment ?? 0 }}</div>
-            <div class="text-xs text-gray-600">Issued Equipment</div>
-            <a href="{{ route('inventory') }}" class="text-[0.6rem] text-[#00553d] hover:text-[#007a52] block mt-1">View Details</a>
-        </div>
-        <div class="p-3 border border-[#ffcc34]/30 rounded bg-white shadow-sm">
-            <div class="text-base font-bold text-[#90143c]">{{ $totalReturnedEquipment ?? 0 }}</div>
-            <div class="text-xs text-gray-600">Returned Equipment</div>
-            <a href="{{ route('inventory') }}" class="text-[0.6rem] text-[#00553d] hover:text-[#007a52] block mt-1">View Details</a>
-        </div>
-        <div class="p-3 border border-[#ffcc34]/30 rounded bg-white shadow-sm">
-            <div class="text-base font-bold text-[#90143c]">{{ $departmentsWithItems ?? 0 }}</div>
-            <div class="text-xs text-gray-600">Departments with Item</div>
-            <a href="{{ route('inventory') }}" class="text-[0.6rem] text-[#00553d] hover:text-[#007a52] block mt-1">View Details</a>
-        </div>
-    </div>
+                {{-- Row 1 --}}
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-3 mb-4">
+                    <div class="p-4 border border-[#ffcc34]/30 rounded bg-white shadow-sm overview-card">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <div class="text-base font-bold text-[#90143c] card-number">{{ $totalEquipment ?? 0 }}</div>
+                                <div class="card-content">
+                                    <div class="text-xs text-gray-600">Total Equipment</div>
+                                    <a href="{{ route('inventory') }}" class="text-[0.6rem] text-[#00553d] hover:text-[#007a52] block mt-1">View Details</a>
+                                </div>
+                            </div>
+                            <span class="card-icon"><i class="fas fa-boxes text-xs"></i></span>
+                        </div>
+                    </div>
+                    <div class="p-4 border border-[#ffcc34]/30 rounded bg-white shadow-sm overview-card">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <div class="text-base font-bold text-[#90143c] card-number">{{ $totalIssuedEquipment ?? 0 }}</div>
+                                <div class="card-content">
+                                    <div class="text-xs text-gray-600">Issued Equipment</div>
+                                    <a href="{{ route('inventory') }}" class="text-[0.6rem] text-[#00553d] hover:text-[#007a52] block mt-1">View Details</a>
+                                </div>
+                            </div>
+                            <span class="card-icon"><i class="fas fa-handshake text-xs"></i></span>
+                        </div>
+                    </div>
+                    <div class="p-4 border border-[#ffcc34]/30 rounded bg-white shadow-sm overview-card">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <div class="text-base font-bold text-[#90143c] card-number">{{ $totalReturnedEquipment ?? 0 }}</div>
+                                <div class="card-content">
+                                    <div class="text-xs text-gray-600">Returned Equipment</div>
+                                    <a href="{{ route('inventory') }}" class="text-[0.6rem] text-[#00553d] hover:text-[#007a52] block mt-1">View Details</a>
+                                </div>
+                            </div>
+                            <span class="card-icon"><i class="fas fa-undo-alt text-xs"></i></span>
+                        </div>
+                    </div>
+                    <div class="p-4 border border-[#ffcc34]/30 rounded bg-white shadow-sm overview-card">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <div class="text-base font-bold text-[#90143c] card-number">{{ $departmentsWithItems ?? 0 }}</div>
+                                <div class="card-content">
+                                    <div class="text-xs text-gray-600">Departments with Item</div>
+                                    <a href="{{ route('inventory') }}" class="text-[0.6rem] text-[#00553d] hover:text-[#007a52] block mt-1">View Details</a>
+                                </div>
+                            </div>
+                            <span class="card-icon"><i class="fas fa-building text-xs"></i></span>
+                        </div>
+                    </div>
+                </div>
 
-    {{-- Row 2 --}}
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-3 mb-4">
-        <div class="p-3 border border-[#ffcc34]/30 rounded bg-white shadow-sm">
-            <div class="text-base font-bold text-[#90143c]">{{ $in_use ?? 0 }}</div>
-            <div class="text-xs text-gray-600">In Use Equipment</div>
-        </div>
-        <div class="p-3 border border-[#ffcc34]/30 rounded bg-white shadow-sm">
-            <div class="text-base font-bold text-[#90143c]">{{ $available ?? 0 }}</div>
-            <div class="text-xs text-gray-600">Available Equipment</div>
-        </div>
-        <div class="p-3 border border-[#ffcc34]/30 rounded bg-white shadow-sm">
-            <div class="text-base font-bold text-[#90143c]">{{ $maintenance ?? 0 }}</div>
-            <div class="text-xs text-gray-600">Under Maintenance</div>
-        </div>
-        <div class="p-3 border border-[#ffcc34]/30 rounded bg-white shadow-sm">
-            <div class="text-base font-bold text-[#90143c]">{{ $damaged ?? 0 }}</div>
-            <div class="text-xs text-gray-600">Damaged Equipment</div>
-        </div>
-    </div>
+                {{-- Row 2 --}}
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-3 mb-4">
+                    <div class="p-4 border border-[#ffcc34]/30 rounded bg-white shadow-sm overview-card">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <div class="text-base font-bold text-[#90143c] card-number">{{ $in_use ?? 0 }}</div>
+                                <div class="card-content">
+                                    <div class="text-xs text-gray-600">In Use Equipment</div>
+                                </div>
+                            </div>
+                            <span class="card-icon"><i class="fas fa-cog text-xs"></i></span>
+                        </div>
+                    </div>
+                    <div class="p-4 border border-[#ffcc34]/30 rounded bg-white shadow-sm overview-card">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <div class="text-base font-bold text-[#90143c] card-number">{{ $available ?? 0 }}</div>
+                                <div class="card-content">
+                                    <div class="text-xs text-gray-600">Available Equipment</div>
+                                </div>
+                            </div>
+                            <span class="card-icon"><i class="fas fa-check-circle text-xs"></i></span>
+                        </div>
+                    </div>
+                    <div class="p-4 border border-[#ffcc34]/30 rounded bg-white shadow-sm overview-card">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <div class="text-base font-bold text-[#90143c] card-number">{{ $maintenance ?? 0 }}</div>
+                                <div class="card-content">
+                                    <div class="text-xs text-gray-600">Under Maintenance</div>
+                                </div>
+                            </div>
+                            <span class="card-icon"><i class="fas fa-wrench text-xs"></i></span>
+                        </div>
+                    </div>
+                    <div class="p-4 border border-[#ffcc34]/30 rounded bg-white shadow-sm overview-card">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <div class="text-base font-bold text-[#90143c] card-number">{{ $damaged ?? 0 }}</div>
+                                <div class="card-content">
+                                    <div class="text-xs text-gray-600">Damaged Equipment</div>
+                                </div>
+                            </div>
+                            <span class="card-icon"><i class="fas fa-exclamation-triangle text-xs"></i></span>
+                        </div>
+                    </div>
+                </div>
 
-    {{-- Row 3 --}}
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
-        <div class="p-3 border border-[#ffcc34]/30 rounded bg-white shadow-sm">
-            <div class="text-base font-bold text-[#90143c]">{{ $totalDepartments ?? 0 }}</div>
-            <div class="text-xs text-gray-600">Total Departments</div>
-            <a href="{{ route('settings') }}" class="text-[0.6rem] text-[#00553d] hover:text-[#007a52] block mt-1">View Details</a>
-        </div>
-        <div class="p-3 border border-[#ffcc34]/30 rounded bg-white shadow-sm">
-            <div class="text-base font-bold text-[#90143c]">{{ $totalStaff ?? 0 }}</div>
-            <div class="text-xs text-gray-600">Total Staff</div>
-            <a href="{{ route('staff.index') }}" class="text-[0.6rem] text-[#00553d] hover:text-[#007a52] block mt-1">View Details</a>
-        </div>
-        <div class="p-3 border border-[#ffcc34]/30 rounded bg-white shadow-sm">
-            <div class="text-base font-bold text-[#90143c]">{{ $activeStaff ?? 0 }}</div>
-            <div class="text-xs text-gray-600">Active Staff</div>
-            <a href="{{ route('staff.index', ['status' => 'Active']) }}" class="text-[0.6rem] text-[#00553d] hover:text-[#007a52] block mt-1">View Details</a>
-        </div>
-        <div class="p-3 border border-[#ffcc34]/30 rounded bg-white shadow-sm">
-            <div class="text-base font-bold text-[#90143c]">{{ $resignedStaff ?? 0 }}</div>
-            <div class="text-xs text-gray-600">Resigned Staff</div>
-            <a href="{{ route('staff.index', ['status' => 'Resigned']) }}" class="text-[0.6rem] text-[#00553d] hover:text-[#007a52] block mt-1">View Details</a>
-        </div>
-    </div>
-</div>
-
+                {{-- Row 3 --}}
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+                    <div class="p-4 border border-[#ffcc34]/30 rounded bg-white shadow-sm overview-card">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <div class="text-base font-bold text-[#90143c] card-number">{{ $totalDepartments ?? 0 }}</div>
+                                <div class="card-content">
+                                    <div class="text-xs text-gray-600">Total Departments</div>
+                                    <a href="{{ route('settings') }}" class="text-[0.6rem] text-[#00553d] hover:text-[#007a52] block mt-1">View Details</a>
+                                </div>
+                            </div>
+                            <span class="card-icon"><i class="fas fa-sitemap text-xs"></i></span>
+                        </div>
+                    </div>
+                    <div class="p-4 border border-[#ffcc34]/30 rounded bg-white shadow-sm overview-card">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <div class="text-base font-bold text-[#90143c] card-number">{{ $totalStaff ?? 0 }}</div>
+                                <div class="card-content">
+                                    <div class="text-xs text-gray-600">Total Staff</div>
+                                    <a href="{{ route('staff.index') }}" class="text-[0.6rem] text-[#00553d] hover:text-[#007a52] block mt-1">View Details</a>
+                                </div>
+                            </div>
+                            <span class="card-icon"><i class="fas fa-users text-xs"></i></span>
+                        </div>
+                    </div>
+                    <div class="p-4 border border-[#ffcc34]/30 rounded bg-white shadow-sm overview-card">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <div class="text-base font-bold text-[#90143c] card-number">{{ $activeStaff ?? 0 }}</div>
+                                <div class="card-content">
+                                    <div class="text-xs text-gray-600">Active Staff</div>
+                                    <a href="{{ route('staff.index', ['status' => 'Active']) }}" class="text-[0.6rem] text-[#00553d] hover:text-[#007a52] block mt-1">View Details</a>
+                                </div>
+                            </div>
+                            <span class="card-icon"><i class="fas fa-user-check text-xs"></i></span>
+                        </div>
+                    </div>
+                    <div class="p-4 border border-[#ffcc34]/30 rounded bg-white shadow-sm overview-card">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <div class="text-base font-bold text-[#90143c] card-number">{{ $resignedStaff ?? 0 }}</div>
+                                <div class="card-content">
+                                    <div class="text-xs text-gray-600">Resigned Staff</div>
+                                    <a href="{{ route('staff.index', ['status' => 'Resigned']) }}" class="text-[0.6rem] text-[#00553d] hover:text-[#007a52] block mt-1">View Details</a>
+                                </div>
+                            </div>
+                            <span class="card-icon"><i class="fas fa-user-times text-xs"></i></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
             <div class="space-y-4">
                 <!-- Inventory Log Section -->
@@ -298,27 +444,6 @@
                                     <input type="text" name="inventory_search"
                                         value="{{ request('inventory_search') }}" placeholder="Search inventory..."
                                         class="px-3 py-3 rounded-lg text-xs border border-[#ffcc34] focus:outline-none focus:ring-2 focus:ring-[#00553d] w-full sm:w-64">
-                                        {{--  <select name="inventory_status"
-                                            class="px-3 py-3 rounded-lg text-xs border border-[#ffcc34] focus:outline-none focus:ring-2 focus:ring-[#00553d] w-full sm:w-36">
-                                            <option value="all"
-                                                {{ request('inventory_status') == 'all' ? 'selected' : '' }}>All Status
-                                            </option>
-                                            <option value="available"
-                                                {{ request('inventory_status') == 'available' ? 'selected' : '' }}>
-                                                Available</option>
-                                            <option value="not_working"
-                                                {{ request('inventory_status') == 'not_working' ? 'selected' : '' }}>Not
-                                                Working</option>
-                                            <option value="working"
-                                                {{ request('inventory_status') == 'working' ? 'selected' : '' }}>Working
-                                            </option>
-                                            <option value="not_returned"
-                                                {{ request('inventory_status') == 'not_returned' ? 'selected' : '' }}>Not
-                                                Returned</option>
-                                            <option value="returned"
-                                                {{ request('inventory_status') == 'returned' ? 'selected' : '' }}>Returned
-                                            </option>
-                                        </select>  --}}
                                     <button type="submit"
                                         class="gradient-btn px-6 py-3 text-white font-semibold rounded-lg text-xs border border-[#ffcc34] shadow-md hover:shadow-lg flex items-center transition-all duration-300">
                                         <i class="spinner fas fa-spinner fa-spin mr-2"></i>
@@ -361,13 +486,11 @@
                                             <tr class="hover:bg-gray-50 slide-up">
                                                 <td class="px-4 py-2 text-xs text-[#00553d]">
                                                     @php
-    $firstIssuance = $item->issuances->first();
-@endphp
-
-{{ $firstIssuance
-    ? ($firstIssuance->staff->name ?? 'Unknown Staff')
-    : 'N/A' }}
-
+                                                        $firstIssuance = $item->issuances->first();
+                                                    @endphp
+                                                    {{ $firstIssuance
+                                                        ? ($firstIssuance->staff->name ?? 'Unknown Staff')
+                                                        : 'N/A' }}
                                                 </td>
                                                 <td class="px-4 py-2 text-xs text-[#00553d]">
                                                     {{ $item->department->name ?? 'N/A' }}</td>
@@ -450,105 +573,103 @@
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
         <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                // Accordion Toggle with Retry Mechanism
-                function initializeAccordions() {
-                    const accordionToggles = document.querySelectorAll('.accordion-toggle');
-                    accordionToggles.forEach(toggle => {
-                        toggle.addEventListener('click', function() {
-                            const target = document.getElementById(toggle.dataset.target);
-                            const icon = toggle.querySelector('.accordion-icon');
-                            if (!target || !icon) {
-                                console.error('Accordion target or icon not found for toggle:', toggle.dataset.target);
-                                return;
-                            }
-                            const isOpen = target.classList.contains('open');
-                            target.classList.toggle('open');
-                            icon.classList.toggle('rotate-180');
-                            target.style.maxHeight = isOpen ? '0' : (target.scrollHeight + 30 || 2000) + 'px';
-                            if (target.classList.contains('open')) {
-                                setTimeout(() => {
-                                    target.style.animation = 'fadeIn 0.3s ease-out';
-                                }, 100);
-                            }
-                        });
-                    });
-
-                    // Initialize inventory log accordion as open with retry mechanism
-                    function initializeInventoryLog() {
-                        const inventoryLogContent = document.getElementById('inventory-section');
-                        const inventoryLogIcon = document.querySelector('[data-target="inventory-section"] .accordion-icon');
-                        if (!inventoryLogContent || !inventoryLogIcon) {
-                            console.warn('Inventory log elements not found. Retrying...');
-                            setTimeout(initializeInventoryLog, 100); // Retry after 100ms
+            // Accordion Toggle with Retry Mechanism
+            function initializeAccordions() {
+                const accordionToggles = document.querySelectorAll('.accordion-toggle');
+                accordionToggles.forEach(toggle => {
+                    toggle.addEventListener('click', function() {
+                        const target = document.getElementById(toggle.dataset.target);
+                        const icon = toggle.querySelector('.accordion-icon');
+                        if (!target || !icon) {
+                            console.error('Accordion target or icon not found for toggle:', toggle.dataset.target);
                             return;
                         }
+                        const isOpen = target.classList.contains('open');
+                        target.classList.toggle('open');
+                        icon.classList.toggle('rotate-180');
+                        target.style.maxHeight = isOpen ? '0' : (target.scrollHeight + 30 || 2000) + 'px';
+                        if (target.classList.contains('open')) {
+                            setTimeout(() => {
+                                target.style.animation = 'fadeIn 0.3s ease-out';
+                            }, 100);
+                        }
+                    });
+                });
 
-                        inventoryLogContent.classList.add('open');
-                        inventoryLogIcon.classList.add('rotate-180');
-                        const maxHeight = inventoryLogContent.scrollHeight > 0 ? (inventoryLogContent.scrollHeight + 30) : 2000;
-                        inventoryLogContent.style.maxHeight = maxHeight + 'px';
-
-                        // Update max-height on window resize
-                        window.addEventListener('resize', () => {
-                            if (inventoryLogContent.classList.contains('open')) {
-                                const newMaxHeight = inventoryLogContent.scrollHeight > 0 ? (inventoryLogContent.scrollHeight + 30) : 2000;
-                                inventoryLogContent.style.maxHeight = newMaxHeight + 'px';
-                            }
-                        });
+                // Initialize inventory log accordion as open with retry mechanism
+                function initializeInventoryLog() {
+                    const inventoryLogContent = document.getElementById('inventory-section');
+                    const inventoryLogIcon = document.querySelector('[data-target="inventory-section"] .accordion-icon');
+                    if (!inventoryLogContent || !inventoryLogIcon) {
+                        console.warn('Inventory log elements not found. Retrying...');
+                        setTimeout(initializeInventoryLog, 100);
+                        return;
                     }
 
-                    initializeInventoryLog();
-                }
+                    inventoryLogContent.classList.add('open');
+                    inventoryLogIcon.classList.add('rotate-180');
+                    const maxHeight = inventoryLogContent.scrollHeight > 0 ? (inventoryLogContent.scrollHeight + 30) : 2000;
+                    inventoryLogContent.style.maxHeight = maxHeight + 'px';
 
-                // Utility Functions
-                function showAlert(message, type) {
-                    const alertContainer = document.getElementById('alert-container');
-                    const alertDiv = document.createElement('div');
-                    alertDiv.className = `p-3 rounded-lg text-xs flex items-center space-x-2 ${
-                        type === 'error' ? 'bg-red-100 text-red-700 border-red-200' : 
-                        type === 'success' ? 'bg-green-100 text-green-700 border-green-200' : 
-                        'bg-blue-100 text-blue-700 border-blue-200'
-                    } border fade-in`;
-                    alertDiv.innerHTML = `
-                        <i class="fas ${
-                            type === 'error' ? 'fa-exclamation-circle' : 
-                            type === 'success' ? 'fa-check-circle' : 
-                            'fa-info-circle'
-                        } text-base"></i>
-                        <span>${message}</span>
-                    `;
-                    alertContainer.appendChild(alertDiv);
-                    setTimeout(() => {
-                        alertDiv.classList.remove('fade-in');
-                        alertDiv.classList.add('fade-out');
-                        setTimeout(() => alertDiv.remove(), 300);
-                    }, 3000);
-                }
-
-                // Sidebar Toggle
-                const toggleSidebar = document.getElementById('toggleSidebar');
-                const sidebar = document.querySelector('.sidebar');
-                if (toggleSidebar && sidebar) {
-                    toggleSidebar.addEventListener('click', function() {
-                        sidebar.classList.toggle('hidden');
+                    // Update max-height on window resize
+                    window.addEventListener('resize', () => {
+                        if (inventoryLogContent.classList.contains('open')) {
+                            const newMaxHeight = inventoryLogContent.scrollHeight > 0 ? (inventoryLogContent.scrollHeight + 30) : 2000;
+                            inventoryLogContent.style.maxHeight = newMaxHeight + 'px';
+                        }
                     });
                 }
 
-                // Initialize Accordions
-                initializeAccordions();
+                initializeInventoryLog();
+            }
 
-                // Handle Session Alerts
-                @if (session('success'))
-                    showAlert('{{ session('success') }}', 'success');
-                @endif
-                @if (session('error'))
-                    showAlert('{{ session('error') }}', 'error');
-                @endif
-                @if ($errors->any())
-                    showAlert('{{ $errors->first() }}', 'error');
-                @endif
-            });
+            // Utility Functions
+            function showAlert(message, type) {
+                const alertContainer = document.getElementById('alert-container');
+                const alertDiv = document.createElement('div');
+                alertDiv.className = `p-3 rounded-lg text-xs flex items-center space-x-2 ${
+                    type === 'error' ? 'bg-red-100 text-red-700 border-red-200' : 
+                    type === 'success' ? 'bg-green-100 text-green-700 border-green-200' : 
+                    'bg-blue-100 text-blue-700 border-blue-200'
+                } border fade-in`;
+                alertDiv.innerHTML = `
+                    <i class="fas ${
+                        type === 'error' ? 'fa-exclamation-circle' : 
+                        type === 'success' ? 'fa-check-circle' : 
+                        'fa-info-circle'
+                    } text-base"></i>
+                    <span>${message}</span>
+                `;
+                alertContainer.appendChild(alertDiv);
+                setTimeout(() => {
+                    alertDiv.classList.remove('fade-in');
+                    alertDiv.classList.add('fade-out');
+                    setTimeout(() => alertDiv.remove(), 300);
+                }, 3000);
+            }
+
+            // Sidebar Toggle
+            const toggleSidebar = document.getElementById('toggleSidebar');
+            const sidebar = document.querySelector('.sidebar');
+            if (toggleSidebar && sidebar) {
+                toggleSidebar.addEventListener('click', function() {
+                    sidebar.classList.toggle('hidden');
+                });
+            }
+
+            // Initialize Accordions
+            initializeAccordions();
+
+            // Handle Session Alerts
+            @if (session('success'))
+                showAlert('{{ session('success') }}', 'success');
+            @endif
+            @if (session('error'))
+                showAlert('{{ session('error') }}', 'error');
+            @endif
+            @if ($errors->any())
+                showAlert('{{ $errors->first() }}', 'error');
+            @endif
         </script>
     @endsection
     <x-auth-footer />

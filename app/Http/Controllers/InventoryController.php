@@ -17,7 +17,11 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Carbon\Carbon;
 
 class InventoryController extends Controller
 {
@@ -78,7 +82,6 @@ class InventoryController extends Controller
                 $query->whereDate('date_issued', '>=', $request->input('inventory_date_from'));
             }
 
-            // Apply filters...
             if ($request->filled('inventory_date_to')) {
                 $query->whereDate('action_date', '<=', $request->inventory_date_to);
             }
@@ -92,7 +95,7 @@ class InventoryController extends Controller
             if (!in_array($inventoryPerPage, [20, 50, 100])) {
                 $inventoryPerPage = 20;
             }
-            $inventory = $query->with('department')->paginate($inventoryPerPage, ['*'], 'inventory_page')->appends($request->except('inventory_page'));
+            $inventory = $query->with(['department', 'issuances.staff'])->paginate($inventoryPerPage, ['*'], 'inventory_page')->appends($request->except('inventory_page'));
 
             // Equipment data for the chart
             $equipmentData = Equipment::groupBy('equipment_name')
@@ -169,8 +172,9 @@ class InventoryController extends Controller
             'serial_number' => 'required|string|max:255|unique:equipment,serial_number',
             'date_issued' => 'required|date',
             'pr_number' => 'required|string|max:255',
-            'status' => 'required|string|in:available,in_use,maintenance,damaged',
+            'status' => 'required|string|in:available,in_use,maintenance,damaged,condemned',
             'remarks' => 'nullable|string|max:255',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
         try {
@@ -213,7 +217,8 @@ class InventoryController extends Controller
             );
             Log::info('User processed', ['user_id' => $user->id, 'email' => $user->email]);
 
-            $equipment = Equipment::create([
+            // Prepare equipment data
+            $equipmentData = [
                 'staff_name' => $validated['staff_name'],
                 'department_id' => $validated['department_id'],
                 'equipment_name' => $validated['equipment_name'],
@@ -223,7 +228,16 @@ class InventoryController extends Controller
                 'date_issued' => $validated['date_issued'],
                 'pr_number' => $validated['pr_number'],
                 'remarks' => $validated['remarks'],
-            ]);
+            ];
+
+            // Handle image upload
+            if ($request->hasFile('image')) {
+                $path = $request->file('image')->store('equipment_images', 'public');
+                $equipmentData['image_path'] = $path;
+                Log::info('Image uploaded for equipment', ['path' => $path]);
+            }
+
+            $equipment = Equipment::create($equipmentData);
             Log::info('Equipment created', ['equipment_id' => $equipment->id]);
 
             if ($validated['status'] === 'in_use') {
@@ -239,6 +253,12 @@ class InventoryController extends Controller
                 Log::info('Issuance created', ['issuance_id' => $issuance->id]);
             }
 
+            // Update history log description to include image if uploaded
+            $logDescription = "Issued equipment: {$equipment->equipment_name} to registered staff {$staff->name} (Department: {$staff->department}), PR: {$validated['pr_number']}, Serial: {$equipment->serial_number}";
+            if (isset($equipmentData['image_path'])) {
+                $logDescription .= ", Image uploaded: {$equipmentData['image_path']}";
+            }
+
             HistoryLog::create([
                 'action' => 'Issued',
                 'action_date' => $validated['date_issued'],
@@ -250,7 +270,7 @@ class InventoryController extends Controller
                 'staff_id' => $staff->id,
                 'ip_address' => $request->ip(),
                 'user_agent' => $request->userAgent(),
-                'description' => "Issued equipment: {$equipment->equipment_name} to registered staff {$staff->name} (Department: {$staff->department}), PR: {$validated['pr_number']}, Serial: {$equipment->serial_number}",
+                'description' => $logDescription,
             ]);
             Log::info('History log created', ['model' => 'Equipment', 'model_id' => $equipment->id]);
 
@@ -358,7 +378,7 @@ class InventoryController extends Controller
 
         $validated = $request->validate([
             'date_returned' => 'required|date',
-            'returned_condition' => 'required|string|in:good,damaged,lost',
+            'returned_condition' => 'required|string|in:good,damaged,lost,condemned',
             'remarks' => 'nullable|string|max:500',
         ]);
 
@@ -516,6 +536,7 @@ class InventoryController extends Controller
                     'department_id' => $equipment->department_id,
                     'department_name' => $equipment->department ? $equipment->department->name : null,
                     'remarks' => $equipment->remarks,
+                    'image_path' => $equipment->image_path ? Storage::url($equipment->image_path) : null,
                 ]
             ], 200);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
@@ -554,8 +575,9 @@ class InventoryController extends Controller
             'serial_number' => 'required|string|max:255|unique:equipment,serial_number,' . $equipment->id,
             'date_issued' => 'nullable|date_format:Y-m-d\TH:i',
             'pr_number' => 'required|string|max:255',
-            'status' => 'required|string|in:available,in_use,maintenance,damaged',
+            'status' => 'required|string|in:available,in_use,maintenance,damaged,condemned',
             'remarks' => 'nullable|string|max:255',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048', 
         ]);
 
         try {
@@ -569,6 +591,18 @@ class InventoryController extends Controller
             if (!$staff) {
                 throw new \Exception("Staff member '{$validated['staff_name']}' is not active or missing.");
             }
+
+            if ($request->hasFile('image')) {
+                    $image = $request->file('image');
+                    $imagePath = $image->store('equipment_images', 'public');
+
+                    // Delete old image if it exists
+                    if ($equipment->image_path && Storage::disk('public')->exists($equipment->image_path)) {
+                        Storage::disk('public')->delete($equipment->image_path);
+                    }
+
+                    $validated['image_path'] = $imagePath;
+                }
 
             $oldValues = $equipment->toArray();
             $equipment->update($validated);
@@ -648,8 +682,9 @@ class InventoryController extends Controller
             'serial_number' => 'required|string|max:255|unique:equipment,serial_number,' . $equipment->id,
             'date_issued' => 'required|date',
             'pr_number' => 'required|string|max:255',
-            'status' => 'required|string|in:available,in_use,maintenance,damaged',
+            'status' => 'required|string|in:available,in_use,maintenance,damaged,condemned',
             'remarks' => 'nullable|string|max:255',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
 
         try {
@@ -666,7 +701,25 @@ class InventoryController extends Controller
             }
 
             $oldValues = $equipment->toArray();
-            $equipment->update($validated);
+
+                 // Handle image upload
+            if ($request->hasFile('image')) {
+                $path = $request->file('image')->store('equipment_images', 'public');
+                $equipmentData['image_path'] = $path;
+                Log::info('Image uploaded for equipment', ['path' => $path]);
+            }
+
+                 if ($equipment->image_path && Storage::exists($equipment->image_path)) {
+                        Storage::delete($equipment->image_path);
+                    }
+
+            $equipment->fill($validated);
+            
+            if ($request->filled('date_issued')) {
+                $equipment->date_issued = Carbon::parse($validated['date_issued'])->setTimezone('Asia/Manila');
+            }
+
+            $equipment->save();
 
             if ($validated['status'] === 'available') {
                 // Find the latest active issuance for this equipment
@@ -1065,6 +1118,82 @@ class InventoryController extends Controller
             return response()->json([
                 'error' => 'Failed to export logs: ' . $e->getMessage()
             ], 500);
+        }
+    }
+
+    public function exportEquipmentsPDF(Request $request)
+    {
+        try {
+            // Get equipment data - same query as your CSV export
+            $equipment = Equipment::with('department')->whereNull('deleted_at')->get();
+            
+            $data = [
+                'equipment' => $equipment,
+                'exportDate' => now(),
+                'totalItems' => $equipment->count(),
+                'title' => 'Equipment Inventory Report'
+            ];
+            
+            // Load the view and pass data
+            $pdf = Pdf::loadView('pdf.equipments-pdf', $data);
+            
+            // Set paper size and orientation
+            $pdf->setPaper('A4', 'landscape');
+            
+            // Generate filename with timestamp
+            $filename = 'equipment-inventory-' . date('Y-m-d-H-i-s') . '.pdf';
+            
+            // Download the PDF
+            return $pdf->download($filename);
+            
+        } catch (\Exception $e) {
+            Log::error('Error exporting PDF: ' . $e->getMessage(), ['stack_trace' => $e->getTraceAsString()]);
+            return redirect()->back()->with('error', 'Failed to export PDF: ' . $e->getMessage());
+        }
+    }
+
+
+//equipment logs
+public function exportEquipmentLogsPDF($id)
+{
+    try {
+        // Load equipment with department relationship
+        $equipment = Equipment::with('department')->findOrFail($id);
+
+        // Load logs with staff relationship and equipment relationship (if needed)
+        $logs = HistoryLog::with(['staff', 'equipment'])
+            ->where('model_id', $equipment->id)
+            ->orderBy('action_date', 'desc')
+            ->get();
+
+        $data = [
+            'equipment' => $equipment,
+            'logs' => $logs,
+            'exportDate' => now(),
+            'title' => "Equipment Log Report - {$equipment->equipment_name}"
+        ];
+
+        $pdf = Pdf::loadView('pdf.equipments-log-pdf', $data);
+        $pdf->setPaper('A4', 'landscape');
+        $filename = 'equipment-logs-' . $equipment->id . '-' . now()->format('Y-m-d-His') . '.pdf';
+
+        return $pdf->download($filename);
+    } catch (\Exception $e) {
+        Log::error('Error exporting Equipment Logs PDF: ' . $e->getMessage(), [
+            'stack_trace' => $e->getTraceAsString()
+        ]);
+        return redirect()->back()->with('error', 'Failed to export Equipment Logs PDF: ' . $e->getMessage());
+    }
+}
+
+        public function getEquipmentLogs($id)
+    {
+        try {
+            $logs = HistoryLog::with('staff')->where('equipment_id', $id)->get();
+            return response()->json(['status' => 'success', 'data' => $logs]);
+        } catch (\Exception $e) {
+            Log::error('Error fetching equipment logs: ' . $e->getMessage(), ['stack_trace' => $e->getTraceAsString()]);
+            return response()->json(['status' => 'error', 'message' => 'Failed to load logs'], 500);
         }
     }
 

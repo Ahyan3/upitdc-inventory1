@@ -84,9 +84,7 @@
                         </td>
 
 
-                        <td class="px-4 py-3 whitespace-nowrap text-xs text-black min-w-[120px]">{{ $log->model_brand }}
-                            (ID: {{ $log->model_id }})
-                        </td>
+                        <td class="px-4 py-3 whitespace-nowrap text-xs text-black min-w-[120px]">{{ $log->model_brand }}</td>
                         <td class="px-4 py-3 text-xs text-black min-w-[200px]">{{ $log->description ?? 'N/A' }}</td>
                         <td class="px-4 py-3 whitespace-nowrap text-xs text-black min-w-[120px]">
                             @if ($log->action_date instanceof \Carbon\Carbon)

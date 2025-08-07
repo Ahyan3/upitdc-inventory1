@@ -47,13 +47,13 @@
                 </button>
                 @endauth
 
-                <!-- User Dropdown -->
+                <!-- Admin Dropdown -->
                 <div class="relative">
                     <button id="userDropdownToggle" class="flex items-center text-xs font-medium text-gray-700 hover:text-[#90143c] focus:outline-none" aria-label="User menu">
                         @auth
                         {{ Auth::user()->name }}
                         @else
-                        User
+                        Admin
                         @endauth
                         <i class="fas fa-user-circle ml-1.5 text-base"></i>
                     </button>
