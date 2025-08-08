@@ -908,7 +908,10 @@ function initializeHistoryPDFExport() {
                             const url = window.URL.createObjectURL(blob);
                             const a = document.createElement('a');
                             a.href = url;
-                            a.download = 'history_logs_export.csv';
+                            const contentDisposition = response.headers.get('Content-Disposition');
+                            const filenameMatch = contentDisposition && contentDisposition.match(/filename="(.+)"/);
+                            a.download = filenameMatch ? filenameMatch[1] : 'history_logs_export.csv';
+
                             document.body.appendChild(a);
                             a.click();
                             a.remove();
@@ -942,8 +945,9 @@ function initializeHistoryPDFExport() {
                             const url = window.URL.createObjectURL(blob);
                             const a = document.createElement('a');
                             a.href = url;
-                            a.download = 'inventory_logs_export.csv';
-                            document.body.appendChild(a);
+                            const contentDisposition = response.headers.get('Content-Disposition');
+                            const filenameMatch = contentDisposition && contentDisposition.match(/filename="(.+)"/);
+                            a.download = filenameMatch ? filenameMatch[1] : 'history_logs_export.csv';                          
                             a.click();
                             a.remove();
                             window.URL.revokeObjectURL(url);

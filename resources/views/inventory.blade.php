@@ -697,7 +697,7 @@
                             </div>
                             <div class="col-span-2 relative group">
                                 <label for="image" class="block text-[0.65rem] font-medium text-[#00553d] mb-1">
-                                    Equipment Image
+                                    Equipment Image (less 20mb)
                                 </label>
                                 <input type="file" name="image" id="image" accept="image/*"
                                     class="w-full px-3 py-2 border border-[#ffcc34] rounded-lg focus:ring-2 focus:ring-[#00553d] text-xs group-hover:shadow-md transition-all duration-300">
@@ -1269,14 +1269,14 @@
 
                             @if(isset($item) && $item)
                             <button id="export-equipment-logs-pdf"
-                                class="gradient-btn px-4 py-2 text-white font-semihold rounded-lg text-xs border border-[#ffcc34] shadow-md hover:shadow-lg flex items-center transition-all duration-300"
+                                class="gradient-btn px-4 py-2 text-white font-semibold rounded-lg text-xs border border-[#ffcc34] shadow-md hover:shadow-lg flex items-center transition-all duration-300"
                                 data-equipment-id="{{ $item->id }}"
                                 aria-label="Export equipment history logs as PDF">
                                 <i class="fas fa-file-pdf mr-2"></i>Export PDF
                             </button>
                             @endif
 
-                            <button id="export-equipment-logs-btn"
+                            <button id="export-equipment-logs-btn" style="display: none;"
                                 class="gradient-btn px-4 py-2 text-white font-semibold rounded-lg text-xs border border-[#ffcc34] shadow-md hover:shadow-lg flex items-center transition-all duration-300 hidden"
                                 data-equipment-id="" aria-label="Export equipment history logs as CSV">
                                 <i class="fas fa-file-csv mr-2"></i>Export CSV
@@ -1950,11 +1950,11 @@
 
                                         html += `
                         <tr>
-                            <td class="px-5 py-3 text-xs text-black">${log.action_date || '-'}</td>
-                            <td class="px-5 py-3 text-xs text-black">${log.action || '-'}</td>
-                            <td class="px-5 py-3 text-xs text-black">${log.model_brand || '-'}</td>
-                            <td class="px-5 py-3 text-xs text-black break-words" style="max-width: 1200px;">${changes}</td>
-                            <td class="px-5 py-3 text-xs text-black break-words">${log.description || '-'}</td>
+                            <td class="px-5 py-3 text-xs tracking-wider text-black" style="width: 15%;">${log.action_date || '-'}</td>
+                            <td class="px-5 py-3 text-xs tracking-wider text-black" style="width: 10%;">${log.action || '-'}</td>
+                            <td class="px-5 py-3 text-xs tracking-wider text-black" style="width: 10%;">${log.model_brand || '-'}</td>
+                            <td class="px-5 py-3 text-xs tracking-wider text-black" style="width: 32.5%;">${changes}</td>
+                            <td class="px-5 py-3 text-xs tracking-wider text-black break-words" style="width: 32.5%;">${log.description || '-'}</td>
                         </tr>
                     `;
                                     });
@@ -1987,26 +1987,87 @@
                     // Make sure this script tag is also included
                     const equipmentLogEndpointTemplate = @json(route('inventory.logs', ['equipment' => '__ID__']));
 
-                    document.addEventListener('click', async (e) => {
-                        // Close modal buttons
-                        if (e.target.closest('.close-logs-btn')) {
-                            const modal = document.getElementById('history-logs-modal');
-                            modal.classList.add('hidden');
-                            modal.classList.remove('flex');
-                            document.body.classList.remove('modal-open');
-                        }
+                   document.querySelectorAll('.view-btn').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+        e.preventDefault();
 
-                        // Equipment logs export button
-                        if (e.target.closest('#export-equipment-logs-btn')) {
-                            const button = document.getElementById('export-equipment-logs-btn');
-                            const equipmentId = button.dataset.equipmentId;
-                            if (!equipmentId) return;
-                            window.location.href = `/inventory/${equipmentId}/logs/export`;
-                        }
+        const id = btn.dataset.id;
+        const name = btn.dataset.name;
+        const type = btn.dataset.type;
+
+        console.log('View button clicked:', { id, name, type });
+
+        // CLEAR previous equipment IDs first
+        const exportPDFButton = document.getElementById('export-equipment-logs-pdf');
+        const exportCSVButton = document.getElementById('export-equipment-logs-btn');
+        
+        // Clear both buttons
+        if (exportPDFButton) {
+            exportPDFButton.removeAttribute('data-equipment-id');
+            exportPDFButton.dataset.equipmentId = '';
+        }
+        if (exportCSVButton) {
+            exportCSVButton.removeAttribute('data-equipment-id');
+            exportCSVButton.dataset.equipmentId = '';
+        }
+
+        // Set new equipment ID only for equipment type
+        if (type === 'equipment') {
+            if (exportPDFButton) {
+                exportPDFButton.setAttribute('data-equipment-id', id);
+                exportPDFButton.dataset.equipmentId = id;
+                console.log('Set PDF export ID:', id);
+            }
+            
+            if (exportCSVButton) {
+                exportCSVButton.setAttribute('data-equipment-id', id);
+                exportCSVButton.dataset.equipmentId = id;
+                exportCSVButton.classList.remove('hidden');
+                console.log('Set CSV export ID:', id);
+            }
+        } else {
+            // Hide export buttons for staff
+            if (exportCSVButton) {
+                exportCSVButton.classList.add('hidden');
+            }
+        }
                     });
+});
 
-
-
+// Close modal when clicking outside OR clicking close buttons
+document.getElementById('history-logs-modal').addEventListener('click', (e) => {
+    // Check if clicked on modal backdrop OR close button
+    if (e.target === e.currentTarget || e.target.closest('.close-logs-btn')) {
+        e.preventDefault();
+        const modal = document.getElementById('history-logs-modal');
+        
+        // Clear equipment IDs
+        const exportPDFButton = document.getElementById('export-equipment-logs-pdf');
+        const exportCSVButton = document.getElementById('export-equipment-logs-btn');
+        
+        if (exportPDFButton) {
+            exportPDFButton.removeAttribute('data-equipment-id');
+            exportPDFButton.dataset.equipmentId = '';
+        }
+        
+        if (exportCSVButton) {
+            exportCSVButton.removeAttribute('data-equipment-id');
+            exportCSVButton.dataset.equipmentId = '';
+            exportCSVButton.classList.add('hidden');
+        }
+        
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+        document.body.classList.remove('modal-open');
+        
+        // Log which method was used to close
+        if (e.target === e.currentTarget) {
+            console.log('Modal closed by clicking outside');
+        } else {
+            console.log('Modal closed by clicking close button');
+        }
+    }
+});
 
                     // Initialize Chart
                     function initializeChart() {
@@ -2158,7 +2219,7 @@
                         if (equipmentLogsPDFButton) {
                             equipmentLogsPDFButton.addEventListener('click', function() {
                                 const equipmentId = this.getAttribute('data-equipment-id');
-                                const route = `{{ route('equipment.logs.export', ':id') }}`.replace(':id',
+                                const route = `{{ route('equipment.logs.export.pdf', ':id') }}`.replace(':id',
                                     equipmentId);
                                 handlePDFExport(this, route);
                             });
@@ -2779,36 +2840,41 @@
                                 queryParams.set('export', 'csv');
                                 setLoadingState(exportButton, true);
 
-                                fetch(`{{ route('inventory.export') }}?${queryParams.toString()}`, {
-                                        method: 'GET',
-                                        headers: {
-                                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')
-                                                .content
-                                        }
-                                    })
-                                    .then(response => {
-                                        if (!response.ok) throw new Error(
-                                            `HTTP error! Status: ${response.status}`);
-                                        return response.blob();
-                                    })
-                                    .then(blob => {
-                                        const url = window.URL.createObjectURL(blob);
-                                        const a = document.createElement('a');
-                                        a.href = url;
-                                        a.download =
-                                            `inventory_export_${new Date().toISOString().split('T')[0]}.csv`;
-                                        document.body.appendChild(a);
-                                        a.click();
-                                        a.remove();
-                                        window.URL.revokeObjectURL(url);
-                                        showAlert('Inventory exported successfully.', 'success');
-                                    })
-                                    .catch(error => {
-                                        console.error('Error exporting inventory:', error);
-                                        showAlert('Failed to export inventory. Please try again.', 'error');
-                                    })
-                                    .finally(() => {
-                                        setLoadingState(exportButton, false);
+                               fetch(`{{ route('inventory.export') }}?${queryParams.toString()}`, {
+                                    method: 'GET',
+                                    headers: {
+                                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                                    }
+                                })
+                                .then(response => {
+                                    if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                                    return response.blob();
+                                })
+                                .then(blob => {
+                                    const url = window.URL.createObjectURL(blob);
+                                    const a = document.createElement('a');
+                                    a.href = url;
+
+                                    // Generate filename
+                                    const now = new Date();
+                                    const pad = (num) => num.toString().padStart(2, '0');
+                                    const filename = `inventorylist_${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}.csv`;
+
+                                    a.download = filename; // ✅ This is the missing line
+                                    document.body.appendChild(a);
+                                    a.click();
+                                    a.remove();
+                                    window.URL.revokeObjectURL(url);
+
+                                    showAlert('Inventory exported successfully.', 'success');
+                                })
+                                .catch(error => {
+                                    console.error('Error exporting inventory:', error);
+                                    showAlert('Failed to export inventory. Please try again.', 'error');
+                                })
+                                .finally(() => {
+                                    setLoadingState(exportButton, false);
+
                                     });
                             });
                         }
@@ -2857,7 +2923,7 @@
                                     // Download the CSV file
                                     const equipmentName = data.equipment_name || 'Equipment';
                                     const filename =
-                                        `${equipmentName}_History_Logs_${new Date().toISOString().split('T')[0]}.csv`;
+                                        `${equipmentName}historylogs_${new Date().toISOString().split('T')[0]}.csv`;
                                     downloadCSV(csvContent, filename);
 
                                     showAlert('CSV exported successfully!', 'success');

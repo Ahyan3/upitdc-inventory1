@@ -265,7 +265,7 @@ class HistoryController extends Controller
 
         $items = $query->get();
 
-        $filename = 'inventory_logs_export_' . now()->format('Ymd_His') . '.csv';
+        $filename = 'historylogs_' . now()->format('YmdHis') . '.csv';
         $headers = [
             'Content-Type' => 'text/csv',
             'Content-Disposition' => "attachment; filename=\"$filename\"",

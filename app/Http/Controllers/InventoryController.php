@@ -577,7 +577,7 @@ class InventoryController extends Controller
             'pr_number' => 'required|string|max:255',
             'status' => 'required|string|in:available,in_use,maintenance,damaged,condemned',
             'remarks' => 'nullable|string|max:255',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048', 
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:20048', 
         ]);
 
         try {
@@ -591,6 +591,7 @@ class InventoryController extends Controller
             if (!$staff) {
                 throw new \Exception("Staff member '{$validated['staff_name']}' is not active or missing.");
             }
+
 
             if ($request->hasFile('image')) {
                     $image = $request->file('image');
@@ -940,7 +941,7 @@ class InventoryController extends Controller
 
 
 
-
+    //Inventory CSV Export
     public function exportCsv()
     {
         try {
@@ -952,7 +953,7 @@ class InventoryController extends Controller
 
             $callback = function () use ($equipment) {
                 $file = fopen('php://output', 'w');
-                fputcsv($file, ['Staff Name', 'Department', 'Equipment Name', 'Model/Brand', 'Date Issued', 'Serial Number', 'PR Number', 'Status', 'Returned Condition', 'Remarks', 'Created At', 'Updated_At']);
+                fputcsv($file, ['Staff ID','Equipment Name', 'Staff Name', 'Department', 'Model/Brand', 'Date Issued', 'Serial Number', 'PR Number', 'Status', 'Returned Condition', 'Remarks']);
 
                 foreach ($equipment as $item) {
                     fputcsv($file, [
@@ -965,10 +966,8 @@ class InventoryController extends Controller
                         $item->serial_number,
                         $item->pr_number,
                         ucfirst(str_replace('_', ' ', $item->status)),
-                        $item->returned_condition,
+                        $item->returned_condition ?? 'N/A',
                         $item->remarks ?? 'N/A',
-                        $item->created_at,
-                        $item->updated_at,
                     ]);
                 }
 
@@ -1105,7 +1104,7 @@ class InventoryController extends Controller
 
             // Generate filename
             $equipmentName = $equipmentModel->equipment_name ?? $equipmentModel->serial_number ?? 'Equipment';
-            $filename = "{$equipmentName}_History_Logs_" . date('Y-m-d') . '.csv';
+            $filename = "{$equipmentName}_historylogs_" . date('YmdHis') . '.csv';
 
             // Return CSV download response
             return response($csvContent)
@@ -1141,7 +1140,7 @@ class InventoryController extends Controller
             $pdf->setPaper('A4', 'landscape');
             
             // Generate filename with timestamp
-            $filename = 'equipment-inventory-' . date('Y-m-d-H-i-s') . '.pdf';
+            $filename = 'inventorylogs-' . date('YmdHis') . '.pdf';
             
             // Download the PDF
             return $pdf->download($filename);
@@ -1152,17 +1151,15 @@ class InventoryController extends Controller
         }
     }
 
-
-//equipment logs
-public function exportEquipmentLogsPDF($id)
+public function exportEquipmentLogsPDF($equipmentId)
 {
     try {
-        // Load equipment with department relationship
-        $equipment = Equipment::with('department')->findOrFail($id);
+        // Get the equipment
+        $equipment = Equipment::with('department')->findOrFail($equipmentId);
 
-        // Load logs with staff relationship and equipment relationship (if needed)
+        // Match the column used in other log fetching (most likely equipment_id)
         $logs = HistoryLog::with(['staff', 'equipment'])
-            ->where('model_id', $equipment->id)
+            ->where('equipment_id', $equipment->id) // Use equipment_id, not model_id
             ->orderBy('action_date', 'desc')
             ->get();
 
@@ -1175,27 +1172,19 @@ public function exportEquipmentLogsPDF($id)
 
         $pdf = Pdf::loadView('pdf.equipments-log-pdf', $data);
         $pdf->setPaper('A4', 'landscape');
-        $filename = 'equipment-logs-' . $equipment->id . '-' . now()->format('Y-m-d-His') . '.pdf';
+
+        $filename = $equipment->equipment_name . '_equipmentlogs_' . now()->format('YmdHis') . '.pdf';
 
         return $pdf->download($filename);
+
     } catch (\Exception $e) {
         Log::error('Error exporting Equipment Logs PDF: ' . $e->getMessage(), [
             'stack_trace' => $e->getTraceAsString()
         ]);
-        return redirect()->back()->with('error', 'Failed to export Equipment Logs PDF: ' . $e->getMessage());
+
+        return redirect()->back()->with('error', 'Failed to export Equipment Logs PDF.');
     }
 }
-
-        public function getEquipmentLogs($id)
-    {
-        try {
-            $logs = HistoryLog::with('staff')->where('equipment_id', $id)->get();
-            return response()->json(['status' => 'success', 'data' => $logs]);
-        } catch (\Exception $e) {
-            Log::error('Error fetching equipment logs: ' . $e->getMessage(), ['stack_trace' => $e->getTraceAsString()]);
-            return response()->json(['status' => 'error', 'message' => 'Failed to load logs'], 500);
-        }
-    }
 
 
 

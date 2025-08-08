@@ -1089,14 +1089,14 @@
                                                     <p class="text-[0.6rem] text-[#666]">Total logs: ${data.logs.length}</p>
                                                 </div>
                                                 <div class="w-full">
-                                                    <table class="table-auto w-full divide-y divide-[#ffcc34]">
-                                                        <thead class="bg-gradient-to-br from-[#90143c] to-[#b01a47]">
+                                                    <table class="table-fixed w-full divide-y divide-[#ffcc34]">
+                                                       <thead class="bg-gradient-to-br from-[#90143c] to-[#b01a47]">
                                                             <tr>
-                                                                <th class="px-5 py-2 text-left text-[0.65rem] font-medium uppercase tracking-wider text-white">Date</th>
-                                                                <th class="px-5 py-2 text-left text-[0.65rem] font-medium uppercase tracking-wider text-white">Action</th>
-                                                                <th class="px-5 py-2 text-left text-[0.65rem] font-medium uppercase tracking-wider text-white">Model</th>
-                                                                <th class="px-5 py-2 text-left text-[0.65rem] font-medium uppercase tracking-wider text-white">Changes</th>
-                                                                <th class="px-5 py-2 text-left text-[0.65rem] font-medium uppercase tracking-wider text-white">Description</th>
+                                                                <th class="px-5 py-2 text-left text-[0.65rem] font-medium uppercase tracking-wider text-white" style="width: 15%;">Date</th>
+                                                                <th class="px-5 py-2 text-left text-[0.65rem] font-medium uppercase tracking-wider text-white" style="width: 10%;">Action</th>
+                                                                <th class="px-5 py-2 text-left text-[0.65rem] font-medium uppercase tracking-wider text-white" style="width: 10%;">Model</th>
+                                                                <th class="px-5 py-2 text-left text-[0.65rem] font-medium uppercase tracking-wider text-white" style="width: 32.5%;">Changes</th>
+                                                                <th class="px-5 py-2 text-left text-[0.65rem] truncate font-medium uppercase tracking-wider text-white" style="width: 32.5%;">Description</th>
                                                             </tr>
                                                         </thead>
                                                         <tbody class="bg-white divide-y divide-[#ffcc34]">
@@ -1143,7 +1143,7 @@
                                                         <td class="px-5 py-3 text-xs text-black">${log.action || '-'}</td>
                                                         <td class="px-5 py-3 text-xs text-black">${log.model_brand || '-'}</td>
                                                         <td class="px-5 py-3 text-xs text-black break-words">${changes}</td>
-                                                        <td class="px-5 py-3 text-xs text-black">${log.description || '-'}</td>
+                                                        <td class="px-5 py-3 text-xs text-black break-words">${log.description || '-'}</td>
                                                     </tr>
                                                 `;
                                             });

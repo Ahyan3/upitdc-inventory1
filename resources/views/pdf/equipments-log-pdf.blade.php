@@ -6,137 +6,129 @@
     <title>{{ $title }}</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
+            font-family: DejaVu Sans, Arial, sans-serif;
+            font-size: 9px;
             color: #333;
-            font-size: 12px;
-        }
-        
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-            border-bottom: 2px solid #333;
-            padding-bottom: 20px;
-        }
-        
-        .header h1 {
+            padding: 16px;
             margin: 0;
-            font-size: 20px;
-            color: #2c3e50;
         }
-        
-        .header p {
-            margin: 5px 0;
-            color: #7f8c8d;
+        h1 {
+            font-size: 18px;
+            color: #dc3545;
+            text-align: center;
+            margin-bottom: 8px;
         }
-        
+        .header-info {
+            font-size: 8px;
+            color: #666;
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
         .equipment-info {
-            background-color: #f8f9fa;
-            padding: 15px;
-            margin-bottom: 20px;
-            border-radius: 5px;
-            border: 1px solid #dee2e6;
+            font-size: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            padding: 8px;
+            border-radius: 4px;
         }
-        
         .equipment-info h3 {
-            margin: 0 0 10px 0;
-            color: #2c3e50;
-            font-size: 16px;
+            font-size: 11px;
+            font-weight: bold;
+            color: #dc3545;
+            margin: 0 0 6px 0;
         }
-        
         .info-row {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 5px;
+            margin-bottom: 4px;
         }
-        
         .info-label {
             font-weight: bold;
-            width: 120px;
+            width: 100px;
         }
-        
         .info-value {
             flex: 1;
         }
-        
-        table {
+        .table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 20px;
+            margin-top: 10px;
+            font-size: 8px;
         }
-        
-        table, th, td {
-            border: 1px solid #ddd;
-        }
-        
-        th {
-            background-color: #f2f2f2;
-            padding: 8px;
+        .table th {
+            background-color: #dc3545;
+            color: white;
+            padding: 6px 4px;
             text-align: left;
+            border: 1px solid #dc3545;
             font-weight: bold;
-            font-size: 11px;
         }
-        
-        td {
-            padding: 6px 8px;
-            font-size: 10px;
+        .table td {
+            padding: 5px 4px;
+            border: 1px solid #ccc;
             vertical-align: top;
         }
-        
-        tr:nth-child(even) {
+        .table tr:nth-child(even) {
             background-color: #f9f9f9;
         }
-        
         .no-logs {
             text-align: center;
-            padding: 30px;
-            color: #6c757d;
+            padding: 20px;
+            color: #666;
             font-style: italic;
+            font-size: 8px;
         }
-        
         .footer {
-            margin-top: 30px;
-            text-align: center;
-            font-size: 10px;
-            color: #6c757d;
-            border-top: 1px solid #dee2e6;
+            margin-top: 20px;
+            font-size: 8px;
+            color: #666;
+            border-top: 1px solid #ddd;
             padding-top: 10px;
         }
-        
+        .footer-grid {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
         .status-badge {
-            padding: 2px 6px;
+            padding: 2px 4px;
             border-radius: 3px;
-            font-size: 9px;
+            font-size: 7px;
             font-weight: bold;
             text-transform: uppercase;
+            display: inline-block;
         }
-        
         .status-available {
             background-color: #d4edda;
             color: #155724;
         }
-        
         .status-assigned {
             background-color: #fff3cd;
             color: #856404;
         }
-        
         .status-maintenance {
             background-color: #f8d7da;
             color: #721c24;
         }
-        
         .status-damaged {
             background-color: #f5c6cb;
             color: #721c24;
         }
+        hr {
+            margin: 8px 0;
+            border: none;
+            border-top: 1px solid #ddd;
+        }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>{{ $title }}</h1>
-        <p>Generated on: {{ $exportDate->format('F d, Y \a\t g:i A') }}</p>
+    <h1>{{ $title ?? 'Equipment Log Report' }}</h1>
+
+    <div class="header-info">
+        <div>Generated: {{ $exportDate->format('F d, Y g:i A') }}</div>
+        <div>Total Logs: {{ $logs ? $logs->count() : 0 }}</div>
+        <div>Report ID: EQ-{{ $exportDate->format('Ymd-His') }}</div>
     </div>
 
     <div class="equipment-info">
@@ -180,7 +172,8 @@
     </div>
 
     @if($logs && $logs->count() > 0)
-        <table>
+        <h3 style="font-size: 11px; font-weight: bold; margin-bottom: 6px;">History Logs</h3>
+        <table class="table">
             <thead>
                 <tr>
                     <th style="width: 15%;">Staff Member</th>
@@ -197,12 +190,12 @@
                     <tr>
                         <td>{{ $log->staff->name ?? 'N/A' }}</td>
                         <td>{{ $log->action ?? 'N/A' }}</td>
-                        <td>{{ $log->equipment_name ?? 'N/A' }}</td>
-                        <td>
-                            <span class="status-badge status-{{ strtolower($log->status ?? 'unknown') }}">
-                                {{ ucfirst($log->status ?? 'N/A') }}
-                            </span>
-                        </td>
+                         <td>{{ $equipment->equipment_name ?? 'N/A' }}</td> {{-- Use main equipment --}}
+            <td>
+                <span class="status-badge status-{{ Str::slug($log->equipment->status ?? $equipment->status ?? 'available') }}">
+                    {{ ucfirst($log->equipment->status ?? $equipment->status ?? 'N/A') }}
+                </span>
+            </td>
                         <td>{{ $log->model_brand ?? 'N/A' }}</td>
                         <td>{{ $log->description ?? 'N/A' }}</td>
                         <td>{{ $log->action_date ? \Carbon\Carbon::parse($log->action_date)->format('M d, Y g:i A') : 'N/A' }}</td>
@@ -217,8 +210,25 @@
     @endif
 
     <div class="footer">
-        <p>Equipment Log Report | Total Records: {{ $logs ? $logs->count() : 0 }} | Page 1 of 1</p>
-        <p>This report was automatically generated by the Inventory Management System</p>
+        <div class="footer-grid">
+            <div>
+                <strong>Total Logs:</strong> {{ $logs ? $logs->count() : 0 }}<br>
+                <strong>Equipment ID:</strong> {{ $equipment->id ?? 'N/A' }}
+            </div>
+            <div>
+                <strong>Generated by:</strong> UPITDC Inventory Management System<br>
+                <strong>Date:</strong> {{ $exportDate->format('M d, Y') }}
+            </div>
+            <div>
+                <strong>Report Type:</strong> Equipment Log Report<br>
+                <strong>Status:</strong> As of {{ $exportDate->format('g:i A') }}
+            </div>
+        </div>
+        <hr>
+        <div style="text-align: center;">
+            © {{ date('Y') }} University of the Philippines Diliman Information Technology Development Center<br>
+            <p>This report was automatically generated by the Inventory Management System</p>
+        </div>
     </div>
 </body>
 </html>

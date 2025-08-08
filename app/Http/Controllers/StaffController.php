@@ -134,13 +134,13 @@ class StaffController extends Controller
             $data = [
                 'staffList' => Staff::with('department')->get(),
                 'exportDate' => now(),
-                'title' => 'Complete Staff List',
+                'title' => 'All Staff List',
                 'totalStaff' => Staff::count()
             ];
 
             $pdf = Pdf::loadView('pdf.staff-pdf', $data);
             $pdf->setPaper('A4', 'landscape');
-            $filename = 'staff-list-' . now()->format('Y-m-d-H-i-s') . '.pdf';
+            $filename = 'stafflist_' . now()->format('YmdHis') . '.pdf';
 
             return $pdf->download($filename);
 
@@ -206,7 +206,7 @@ class StaffController extends Controller
         ];
 
         $pdf = Pdf::loadView('pdf.staff-log-pdf', $data)->setPaper('A4', 'landscape');
-        $filename = 'staff-logs-' . $staff->id . '-' . date('Y-m-d-H-i-s') . '.pdf';
+        $filename = $staff->name . '_stafflogs' . '-' . date('YmdHis') . '.pdf';
 
         return $pdf->download($filename);
     } catch (\Exception $e) {
@@ -353,7 +353,7 @@ class StaffController extends Controller
                 'status' => 'error',
                 'message' => 'A database constraint was violated. Please check your input.'
             ], 422);
-        }
+        } 
 
         // For other database errors
         return response()->json([
@@ -472,6 +472,65 @@ class StaffController extends Controller
         }
     }
 
+        public function update(Request $request, $id)
+{
+    try {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'department' => 'required|string|max:255',
+            'email' => 'required|email|unique:staff,email,' . $id,
+            'status' => 'required|in:Active,Resigned', // Add status validation if needed
+        ]);
+
+        $staff = Staff::findOrFail($id);
+        $oldValues = $staff->getAttributes();
+        $staff->update($validated);
+
+        // Clear cache
+        Cache::forget('staff_' . md5(json_encode($request->query())));
+        Cache::forget('departments_all');
+        Cache::forget('active_staff_count');
+        Cache::forget('resigned_staff_count');
+        Cache::forget('active_staff_list');
+        Cache::forget('inactive_staff_list');
+
+        // Create history log
+        HistoryLog::create([
+            'staff_id' => $staff->id,
+            'action' => 'Updated',
+            'model_brand' => 'staff',
+            'model_id' => $staff->id,
+            'old_values' => json_encode($oldValues),
+            'new_values' => json_encode($validated),
+            'description' => "Updated staff: {$staff->name}",
+            'ip_address' => $request->ip(),
+            'action_date' => Carbon::now()->toDateTimeString(),
+        ]);
+
+        return response()->json([
+            'status' => 'success', 
+            'message' => 'Staff updated successfully.'
+        ]);
+
+    } catch (\Illuminate\Validation\ValidationException $e) {
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Validation failed.',
+            'errors' => $e->errors(),
+        ], 422);
+    } catch (\Exception $e) {
+        Log::error('StaffController: Failed to update staff', [
+            'error' => $e->getMessage(),
+            'trace' => $e->getTraceAsString(),
+            'id' => $id,
+        ]);
+        return response()->json([
+            'status' => 'error', 
+            'message' => 'Failed to update staff: ' . $e->getMessage()
+        ], 500);
+    }
+}
+
     public function updateStatus(Request $request, Staff $staff)
     {
         try {
@@ -516,7 +575,7 @@ class StaffController extends Controller
     {
         try {
             $staff = Staff::whereNull('deleted_at')->get();
-            $filename = 'staff_' . now()->format('Y-m-d_His') . '.csv';
+            $filename = 'stafflist_' . now()->format('YmdHis') . '.csv';
             $handle = fopen('php://output', 'w');
             fputcsv($handle, ['Name', 'Department', 'Email', 'Status']);
             foreach ($staff as $member) {
@@ -559,24 +618,44 @@ class StaffController extends Controller
                 ->get()
                 ->map(function ($log) {
                     $changes = '-';
+                    $oldValues = [];
+                    $newValues = [];
+
                     try {
-                        $oldValues = is_string($log->old_values) ? json_decode($log->old_values, true) : ($log->old_values ?: []);
-                        $newValues = is_string($log->new_values) ? json_decode($log->new_values, true) : ($log->new_values ?: []);
+                        $oldValues = is_array($log->old_values) ? $log->old_values : json_decode($log->old_values, true);
+                        $newValues = is_array($log->new_values) ? $log->new_values : json_decode($log->new_values, true);
+                    } catch (\Exception $e) {
+                        Log::warning('HistoryLog: Failed to decode old/new values', [
+                            'log_id' => $log->id ?? null,
+                            'staff_id' => $log->staff_id ?? null,
+                            'old_values' => $log->old_values,
+                            'new_values' => $log->new_values,
+                            'error' => $e->getMessage(),
+                        ]);
+                    }
+
+                    if (is_array($newValues)) {
                         $changes = collect($newValues)
                             ->map(function ($value, $key) use ($oldValues) {
-                                return "{$key}: " . ($oldValues[$key] ?? 'none') . " -> {$value}";
-                            })
+                                    $old = $oldValues[$key] ?? 'none';
+
+                                    // Safely convert to string
+                                    if (is_array($old)) $old = json_encode($old);
+                                    if (is_array($value)) $value = json_encode($value);
+
+                                    return "{$key}: {$old} -> {$value}";
+                                })
                             ->implode('; ');
-                    } catch (\Exception $e) {
-                        $changes = $log->model_brand === 'equipment' ? 'Equipment action (details unavailable)' : 'Changed (details unavailable)';
+                    } else {
+                        $changes = 'Changed (no valid data)';
                     }
+
                     return [
                         'Action Date' => optional($log->action_date)->format('Y-m-d H:i:s') ?? 'N/A',
                         'Action' => $log->action ?? 'N/A',
                         'Model' => ($log->model_brand ?? 'N/A'),
                         'Changes' => $changes,
                         'Description' => $log->description ?? 'N/A',
-                        'IP Address' => $log->ip_address ?? 'N/A',
                     ];
                 });
 
@@ -586,7 +665,7 @@ class StaffController extends Controller
                 'log_count' => $logs->count(),
             ]);
 
-            $filename = "history_logs_{$staff->name}_" . Carbon::now()->format('Ymd_His') . ".csv";
+            $filename = "{$staff->name}_historylogs_" . Carbon::now()->format('YmdHis') . ".csv";
             $headers = [
                 'Content-Type' => 'text/csv',
                 'Content-Disposition' => "attachment; filename=\"$filename\"",
@@ -597,7 +676,7 @@ class StaffController extends Controller
 
             $callback = function () use ($logs) {
                 $file = fopen('php://output', 'w');
-                fputcsv($file, ['Action Date', 'Action', 'Model', 'Changes', 'Description', 'IP Address']);
+                fputcsv($file, ['Action Date', 'Action', 'Model', 'Changes', 'Description']);
                 foreach ($logs as $log) {
                     fputcsv($file, $log);
                 }

@@ -64,7 +64,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/debug/create-test-log/{id}', [StaffController::class, 'createTestLog'])->name('staff.create-test-log');
 
         // Generic {id} routes LAST to avoid conflicts
-        Route::put('/staff/{id}', [StaffController::class, 'update'])->name('staff.update');
+        Route::put('/staff/{staff}', [StaffController::class, 'update'])->name('staff.update');
         Route::delete('/staff/{id}', [StaffController::class, 'destroy'])->name('staff.destroy');
         Route::put('/staff/{staff}/status', [StaffController::class, 'updateStatus'])->name('staff.status');
     });
@@ -104,7 +104,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Equipment-related PDF exports
     Route::get('/export/pdf', [InventoryController::class, 'exportEquipmentsPDF'])->name('inventory.export.pdf');
-    Route::get('/equipment/{equipments}/logs/export', [InventoryController::class, 'exportEquipmentLogsPDF'])->name('equipment.logs.export');
+    Route::get('/inventory/{equipments}/logs/pdf', [PDFController::class, 'exportEquipmentLogs'])->name('equipment.logs.export.pdf');
     // History log PDF export
     Route::get('/history-logs/export', [PDFController::class, 'exportHistoryLogsPDF'])->name('history.logs.export');
 

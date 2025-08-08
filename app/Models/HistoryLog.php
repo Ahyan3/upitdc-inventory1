@@ -48,7 +48,7 @@
 
         public function equipment() 
         { 
-            return $this->belongsTo(Equipment::class, 'model_id')->withTrashed();
+            return $this->belongsTo(Equipment::class, 'model_id', 'equipment_name')->withTrashed();
         }
 
         public function scopeSearch($query, $search)
