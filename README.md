@@ -194,10 +194,3 @@ Pull requests are welcome. For major changes, please open an issue first to disc
 If you discover a security vulnerability, please send an e-mail to the project maintainer.
 
 ---
-
-## 📜 License
-
-This project is licensed under the [MIT License](https://opensource.org/licenses/MIT).
-
----
-
